@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f5f5b">
+<meta name="description" content="আজকের খরচ: রোজ জানুন আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। বাংলায়, লগইন ছাড়া, সব তথ্য শুধু আপনার ফোনে। Ajker Khoroch: know how much you can safely spend today. No login, data stays on your phone.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>আজকের খরচ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;800&display=swap">
+<style>
+/* Layout: one narrow column like a pocket diary — today's signal on top, statement import, cash entry, then the month's ledger and settings. */
+:root{
+  --bg:#f3f4ef; --card:#ffffff; --ink:#1d2a2a; --muted:#5d6b69; --line:#dde2da;
+  --accent:#1f5f5b; --accent-soft:#e3efec;
+  --go:#2f7d3b; --go-bg:#e4f2e5; --wait:#a86a00; --wait-bg:#fbf0d9; --stop:#b3261e; --stop-bg:#fbe4e1;
+  --f-display:"Noto Serif Bengali","Hind Siliguri",serif;
+  --f-body:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121817; --card:#1b2322; --ink:#e7ece9; --muted:#9aa8a4; --line:#2c3735;
+  --accent:#6cc0b8; --accent-soft:#1f3331;
+  --go:#7fd08a; --go-bg:#1d3221; --wait:#f0b84c; --wait-bg:#3a2e14; --stop:#f2877f; --stop-bg:#3d1f1c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121817; --card:#1b2322; --ink:#e7ece9; --muted:#9aa8a4; --line:#2c3735;
+  --accent:#6cc0b8; --accent-soft:#1f3331;
+  --go:#7fd08a; --go-bg:#1d3221; --wait:#f0b84c; --wait-bg:#3a2e14; --stop:#f2877f; --stop-bg:#3d1f1c; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+.wrap{max-width:520px;margin:0 auto;padding-inline:16px;padding-block:18px 48px;display:flex;flex-direction:column;gap:16px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-size:1.5rem;margin:0;color:var(--accent)}
+.date{color:var(--muted);font-size:.95rem}
+.sample{background:var(--wait-bg);color:var(--ink);border-radius:10px;padding:10px 14px;font-size:.95rem;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.signal{border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:6px;background:var(--go-bg);border:2px solid var(--go)}
+.signal.wait{background:var(--wait-bg);border-color:var(--wait)}
+.signal.stop{background:var(--stop-bg);border-color:var(--stop)}
+.lamp{display:flex;gap:8px;align-items:center;font-weight:600}
+.dot{width:16px;height:16px;border-radius:50%;background:var(--go);flex:none}
+.wait .dot{background:var(--wait)} .stop .dot{background:var(--stop)}
+.big{font-family:var(--f-display);font-weight:800;font-size:clamp(2.6rem,12vw,3.6rem);line-height:1.1;font-variant-numeric:tabular-nums}
+.sub{color:var(--muted)}
+.meter{height:10px;background:var(--card);border-radius:6px;overflow:hidden}
+.meter span{display:block;height:100%;background:var(--go);transition:width .4s}
+.wait .meter span{background:var(--wait)} .stop .meter span{background:var(--stop)}
+section{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+section.import{border:2px solid var(--accent)}
+h2{font-size:1.1rem;margin:0;font-weight:700}
+h3{font-size:1rem;margin:0;font-weight:700}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+input[type=checkbox]{width:20px;height:20px;padding:0;accent-color:var(--accent)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.amt{flex:1 1 140px;font-size:1.3rem;font-weight:600}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px}
+.primary{background:var(--accent);color:var(--card);border-color:var(--accent);font-weight:600}
+.tag{background:var(--accent-soft);border-color:transparent}
+.tag[aria-pressed="true"]{background:var(--accent);color:var(--card)}
+.file{display:flex;flex-direction:column;align-items:center;gap:4px;border:2px dashed var(--accent);border-radius:14px;padding:18px;text-align:center;cursor:pointer;background:var(--accent-soft);color:var(--ink);font-weight:600}
+.file small{font-weight:400;color:var(--muted)}
+.file input{position:absolute;width:1px;height:1px;opacity:0}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);align-items:center}
+li:last-child{border-bottom:0}
+li .what{min-width:0;overflow-wrap:anywhere}
+li .what small{display:block;color:var(--muted);font-size:.85rem}
+.num{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.x{border:0;background:none;color:var(--muted);padding:2px 8px}
+.ledger{display:grid;grid-template-columns:1fr auto;gap:6px 12px}
+.ledger .num{text-align:right}
+.ledger .total{border-top:1px solid var(--line);padding-top:6px;font-weight:700}
+.ledger .indent{padding-left:14px;color:var(--muted)}
+.empty{color:var(--muted)}
+.preview{display:flex;flex-direction:column;gap:10px;background:var(--bg);border-radius:12px;padding:14px}
+.pick{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.pick label{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-size:1rem;flex:1}
+.warn{background:var(--wait-bg);border-radius:10px;padding:10px 12px;font-size:.92rem}
+.err{background:var(--stop-bg);border-radius:10px;padding:10px 12px;font-size:.95rem}
+details summary{cursor:pointer;font-weight:700;font-size:1.1rem}
+details > *+*{margin-top:12px}
+details.help summary{font-size:.95rem;font-weight:600;color:var(--accent)}
+details.help p{margin:6px 0 0;font-size:.92rem;color:var(--muted)}
+label{display:flex;flex-direction:column;gap:4px;font-size:.95rem;color:var(--muted);flex:1 1 140px}
+.note{font-size:.9rem;color:var(--muted);margin:0}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.perm{display:flex;flex-direction:column;gap:2px}
+.mid{font-family:var(--f-display);font-weight:800;font-size:2.2rem;line-height:1.15;font-variant-numeric:tabular-nums;color:var(--accent)}
+.guide{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:.95rem}
+.guide b{display:block;margin-bottom:2px}
+.chartwrap{width:100%}
+.chartwrap svg{width:100%;height:auto;display:block}
+.chartwrap .pos{fill:var(--go)} .chartwrap .neg{fill:var(--stop)}
+.chartwrap .axis{stroke:var(--line)} .chartwrap text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
+.inl{display:flex;gap:6px;flex-wrap:wrap}
+.inl input,.inl select{flex:1 1 120px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:6px 14px;border-radius:999px;background:var(--accent-soft);border-color:transparent;font-size:.95rem}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--card)}
+.kgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.kbox{background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kbox .k{font-size:.85rem;color:var(--muted)}
+.kbox .v{font-family:var(--f-display);font-weight:800;font-size:1.35rem;font-variant-numeric:tabular-nums}
+.cbars{display:flex;flex-direction:column;gap:8px}
+.cbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 8px;font-size:.92rem}
+.cbar .nm{min-width:0;overflow-wrap:anywhere}
+.cbar .am{white-space:nowrap;font-variant-numeric:tabular-nums}
+.cbar .t{grid-column:1/-1;height:8px;border-radius:4px;background:var(--bg);overflow:hidden}
+.cbar .t i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.cbar.other .t i{background:var(--wait)}
+ul.ins{gap:6px}
+ul.ins li{display:block;border:0;padding:8px 12px;background:var(--bg);border-radius:10px;font-size:.93rem}
+ul.ins li.warn{background:var(--wait-bg)} ul.ins li.good{background:var(--go-bg)}
+li.payee select{flex:0 1 46%;font-size:.85rem;padding:6px 8px}
+.mchart svg{width:100%;height:auto;display:block}
+.mchart .bar{fill:var(--accent)} .mchart text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
+.mchart .val{fill:var(--ink)}
+.onb{background:var(--card);border:2px solid var(--accent);border-radius:18px;padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+.onb .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.onb h2{font-family:var(--f-display);color:var(--accent);font-size:1.25rem}
+.flow{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.flow li{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:start;border:0;padding:0 0 14px;position:relative}
+.flow li::before{content:"";position:absolute;left:17px;top:34px;bottom:2px;width:2px;background:var(--line)}
+.flow li:last-child{padding-bottom:0} .flow li:last-child::before{display:none}
+.flow b{width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--card);display:flex;align-items:center;justify-content:center;font-weight:700;position:relative}
+.flow span{padding-top:5px}
+.gets{background:var(--go-bg);border-radius:12px;padding:10px 14px;font-size:.95rem}
+.gets ul{display:block;padding-left:18px;margin:4px 0 0} .gets li{display:list-item;border:0;padding:2px 0}
+.onb small.en,.gets small.en{display:block;color:var(--muted);font-size:.86rem;font-weight:400;line-height:1.45;margin-top:2px;font-family:var(--f-body)}
+.en-inline{color:var(--muted);font-weight:400;font-size:.9rem}
+.helpbtn.sharebtn{background:var(--go);color:var(--card);text-decoration:none;font-weight:600}
+#langBtn{font-weight:600;border:1px solid var(--accent);background:var(--card);color:var(--accent)}
+.helpbtn{font-size:.9rem;padding:6px 12px;border-radius:999px;background:var(--accent-soft);border-color:transparent}
+.fbq{display:flex;flex-direction:column;gap:4px;font-size:.95rem;color:var(--ink);flex:none}
+.flowbox{background:var(--bg);border-radius:14px;padding:12px 14px;counter-reset:fs}
+.flowbox summary{font-size:1rem;color:var(--accent)}
+.flowbox .chips{margin-bottom:10px}
+.fchain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.fchain li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:center;border:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 12px;font-size:.95rem;position:relative;margin-bottom:26px}
+.fchain li::before{counter-increment:fs;content:counter(fs);width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--card);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
+:root[lang="bn"] .fchain li::before{content:counter(fs,bengali)}
+.fchain li::after{content:"↓";position:absolute;left:50%;bottom:-25px;transform:translateX(-50%);color:var(--accent);font-weight:700;font-size:1.2rem;line-height:24px}
+.fchain:last-of-type li:last-child{margin-bottom:0;background:var(--go-bg);border-color:var(--go)}
+.fchain:last-of-type li:last-child::after{display:none}
+.sharetip{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.sharetip p{margin:0;font-size:.93rem}
+.installtop{background:var(--accent);color:var(--card);font-weight:600}
+.installhelp{background:var(--card);border:2px solid var(--accent);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.installhelp .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.installhelp ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.installhelp li{display:list-item;border:0;padding:0}
+textarea{font:inherit;font-size:.85rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:90px;resize:vertical}
+@media (prefers-reduced-motion:reduce){.meter span{transition:none}}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <h1><span data-en="Today&#x27;s Spend">আজকের খরচ</span></h1>
+    <span class="date" id="today"></span>
+    <button class="helpbtn" id="obOpen"><span data-en="How to use">কীভাবে ব্যবহার করবেন?</span></button>
+    <a class="helpbtn sharebtn" id="shareApp" href="https://wa.me/?text=%E0%A6%86%E0%A6%9C%E0%A6%95%E0%A7%87%E0%A6%B0%20%E0%A6%96%E0%A6%B0%E0%A6%9A%20%E0%A6%85%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%AA%3A%20%E0%A6%B0%E0%A7%8B%E0%A6%9C%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A7%81%E0%A6%A8%20%E0%A6%86%E0%A6%9C%20%E0%A6%95%E0%A6%A4%20%E0%A6%9F%E0%A6%BE%E0%A6%95%E0%A6%BE%20%E0%A6%A8%E0%A6%BF%E0%A6%B6%E0%A7%8D%E0%A6%9A%E0%A6%BF%E0%A6%A8%E0%A7%8D%E0%A6%A4%E0%A7%87%20%E0%A6%96%E0%A6%B0%E0%A6%9A%20%E0%A6%95%E0%A6%B0%E0%A6%BE%20%E0%A6%AF%E0%A6%BE%E0%A6%AF%E0%A6%BC%E0%A5%A4%20%E0%A6%B2%E0%A6%97%E0%A6%87%E0%A6%A8%20%E0%A6%A8%E0%A7%87%E0%A6%87%2C%20%E0%A6%B8%E0%A6%AC%20%E0%A6%A4%E0%A6%A5%E0%A7%8D%E0%A6%AF%20%E0%A6%B6%E0%A7%81%E0%A6%A7%E0%A7%81%20%E0%A6%86%E0%A6%AA%E0%A6%A8%E0%A6%BE%E0%A6%B0%20%E0%A6%AB%E0%A7%8B%E0%A6%A8%E0%A7%87%E0%A5%A4%20https%3A%2F%2Fpappa6.github.io%2Fajker-khoroch%2F" target="_blank" rel="noopener"><span data-en="Share with a friend">বন্ধুকে পাঠান</span></a>
+    <button class="helpbtn installtop" id="installTop" hidden><span data-en="📲 Install on phone">📲 ফোনে বসান</span></button>
+    <button class="helpbtn" id="langBtn" aria-label="ভাষা / Language">English</button>
+  </header>
+
+  <div class="installhelp" id="installHelp" hidden>
+    <div class="top"><strong><span data-en="To install the app">অ্যাপটা ফোনে বসাতে</span></strong><button class="x" id="installHelpClose" aria-label="Close">✕</button></div>
+    <ol>
+      <li><span data-en="Tap ⋮ (three dots) at the top right of Chrome">Chrome-এর উপরে ডানদিকে <b>⋮</b> (তিনটে ফোঁটা) চাপুন</span></li>
+      <li><span data-en="Tap Install app or Add to Home screen"><b>Install app</b> বা <b>Add to Home screen</b> চাপুন</span></li>
+      <li><span data-en="Tap Install. The আজ ₹ icon appears on your home screen ✅"><b>Install</b> চাপুন। হোম স্ক্রিনে <b>আজ ₹</b> আইকন বসে যাবে ✅</span></li>
+    </ol>
+    <p class="note"><span data-en="On iPhone: in Safari tap the Share icon → Add to Home Screen.">iPhone-এ: Safari-তে নিচের Share চিহ্ন → <b>Add to Home Screen</b>।</span></p>
+  </div>
+
+  <section class="onb" id="onboard" hidden>
+    <div class="top">
+      <h2>প্রথমবার? এভাবে শুরু করুন<small class="en">First time? Start like this</small></h2>
+      <button class="x" id="obClose" aria-label="বন্ধ করুন / Close">✕</button>
+    </div>
+    <p style="margin:0">এই অ্যাপ রোজ বলে দেয়, আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। কোনো লগইন নেই, আপনার সব তথ্য শুধু আপনার ফোনেই থাকে।<small class="en">This app tells you every day how much you can safely spend today. No login. All your data stays only on your phone.</small></p>
+    <ol class="flow">
+      <li><b>১</b><span><strong>নিজের হিসেব বসান:</strong> নিচে "আমার মাসের হিসেব" খুলে মাসিক আয়, কত তারিখে আসে, আর নির্দিষ্ট খরচ (ভাড়া, বিল, EMI) লিখুন।<small class="en"><strong>Set up your budget:</strong> open "আমার মাসের হিসেব" (My monthly budget) below and enter your monthly income, the date it arrives, and fixed costs (rent, bills, EMI).</small></span></li>
+      <li><b>২</b><span><strong>স্টেটমেন্ট দিন:</strong> "স্টেটমেন্ট থেকে UPI খরচ আনুন"-এ PhonePe বা ব্যাঙ্কের স্টেটমেন্ট (PDF বা Excel) দিন। সব UPI খরচ নিজে থেকেই ঢুকে যাবে।<small class="en"><strong>Add your statement:</strong> in "Import UPI spending from statement", choose your PhonePe or bank statement (PDF or Excel). All UPI payments are added automatically.</small></span></li>
+      <li><b>৩</b><span><strong>নগদ খরচ লিখুন:</strong> নগদে কিছু কিনলে "নগদ খরচ লিখুন"-এ অঙ্কটা লিখুন। রোজ ১০ সেকেন্ড।<small class="en"><strong>Note cash spending:</strong> when you pay in cash, type the amount in "নগদ খরচ লিখুন" (Add cash expense). About 10 seconds a day.</small></span></li>
+      <li><b>৪</b><span><strong>রোজ রঙ দেখুন:</strong> উপরের বড় ঘরে 🟢 সবুজ মানে নিরাপদ, 🟡 হলুদ মানে সাবধান, 🔴 লাল মানে আজ থামুন।<small class="en"><strong>Check the colour daily:</strong> in the big box at the top, 🟢 green means safe, 🟡 yellow means careful, 🔴 red means stop spending today.</small></span></li>
+      <li><b>৫</b><span><strong>ব্যাকআপ রাখুন:</strong> সপ্তাহে একবার নিচের "ব্যাকআপ" থেকে কপি করে নিজেকে WhatsApp-এ পাঠান।<small class="en"><strong>Keep a backup:</strong> once a week, copy it from "ব্যাকআপ" (Backup) below and send it to yourself on WhatsApp.</small></span></li>
+    </ol>
+    <div class="gets"><strong>যা পাবেন</strong> <span class="en-inline">/ What you get</span>
+      <ul>
+        <li>কোন খাতে কত খরচ হচ্ছে, মাস অনুযায়ী চার্ট, কাকে কত দিয়েছেন<small class="en">Spending by category, a monthly chart, and who you paid how much</small></li>
+        <li>এ মাসে আগের মাসের চেয়ে বেশি না কম খরচ হচ্ছে<small class="en">Whether you are spending more or less than last month</small></li>
+        <li>সামনে বড় খরচ থাকলে আগে থেকেই সংকেত<small class="en">An early signal when a big expense is coming up</small></li>
+      </ul>
+    </div>
+    <p class="note">এখন যা দেখছেন তা নমুনা হিসেব। "নিজের হিসেব শুরু করুন" চাপলে নমুনা মুছে আপনার খাতা শুরু হবে। এক মাস পরে নিচের "মতামত দিন" থেকে মতামত পাঠাবেন।<small class="en">What you see now is a sample. Tap "Start my own budget" to clear it and begin. After a month, send your feedback from "মতামত দিন" (Give feedback) at the bottom.</small></p>
+    <div class="row">
+      <button class="primary" id="obStart">নিজের হিসেব শুরু করুন · Start my own budget</button>
+      <button id="obLater">আগে নমুনা দেখি · See the sample first</button>
+    </div>
+    <div class="confirm" id="sampleAgainRow" hidden>
+      <button id="sampleAgain">নমুনা হিসেব আবার দেখান · Show the sample again</button>
+      <span id="sampleAsk" hidden>আপনার এখনকার হিসেব মুছে নমুনা আসবে। আগে ব্যাকআপ নিয়েছেন? (Your current data will be replaced. Did you take a backup?) <button id="sampleYes">হ্যাঁ · Yes</button> <button id="sampleNo">না · No</button></span>
+    </div>
+  </section>
+
+  <div class="sample" id="sampleBar" hidden>
+    <span><span data-en="This is a sample. To set up your own, open &quot;My monthly budget&quot; below.">এগুলো নমুনা হিসেব। নিজের হিসেব বসাতে নিচের "আমার মাসের হিসেব" খুলুন।</span></span>
+    <button id="clearSample"><span data-en="Clear sample">নমুনা মুছুন</span></button>
+  </div>
+
+  <div class="signal" id="signal" role="status">
+    <div class="lamp"><span class="dot"></span><span id="lampText">নিরাপদ</span></div>
+    <div class="sub"><span data-en="You can still safely spend today">আজ আপনি নিশ্চিন্তে আর খরচ করতে পারেন</span></div>
+    <div class="big" id="leftToday">₹০</div>
+    <div class="meter"><span id="meterBar" style="width:0"></span></div>
+    <div class="sub" id="limitLine"></div>
+  </div>
+
+  <section class="import">
+    <h2><span data-en="Import UPI spending from a statement">স্টেটমেন্ট থেকে UPI খরচ আনুন</span></h2>
+    <p class="note" id="importStatus">ব্যাঙ্ক বা PhonePe-র স্টেটমেন্ট দিলে সব UPI খরচ নিজে থেকেই ঢুকে যাবে।</p>
+    <details class="flowbox" id="howFlow" open>
+      <summary><span data-en="How to bring your statement here">স্টেটমেন্ট এখানে কীভাবে আনবেন</span></summary>
+      <div class="chips" role="group" aria-label="Statement source">
+        <button class="chip" data-src="pp" aria-pressed="true">PhonePe</button>
+        <button class="chip" data-src="bank" aria-pressed="false"><span data-en="Bank">ব্যাঙ্ক</span></button>
+      </div>
+      <ol class="fchain" id="fc-pp">
+        <li><span data-en="Open PhonePe and tap History">PhonePe অ্যাপ খুলে নিচে <b>History</b>-তে চাপুন</span></li>
+        <li><span data-en="Tap Download Statement at the top">উপরে <b>Download Statement</b> চিহ্নে চাপুন</span></li>
+        <li><span data-en="Choose the months and tap Proceed">মাস বেছে নিয়ে <b>Proceed</b> চাপুন</span></li>
+        <li><span data-en="The statement PDF arrives in your email">স্টেটমেন্টের PDF আপনার <b>ইমেলে</b> আসবে</span></li>
+      </ol>
+      <ol class="fchain" id="fc-bank" hidden>
+        <li><span data-en="Open your bank app or net banking (e.g. SBI YONO)">ব্যাঙ্কের অ্যাপ বা নেট ব্যাঙ্কিং খুলুন (যেমন SBI YONO)</span></li>
+        <li><span data-en="Go to Account Statement or e-Statement"><b>Account Statement</b> বা <b>e-Statement</b>-এ যান</span></li>
+        <li><span data-en="Choose the dates">তারিখ বেছে নিন</span></li>
+        <li><span data-en="Download it as Excel or PDF"><b>Excel</b> বা <b>PDF</b> হিসেবে ডাউনলোড করুন</span></li>
+      </ol>
+      <ol class="fchain">
+        <li><span data-en="If it came by email, open the email and download the file. It is saved in your phone&#x27;s Downloads.">ইমেলে এলে ইমেল খুলে ফাইলটা ডাউনলোড করুন। ফাইল ফোনের <b>Downloads</b>-এ জমা হবে।</span></li>
+        <li><span data-en="In this app, tap the Choose statement file box below">এই অ্যাপে নিচের <b>স্টেটমেন্ট ফাইল বেছে নিন</b> ঘরে চাপুন</span></li>
+        <li><span data-en="Pick the file from Downloads. If it asks for a password, type it and tap Open.">Downloads থেকে ফাইলটা বাছুন। পাসওয়ার্ড চাইলে লিখে <b>খুলুন</b> চাপুন।</span></li>
+        <li class=done><span data-en="Tap Add to my budget. All your UPI payments are in ✅"><b>হিসেবে যোগ করুন</b> চাপুন। সব UPI খরচ বসে গেল ✅</span></li>
+      </ol>
+      <div class="sharetip" id="shareTip" hidden>
+        <strong><span data-en="⚡ The easiest way">⚡ সবচেয়ে সহজ উপায়</span></strong>
+        <p><span data-en="Install the app on your phone once. Then open the statement PDF in PhonePe or email, tap Share → pick Ajker Khoroch from the list → the file comes straight here.">অ্যাপটা একবার ফোনে বসিয়ে নিন। তারপর PhonePe বা ইমেলে স্টেটমেন্টের PDF খুলে <b>Share</b> চাপুন → তালিকা থেকে <b>আজকের খরচ</b> বেছে নিন → ফাইল সোজা এখানে চলে আসবে।</span></p>
+        <button class="primary" id="installBtn" hidden><span data-en="Install the app">অ্যাপটা ফোনে বসান</span></button>
+        <p class="note" id="installHint"><span data-en="To install: tap ⋮ at the top right of Chrome → Install app or Add to Home screen.">বসাতে: Chrome-এর উপরে ডানদিকে ⋮ চাপুন → <b>Install app</b> বা <b>Add to Home screen</b>।</span></p>
+      </div>
+      <p class="note"><span data-en="No copy-paste needed, you just pick the file. Next month, add the new statement the same way. Payments already added are not added twice.">কোনো কপি-পেস্ট লাগবে না, ফাইলটা শুধু বেছে নিতে হবে। পরের মাসে একই ভাবে নতুন স্টেটমেন্ট দিন, আগের খরচ দ্বিতীয়বার বসবে না।</span></p>
+    </details>
+    <label class="file" for="stmt"><span data-en="Choose statement file">স্টেটমেন্ট ফাইল বেছে নিন</span>
+      <small><span data-en="Excel, CSV or PDF">Excel, CSV বা PDF</span></small>
+      <input id="stmt" type="file" accept=".csv,.xls,.xlsx,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    </label>
+    <div class="row" id="pwRow" hidden>
+      <input id="pw" type="password" placeholder="PDF-এর পাসওয়ার্ড" data-en-ph="PDF password" style="flex:1 1 160px">
+      <button class="primary" id="pwGo"><span data-en="Open">খুলুন</span></button>
+    </div>
+    <div id="importMsg" aria-live="polite"></div>
+    <div class="preview" id="preview" hidden></div>
+    <details class="help">
+      <summary><span data-en="More about statements">স্টেটমেন্ট নিয়ে আরও কিছু কথা</span></summary>
+      <p><span data-en="Download the Account Statement from net banking or your bank app. Excel or CSV works most accurately. PDF also works, but every bank lays out its PDF differently, so a few lines may be missed.">ব্যাঙ্কের নেট ব্যাঙ্কিং বা ব্যাঙ্কের অ্যাপ থেকে Account Statement ডাউনলোড করুন। Excel বা CSV হলে সবচেয়ে নির্ভুল কাজ করে। PDF-ও চলে, তবে সব ব্যাঙ্কের PDF-এর ছাঁচ আলাদা, তাই কিছু লাইন বাদ পড়তে পারে।</span></p>
+      <p><span data-en="You can also add a PhonePe statement (PDF). If it needs a password, a box appears above.">PhonePe-র স্টেটমেন্টও (PDF) দিতে পারেন। পাসওয়ার্ড চাইলে উপরে ঘর আসবে।</span></p>
+      <p><span data-en="The file is read only on your phone and is never sent anywhere.">ফাইলটা শুধু আপনার ফোনেই পড়া হয়, কোথাও পাঠানো হয় না।</span></p>
+    </details>
+  </section>
+
+  <section>
+    <h2><span data-en="Add cash spending">নগদ খরচ লিখুন</span></h2>
+    <p class="note"><span data-en="Note here what a statement won&#x27;t show (cash), or today&#x27;s UPI payments.">যা স্টেটমেন্টে আসে না (নগদ), বা আজকের UPI খরচ, এখানে লিখুন।</span></p>
+    <div class="row">
+      <input id="amt" class="amt" type="number" inputmode="decimal" min="0" placeholder="টাকা ₹" data-en-ph="Amount ₹">
+      <button class="primary" id="addBtn"><span data-en="Add">যোগ করুন</span></button>
+    </div>
+    <div class="row" id="tags"></div>
+    <p class="note" id="addMsg" aria-live="polite"></p>
+  </section>
+
+  <section>
+    <h2><span data-en="Today&#x27;s spending">আজকের খরচ</span></h2>
+    <ul id="todayList"></ul>
+  </section>
+
+  <section>
+    <h2><span data-en="This month">এই মাসের হিসেব</span></h2>
+    <div class="ledger" id="ledger"></div>
+    <p class="note" id="cycleNote"></p>
+    <div class="confirm" id="impDelRow" hidden>
+      <button id="impDel"><span data-en="Remove everything imported from statements">স্টেটমেন্ট থেকে আনা সব মুছুন</span></button>
+      <span id="impDelAsk" hidden><span data-en="Sure?">নিশ্চিত?</span> <button id="impDelYes"><span data-en="Yes">হ্যাঁ</span></button> <button id="impDelNo"><span data-en="No">না</span></button></span>
+    </div>
+  </section>
+
+  <section id="dash">
+    <h2><span data-en="My spending picture">আমার খরচের ছবি</span></h2>
+    <div class="chips" id="dashPeriod" role="group" aria-label="সময় বেছে নিন">
+      <button class="chip" data-p="m0"><span data-en="This month">এই মাস</span></button>
+      <button class="chip" data-p="m1"><span data-en="Last month">গত মাস</span></button>
+      <button class="chip" data-p="m3"><span data-en="3 months">৩ মাস</span></button>
+      <button class="chip" data-p="all"><span data-en="All time">সব সময়</span></button>
+    </div>
+    <div id="dashBody" style="display:flex;flex-direction:column;gap:14px"></div>
+  </section>
+
+  <section id="future">
+    <h2><span data-en="The next 12 months">সামনের ১২ মাস</span></h2>
+    <p class="note"><span data-en="Robert Hall, a 2026 Nobel laureate in economics, showed that what you spend today should depend not only on this month&#x27;s income but on your expected future income and obligations. This section does that calculation.">২০২৬-এর অর্থনীতির নোবেলজয়ী রবার্ট হলের তত্ত্ব বলে, আজ কত খরচ করবেন তা ঠিক হওয়া উচিত শুধু এই মাসের আয় দেখে নয়, সামনের আয় আর দায় মিলিয়ে। এই অংশ সেই হিসেবটাই করে।</span></p>
+    <div class="perm">
+      <span class="sub"><span data-en="Sustainable daily limit, counting the future">ভবিষ্যৎ মিলিয়ে রোজের টেকসই সীমা</span></span>
+      <span class="mid" id="permVal">₹০</span>
+      <span class="sub" id="permLine"></span>
+    </div>
+    <div class="guide" id="guidance" hidden></div>
+    <div class="chartwrap"><svg id="projSvg" viewBox="0 0 360 170" role="img" aria-label="প্রতি মাসের শেষে হাতে কত থাকবে তার অনুমান"></svg></div>
+    <p class="note" id="projNote"></p>
+    <p class="note"><span data-en="This is not a prediction. It is worked out from the expectations you enter. Change the expectations and the numbers change, which is exactly what Hall&#x27;s theory says.">এটা ভবিষ্যদ্বাণী নয়, আপনার দেওয়া প্রত্যাশা থেকে করা হিসেব। প্রত্যাশা বদলালে সংখ্যাও বদলাবে, হলের তত্ত্বও ঠিক এটাই বলে।</span></p>
+    <details id="futSetup">
+      <summary><span data-en="Enter future income and obligations">সামনের আয় ও দায় লিখুন</span></summary>
+      <div class="row">
+        <label for="buffer"><span data-en="Savings you could use if needed (₹)">দরকারে খরচ করা যায় এমন জমা (₹)</span><input id="buffer" type="number" inputmode="decimal" min="0"></label>
+        <label for="infl"><span data-en="Inflation (% per year)">মূল্যবৃদ্ধি (বছরে %)</span><input id="infl" type="number" inputmode="decimal" min="0" max="30" step="0.5"></label>
+      </div>
+      <h3><span data-en="Income going up or down">আয় বাড়বে বা কমবে</span></h3>
+      <p class="note"><span data-en="For example a DA rise on a pension, or income from new work. If it goes down, put a minus (−) before the amount.">যেমন পেনশনে ডিএ বৃদ্ধি, নতুন কাজের আয়। কমলে অঙ্কের আগে মাইনাস (−) দিন।</span></p>
+      <ul id="chgList"></ul>
+      <div class="inl">
+        <input id="cName" placeholder="কী, যেমন ডিএ বৃদ্ধি" data-en-ph="What, e.g. DA rise">
+        <input id="cMonth" type="month" aria-label="কোন মাস থেকে">
+        <input id="cAmt" type="number" inputmode="decimal" placeholder="মাসে কত ₹" data-en-ph="₹ per month">
+        <select id="cProb" aria-label="কতটা নিশ্চিত"><option data-en="Certain" value="100">নিশ্চিত</option><option data-en="Likely" value="70">সম্ভবত</option><option data-en="Maybe" value="40">হয়তো</option></select>
+        <button id="cAdd"><span data-en="Add">যোগ</span></button>
+      </div>
+      <h3><span data-en="Big upcoming obligations">সামনের বড় দায়</span></h3>
+      <p class="note"><span data-en="For example house repairs, a family event, medical treatment, an insurance premium.">যেমন বাড়ির কাজ, অনুষ্ঠান, চিকিৎসা, বিমার প্রিমিয়াম।</span></p>
+      <ul id="liabList"></ul>
+      <div class="inl">
+        <input id="lName" placeholder="কী, যেমন বাড়ি রং" data-en-ph="What, e.g. house painting">
+        <input id="lMonth" type="month" aria-label="কোন মাসে">
+        <input id="lAmt" type="number" inputmode="decimal" min="0" placeholder="₹">
+        <button id="lAdd"><span data-en="Add">যোগ</span></button>
+      </div>
+      <button class="primary" id="saveFuture"><span data-en="Save future plan">সামনের হিসেব সেভ করুন</span></button>
+    </details>
+  </section>
+
+  <section>
+    <details id="setup">
+      <summary><span data-en="My monthly budget">আমার মাসের হিসেব</span></summary>
+      <div class="row">
+        <label for="income"><span data-en="Monthly income (pension/salary)">মাসিক আয় (পেনশন/বেতন)</span><input id="income" type="number" inputmode="decimal" min="0"></label>
+        <label for="payday"><span data-en="Day of the month income arrives">মাসের কত তারিখে আয় আসে</span><input id="payday" type="number" min="1" max="28"></label>
+      </div>
+      <label for="saving"><span data-en="Amount you want to save each month">প্রতি মাসে যা জমাতে চান</span><input id="saving" type="number" inputmode="decimal" min="0"></label>
+      <h3><span data-en="Fixed costs (rent, bills, medicine, EMI)">নির্দিষ্ট খরচ (ভাড়া, বিল, ওষুধ, EMI)</span></h3>
+      <ul id="fixedList"></ul>
+      <div class="row">
+        <input id="fxName" placeholder="নাম, যেমন বিদ্যুৎ বিল" data-en-ph="Name, e.g. electricity bill" style="flex:2 1 160px">
+        <input id="fxAmt" type="number" inputmode="decimal" min="0" placeholder="₹" style="flex:1 1 90px">
+        <button id="fxAdd"><span data-en="Add">যোগ</span></button>
+      </div>
+      <button class="primary" id="saveSetup"><span data-en="Save budget">হিসেব সেভ করুন</span></button>
+      <div class="confirm">
+        <button id="resetBtn"><span data-en="Erase everything and start over">সব মুছে নতুন করে শুরু</span></button>
+        <span id="resetAsk" hidden><span data-en="Sure?">নিশ্চিত?</span> <button id="resetYes"><span data-en="Yes, erase">হ্যাঁ, মুছুন</span></button> <button id="resetNo"><span data-en="No">না</span></button></span>
+      </div>
+      <p class="note"><span data-en="All data stays only on this phone. Nothing is sent anywhere.">সব তথ্য শুধু এই ফোনেই থাকে। কোথাও পাঠানো হয় না।</span></p>
+    </details>
+  </section>
+
+  <section>
+    <details id="backup">
+      <summary><span data-en="Backup">ব্যাকআপ</span></summary>
+      <p class="note"><span data-en="Everything you enter is kept only in this phone&#x27;s browser. Clearing the browser can erase it, so now and then copy a backup and send it to yourself on WhatsApp.">আপনার সব হিসেব শুধু এই ফোনের ব্রাউজারে থাকে। ব্রাউজার পরিষ্কার করলে মুছে যেতে পারে। তাই মাঝে মাঝে ব্যাকআপ কপি করে নিজেকেই WhatsApp-এ পাঠিয়ে রাখুন।</span></p>
+      <button class="primary" id="bkCopy"><span data-en="Copy backup">ব্যাকআপ কপি করুন</span></button>
+      <p class="note" id="bkMsg" aria-live="polite"></p>
+      <textarea id="bkOut" hidden readonly aria-label="ব্যাকআপের লেখা"></textarea>
+      <h3><span data-en="Restore from a backup">ব্যাকআপ থেকে ফিরিয়ে আনুন</span></h3>
+      <p class="note"><span data-en="On a new phone, or after the browser was cleared, paste the backup text you kept on WhatsApp here.">নতুন ফোনে বা ব্রাউজার পরিষ্কার হওয়ার পরে, WhatsApp-এ রাখা ব্যাকআপের লেখাটা এখানে পেস্ট করুন।</span></p>
+      <textarea id="bkIn" placeholder="আগে কপি করা ব্যাকআপের লেখা এখানে পেস্ট করুন" data-en-ph="Paste the backup text you copied earlier" aria-label="ব্যাকআপ পেস্ট করুন"></textarea>
+      <div class="confirm">
+        <button id="bkLoad"><span data-en="Restore">ফিরিয়ে আনুন</span></button>
+        <span id="bkAsk" hidden><span data-en="Your current data will be replaced. Sure?">এখনকার হিসেব বদলে যাবে। নিশ্চিত?</span> <button id="bkYes"><span data-en="Yes">হ্যাঁ</span></button> <button id="bkNo"><span data-en="No">না</span></button></span>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <details id="feedback">
+      <summary><span data-en="Give feedback">মতামত দিন</span></summary>
+      <p class="note"><span data-en="After using the app for a while, write your answers and tap &quot;Copy feedback&quot;, then paste and send it on WhatsApp to whoever shared the app with you. None of your spending amounts are included.">কিছুদিন ব্যবহারের পরে উত্তরগুলো লিখে "মতামত কপি করুন" চাপুন, তারপর যিনি অ্যাপটা পাঠিয়েছেন তাঁকে WhatsApp-এ পেস্ট করে পাঠান। আপনার খরচের কোনো অঙ্ক এতে যায় না।</span></p>
+      <label class="fbq" for="fbName"><span data-en="Your name">আপনার নাম</span><input id="fbName"></label>
+      <label class="fbq" for="fb1"><span data-en="1. Did statement import work? Which app&#x27;s or bank&#x27;s statement did you use?">১. স্টেটমেন্ট আনা ঠিকঠাক কাজ করেছে? কোন অ্যাপ বা ব্যাঙ্কের স্টেটমেন্ট দিয়েছিলেন?</span><textarea id="fb1"></textarea></label>
+      <label class="fbq" for="fb2"><span data-en="2. Did the spending picture show you anything new?">২. খরচের ছবি দেখে নতুন কিছু জানলেন?</span><textarea id="fb2"></textarea></label>
+      <label class="fbq" for="fb3"><span data-en="3. What was difficult? Where did you get stuck?">৩. কী অসুবিধা হয়েছে, কোথায় আটকে গেছেন?</span><textarea id="fb3"></textarea></label>
+      <label class="fbq" for="fb4"><span data-en="4. What else would make it better?">৪. আর কী থাকলে ভালো হতো?</span><textarea id="fb4"></textarea></label>
+      <label class="fbq" for="fb5"><span data-en="5. Would you pay ₹99 once to buy it?">৫. একবারে ₹৯৯ দিয়ে কিনতে রাজি হতেন?</span>
+        <select id="fb5"><option data-en="Choose" value="">বেছে নিন</option><option value="হ্যাঁ" data-en="Yes">হ্যাঁ</option><option value="হয়তো" data-en="Maybe">হয়তো</option><option value="না" data-en="No">না</option></select></label>
+      <button class="primary" id="fbCopy"><span data-en="Copy feedback">মতামত কপি করুন</span></button>
+      <p class="note" id="fbMsg" aria-live="polite"></p>
+      <textarea id="fbOut" hidden readonly aria-label="মতামতের লেখা"></textarea>
+    </details>
+  </section>
+</div>
+
+<script>
+const KEY="ajkerKhoroch.v1";
+const LANG_KEY="ajkerKhoroch.lang";
+let LANG=(()=>{try{return localStorage.getItem(LANG_KEY)==="en"?"en":"bn"}catch(_){return "bn"}})();
+const T=(b,e)=>LANG==="en"?e:b;
+const LOC=()=>LANG==="en"?"en-IN":"bn-IN";
+const TAG_EN={"নগদ":"Cash","বাজার":"Market","ওষুধ":"Medicine","যাতায়াত":"Travel","খাবার":"Food","অন্যান্য":"Other","সঞ্চয়":"Savings","নগদ তোলা":"Cash withdrawal","অন্য ডেবিট":"Other debit","UPI":"UPI"};
+const tagLabel=t=>LANG==="en"?(TAG_EN[t]||t):t;
+const CAT_EN={"বাজার ও মুদি":"Groceries & market","স্বাস্থ্য ও ওষুধ":"Health & medicine","বিল ও রিচার্জ":"Bills & recharge","খাবার ও মিষ্টি":"Food & sweets","যাতায়াত ও জ্বালানি":"Travel & fuel","পোশাক ও কেনাকাটা":"Clothes & shopping","বাড়ি ও মেরামত":"Home & repairs","পুজো ও দান":"Puja & donations","ডিজিটাল ও বিনোদন":"Digital & entertainment","পরিবার ও ব্যক্তিগত":"Family & personal","নগদ তোলা":"Cash withdrawal","অন্যান্য":"Other","সঞ্চয়":"Savings"};
+const catLabel=c=>LANG==="en"?(CAT_EN[c]||c):c;
+const HAND="হাতে লেখা: ";
+const payeeLabel=p=>p.startsWith(HAND)?T(HAND,"Entered by hand: ")+tagLabel(p.slice(HAND.length)):p==="নাম নেই"?T(p,"No name"):p;
+const TAGS=["নগদ","বাজার","ওষুধ","যাতায়াত","খাবার","অন্যান্য"];
+const TYPES=["UPI","SAVE","ATM","OTHER"];
+const typeLabel=k=>({UPI:"UPI",SAVE:T("সঞ্চয় (সোনা, SIP ইত্যাদি)","Savings (gold, SIP etc.)"),ATM:T("ATM থেকে নগদ তোলা","ATM cash withdrawal"),OTHER:T("অন্য ডেবিট (কার্ড, অটো-ডেবিট ইত্যাদি)","Other debits (card, auto-debit etc.)")})[k];
+const XLSX_SRC="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+const PDF_SRC="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+const PDFW_SRC="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const $=id=>document.getElementById(id);
+const bn=n=>Math.round(n).toLocaleString(LOC());
+const cnt=n=>LANG==="en"?bn(n):bn(n)+"টা";
+const rs=n=>(n<0?"−":"")+"₹"+bn(Math.abs(n));
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const bnDate=s=>new Date(s+"T00:00:00").toLocaleDateString(LOC(),{day:"numeric",month:"long"});
+
+function sample(){
+  const t=new Date(), e=[];
+  const add=(back,a,tag,src)=>{const d=new Date(t);d.setDate(d.getDate()-back);e.push({d:iso(d),a,tag,src,id:Math.random()})};
+  for(let i=1;i<=10;i++){add(i,180+((i*73)%220),i%3?"UPI":TAGS[i%6],i%3?"imp":undefined);}
+  add(0,120,"বাজার");add(0,85,"ওষুধ");
+  return {sample:true,income:30000,payday:1,saving:3000,
+    fixed:[{n:T("বিদ্যুৎ বিল","Electricity bill"),a:1200},{n:T("ওষুধ (মাসিক)","Medicine (monthly)"),a:1500},{n:T("মোবাইল ও ইন্টারনেট","Mobile & internet"),a:400},{n:T("কাজের লোক","Domestic help"),a:2000}],
+    exp:e,
+    future:{buffer:20000,infl:5,
+      changes:[{n:T("ডিএ বৃদ্ধি (উদাহরণ)","DA rise (example)"),m:mKey(3),a:900,p:100},{n:T("নতুন কাজের আয় (উদাহরণ)","Income from new work (example)"),m:mKey(2),a:5000,p:40}],
+      liab:[{n:T("বাড়ি রং (উদাহরণ)","House painting (example)"),m:mKey(4),a:25000}]}};
+}
+function mKey(add){const d=new Date();const x=new Date(d.getFullYear(),d.getMonth()+add,1);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")}
+const blankFuture=()=>({buffer:0,infl:5,changes:[],liab:[]});
+const blank=()=>({sample:false,income:0,payday:1,saving:0,fixed:[],exp:[],future:blankFuture(),payeeCat:{}});
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(_){}
+if(!S) S=sample();
+if(!S.future) S.future=blankFuture();
+if(!S.payeeCat) S.payeeCat={};
+let storeOK=true;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){storeOK=false}}
+
+function cycle(){
+  const t=new Date(); t.setHours(0,0,0,0);
+  const p=Math.min(Math.max(+S.payday||1,1),28);
+  let start=new Date(t.getFullYear(),t.getMonth(),p);
+  if(start>t) start=new Date(t.getFullYear(),t.getMonth()-1,p);
+  const next=new Date(start.getFullYear(),start.getMonth()+1,p);
+  return {t,start,next,daysLeft:Math.round((next-t)/864e5)};
+}
+
+let pickedTag=TAGS[0];
+function render(){
+  const c=cycle(), todayS=iso(c.t), startS=iso(c.start);
+  const fixed=S.fixed.reduce((s,f)=>s+(+f.a||0),0);
+  const inCycle=S.exp.filter(e=>e.d>=startS&&e.d<=todayS);
+  const before=inCycle.filter(e=>e.d<todayS).reduce((s,e)=>s+e.a,0);
+  const todayItems=inCycle.filter(e=>e.d===todayS);
+  const spentToday=todayItems.reduce((s,e)=>s+e.a,0);
+  const pool=S.income-fixed-S.saving-before;
+  const monthLimit=Math.max(pool/c.daysLeft,0);
+  const F=future();
+  const useF=F.active&&F.perm<monthLimit;
+  const limit=useF?F.perm:monthLimit;
+  const left=limit-spentToday;
+  const ratio=limit>0?spentToday/limit:(spentToday>0?2:0);
+
+  $("signal").className="signal"+(ratio>1?" stop":ratio>0.7?" wait":"");
+  $("lampText").textContent=ratio>1?T("থামুন, আজকের সীমা পেরিয়ে গেছে","Stop: today's limit is crossed"):ratio>0.7?T("সাবধান, সীমার কাছাকাছি","Careful: close to the limit"):T("নিরাপদ","Safe");
+  $("leftToday").textContent=rs(left);
+  $("meterBar").style.width=Math.min(ratio*100,100)+"%";
+  $("limitLine").textContent=T(`আজকের সীমা ${rs(limit)} · খরচ হয়েছে ${rs(spentToday)}`,`Today's limit ${rs(limit)} · spent ${rs(spentToday)}`)+(useF?T(` · সামনের দায়ের কথা ভেবে সীমা কমানো হয়েছে (এই মাসের হিসেবে হতো ${rs(monthLimit)})`,` · lowered for upcoming obligations (this month alone would allow ${rs(monthLimit)})`):"");
+  renderFuture(F,monthLimit,useF);
+  renderDash();
+
+  const ul=$("todayList");
+  ul.innerHTML=todayItems.length?"":'<li class="empty">'+T("আজ এখনও কিছু লেখা হয়নি।","Nothing entered today yet.")+'</li>';
+  todayItems.forEach(e=>{const li=document.createElement("li");
+    li.innerHTML=`<span class="what">${esc(tagLabel(e.tag))}${e.desc?`<small>${esc(e.desc)}</small>`:""}</span><span><span class="num">${rs(e.a)}</span> <button class="x" aria-label="${T("মুছুন","Delete")}">✕</button></span>`;
+    li.querySelector("button").onclick=()=>{S.exp=S.exp.filter(x=>x.id!==e.id);save();render()};ul.appendChild(li)});
+
+  const imp=inCycle.filter(e=>e.src==="imp").reduce((s,e)=>s+e.a,0);
+  const man=inCycle.filter(e=>e.src!=="imp").reduce((s,e)=>s+e.a,0);
+  const rest=S.income-fixed-S.saving-imp-man;
+  $("ledger").innerHTML=
+    `<span>${T("মাসিক আয়","Monthly income")}</span><span class="num">${rs(S.income)}</span>
+     <span>${T("নির্দিষ্ট খরচ","Fixed costs")}</span><span class="num">${rs(-fixed)}</span>
+     <span>${T("জমানোর লক্ষ্য","Savings goal")}</span><span class="num">${rs(-S.saving)}</span>
+     <span>${T("এ পর্যন্ত রোজের খরচ","Daily spending so far")}</span><span class="num">${rs(-(imp+man))}</span>
+     <span class="indent">${T("স্টেটমেন্ট থেকে (UPI ইত্যাদি)","From statements (UPI etc.)")}</span><span class="num indent">${rs(imp)}</span>
+     <span class="indent">${T("নিজে লেখা (নগদ)","Entered by hand (cash)")}</span><span class="num indent">${rs(man)}</span>
+     <span class="total">${T("হাতে বাকি","Left in hand")}</span><span class="num total">${rs(rest)}</span>`;
+  const nd=c.next.toLocaleDateString(LOC(),{day:"numeric",month:"long"});
+  $("cycleNote").textContent=T(`পরের আয় ${nd}। আজ সমেত আর ${bn(c.daysLeft)} দিন চালাতে হবে। আজ কম খরচ করলে কালকের সীমা নিজে থেকেই বাড়বে।`,`Next income on ${nd}. You need to manage ${bn(c.daysLeft)} more days, including today. Spend less today and tomorrow's limit goes up by itself.`);
+
+  const imps=S.exp.filter(e=>e.src==="imp");
+  $("impDelRow").hidden=!imps.length||S.sample;
+  if(imps.length&&!S.sample){const last=imps.reduce((m,e)=>e.d>m?e.d:m,"");
+    $("importStatus").textContent=T(`স্টেটমেন্ট আছে ${bnDate(last)} পর্যন্ত। তার পরের UPI খরচ পরের স্টেটমেন্টে আসবে, অথবা নিচে হাতে লিখে রাখুন।`,`Statements cover up to ${bnDate(last)}. Later UPI payments will come with your next statement, or note them by hand below.`);}
+  else $("importStatus").textContent=T("ব্যাঙ্ক বা PhonePe-র স্টেটমেন্ট দিলে সব UPI খরচ নিজে থেকেই ঢুকে যাবে।","Add a bank or PhonePe statement and all UPI payments are added automatically.");
+
+  $("sampleBar").hidden=!S.sample;
+  $("income").value=S.income; $("payday").value=S.payday; $("saving").value=S.saving;
+  const fl=$("fixedList"); fl.innerHTML="";
+  S.fixed.forEach((f,i)=>{const li=document.createElement("li");
+    li.innerHTML=`<span class="what">${esc(f.n)}</span><span><span class="num">${rs(f.a)}</span> <button class="x" aria-label="${T("মুছুন","Delete")}">✕</button></span>`;
+    li.querySelector("button").onclick=()=>{S.fixed.splice(i,1);save();render()};fl.appendChild(li)});
+  if(!storeOK) $("addMsg").textContent=T("এই ব্রাউজারে তথ্য সেভ হচ্ছে না। পাতাটা বন্ধ করলে হিসেব হারিয়ে যেতে পারে।","This browser is not saving data. Your entries may be lost when the page closes.");
+}
+
+/* ---------- future: permanent-income limit and 12-month projection ---------- */
+const mName=m=>new Date(m+"-01T00:00:00").toLocaleDateString(LOC(),{month:"long"});
+const mShort=m=>new Date(m+"-01T00:00:00").toLocaleDateString(LOC(),{month:"short"});
+function future(){
+  const Fu=S.future, infl=Math.max(+Fu.infl||0,0)/100, buffer=Math.max(+Fu.buffer||0,0);
+  const fixed=S.fixed.reduce((s,f)=>s+(+f.a||0),0);
+  const months=[];for(let i=0;i<12;i++)months.push(mKey(i));
+  const t=new Date();t.setHours(0,0,0,0);
+  const from=new Date(t);from.setDate(from.getDate()-29);
+  const spendRows=S.exp.filter(e=>e.tag!=="সঞ্চয়");
+  const first=spendRows.reduce((m,e)=>!m||e.d<m?e.d:m,"");
+  let pace=null;
+  if(first){
+    const startS=first>iso(from)?first:iso(from);
+    const covered=Math.round((t-new Date(startS+"T00:00:00"))/864e5)+1;
+    const sum=spendRows.filter(e=>e.d>=startS&&e.d<=iso(t)).reduce((s,e)=>s+e.a,0);
+    if(covered>=7) pace=sum/covered;
+  }
+  const rows=months.map((m,i)=>{
+    const g=Math.pow(1+infl,i/12);
+    const inc=S.income+Fu.changes.filter(c=>c.m&&c.m<=m).reduce((s,c)=>s+c.a*c.p/100,0);
+    const liab=Fu.liab.filter(l=>l.m===m).reduce((s,l)=>s+l.a,0);
+    return {m,g,inc,fx:fixed*g,liab,spend:(pace||0)*30*g};
+  });
+  const resources=buffer+rows.reduce((s,r)=>s+r.inc-r.fx-S.saving-r.liab,0);
+  const dayUnits=rows.reduce((s,r)=>s+30*r.g,0);
+  const perm=Math.max(resources/dayUnits,0);
+  let cum=buffer,firstNeg=null;
+  rows.forEach(r=>{cum+=r.inc-r.fx-S.saving-r.liab-r.spend;r.cum=cum;if(cum<0&&!firstNeg)firstNeg=r.m});
+  const upcoming=Fu.liab.filter(l=>l.m>=months[0]&&l.m<=months[11]).sort((a,b)=>a.m.localeCompare(b.m))[0]||null;
+  return {perm,pace,rows,firstNeg,end:cum,upcoming,active:!!(Fu.changes.length||Fu.liab.length||buffer>0)};
+}
+function renderFuture(F,monthLimit,useF){
+  $("permVal").textContent=rs(F.perm);
+  $("permLine").textContent=F.pace==null
+    ?T("আজকের দামে, সামনের ১২ মাসের আয়, নির্দিষ্ট খরচ, জমা আর দায় মিলিয়ে।","At today's prices, counting the next 12 months of income, fixed costs, savings and obligations.")
+    :T(`আপনার এখনকার খরচের হার রোজ প্রায় ${rs(F.pace)}। `,`You are currently spending about ${rs(F.pace)} a day. `)+(F.pace>F.perm?T(`এটা টেকসই সীমার চেয়ে ${rs(F.pace-F.perm)} বেশি।`,`That is ${rs(F.pace-F.perm)} above the sustainable limit.`):T(`এটা টেকসই সীমার মধ্যেই আছে।`,`That is within the sustainable limit.`));
+  const g=$("guidance");
+  if(F.upcoming&&F.active){
+    g.hidden=false;
+    g.innerHTML=`<b>${T("আগাম সংকেত","Early signal")}</b>${esc(F.upcoming.n)}: `+T(`${mName(F.upcoming.m)} মাসে ${rs(F.upcoming.a)}। `,`${rs(F.upcoming.a)} in ${mName(F.upcoming.m)}. `)+
+      (useF?T(`তাই আজ থেকেই রোজের সীমা ${rs(F.perm)} রাখা হচ্ছে, যাতে সেই মাসে টান না পড়ে।`,`So your daily limit is ${rs(F.perm)} from today, so that month won't pinch.`):T(`এই মাসের সীমার মধ্যে চললেই সেটা সামলানো যাবে।`,`Staying within this month's limit will cover it.`));
+  }else g.hidden=true;
+
+  const svg=$("projSvg"),W=360,H=170,top=14,bot=24,left=6,right=6;
+  const vals=F.rows.map(r=>r.cum),mx=Math.max(1,...vals.map(Math.abs));
+  const hasNeg=vals.some(v=>v<0),hasPos=vals.some(v=>v>0);
+  const zero=hasNeg&&hasPos?top+(H-top-bot)*Math.max(...vals)/(Math.max(...vals)-Math.min(...vals)):hasNeg?top:H-bot;
+  const span=hasNeg&&hasPos?(H-top-bot)/(Math.max(...vals)-Math.min(...vals)):(H-top-bot)/mx;
+  const bw=(W-left-right)/12;
+  let s=`<line class="axis" x1="${left}" x2="${W-right}" y1="${zero}" y2="${zero}"/>`;
+  F.rows.forEach((r,i)=>{
+    const h=Math.abs(r.cum)*span,x=left+i*bw+bw*0.18,y=r.cum>=0?zero-h:zero;
+    s+=`<rect class="${r.cum>=0?"pos":"neg"}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw*0.64).toFixed(1)}" height="${Math.max(h,1).toFixed(1)}" rx="3"><title>${mName(r.m)}: ${rs(r.cum)}</title></rect>`;
+    s+=`<text x="${(left+i*bw+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle">${mShort(r.m)}</text>`;
+  });
+  svg.innerHTML=F.pace==null?`<text x="${W/2}" y="${H/2}" text-anchor="middle">${T("অন্তত ৭ দিনের খরচ লেখা হলে এখানে ছবি আসবে","A chart appears here after 7 days of spending")}</text>`:s;
+  $("projNote").textContent=F.pace==null
+    ?T("অন্তত ৭ দিনের খরচ লেখা হলে বা স্টেটমেন্ট আনলে, এখনকার হারে চললে প্রতি মাসের শেষে হাতে কত থাকবে তা দেখাবে।","After 7 days of spending, or a statement import, this shows how much you would have left at the end of each month at your current pace.")
+    :F.firstNeg
+      ?T(`এখনকার হারে চললে ${mName(F.firstNeg)} মাসে টাকায় টান পড়বে। রোজের খরচ ${rs(F.perm)}-এর মধ্যে রাখলে ১২ মাস নিশ্চিন্তে চলবে।`,`At your current pace, money runs short in ${mName(F.firstNeg)}. Keep daily spending within ${rs(F.perm)} and the next 12 months are covered.`)
+      :T(`এখনকার হারে চললে ১২ মাস শেষে প্রায় ${rs(F.end)} হাতে থাকবে। সবুজ দাগগুলো প্রতি মাসের শেষে হাতে থাকা টাকা।`,`At your current pace, about ${rs(F.end)} will be left after 12 months. The green bars show money in hand at the end of each month.`);
+
+  $("buffer").value=S.future.buffer||""; $("infl").value=S.future.infl;
+  const listItem=(text,amt,onDel)=>{const li=document.createElement("li");
+    li.innerHTML=`<span class="what">${esc(text)}</span><span><span class="num">${amt}</span> <button class="x" aria-label="${T("মুছুন","Delete")}">✕</button></span>`;
+    li.querySelector("button").onclick=onDel;return li};
+  const P={100:T("নিশ্চিত","certain"),70:T("সম্ভবত","likely"),40:T("হয়তো","maybe")};
+  $("chgList").replaceChildren(...S.future.changes.map((c,i)=>listItem(`${c.n} · ${T(mName(c.m)+" থেকে","from "+mName(c.m))} · ${P[c.p]||c.p+"%"}`,(c.a<0?"":"+")+rs(c.a),()=>{S.future.changes.splice(i,1);save();render()})));
+  $("liabList").replaceChildren(...S.future.liab.map((l,i)=>listItem(`${l.n} · ${mName(l.m)}`,rs(l.a),()=>{S.future.liab.splice(i,1);save();render()})));
+}
+$("cAdd").onclick=()=>{const n=$("cName").value.trim(),m=$("cMonth").value,a=parseFloat($("cAmt").value),p=+$("cProb").value;
+  if(!n||!m||!a)return;S.future.changes.push({n,m,a,p});$("cName").value="";$("cAmt").value="";save();render()};
+$("lAdd").onclick=()=>{const n=$("lName").value.trim(),m=$("lMonth").value,a=parseFloat($("lAmt").value);
+  if(!n||!m||!(a>0))return;S.future.liab.push({n,m,a});$("lName").value="";$("lAmt").value="";save();render()};
+$("saveFuture").onclick=()=>{S.future.buffer=Math.max(+$("buffer").value||0,0);S.future.infl=Math.min(Math.max(+$("infl").value||0,0),30);
+  save();render();$("futSetup").open=false;$("future").scrollIntoView({behavior:"smooth"})};
+
+/* ---------- my spending picture (self-serve dashboard) ---------- */
+const CATS=["বাজার ও মুদি","স্বাস্থ্য ও ওষুধ","বিল ও রিচার্জ","খাবার ও মিষ্টি","যাতায়াত ও জ্বালানি","পোশাক ও কেনাকাটা","বাড়ি ও মেরামত","পুজো ও দান","ডিজিটাল ও বিনোদন","পরিবার ও ব্যক্তিগত","নগদ তোলা","অন্যান্য","সঞ্চয়"];
+const RULES=[
+  ["পোশাক ও কেনাকাটা",/bastralaya|paridhan|dress|saree|sari\b|cloth|garment|fashion|amazon(?! ?prime)|flipkart|meesho|myntra|ajio|nykaa|shadowfax|delhivery|ekart|dalal/i],
+  ["খাবার ও মিষ্টি",/sweet|mistanna|food|restaurant|hotel|cafe|swiggy|zomato|pet ?pooja|snack|biryani|bakery|dhaba/i],
+  ["স্বাস্থ্য ও ওষুধ",/pharm|medic|diagnos|hospital|clinic|doctor|arogy|apollo|netmeds|1mg|path ?lab/i],
+  ["বিল ও রিচার্জ",/bill\b|bill paid|recharg|electric|wbsedcl|cesc|\bgas\b|broadband|airtel|bsnl|insur|\blic\b|premium|godigit|\bdth\b/i],
+  ["ডিজিটাল ও বিনোদন",/openai|google|godaddy|netflix|hotstar|spotify|youtube|prime|zee5|sonyliv|apple|microsoft|canva|infotech/i],
+  ["বাজার ও মুদি",/veg|vagetable|grocer|store|bazar|bazaar|mart\b|variety|verity|blinkit|zepto|bigbasket|instamart|dmart|egg|fish|chicken|meat|fruit|dairy|milk|ruti|kirana|retail|shop\b/i],
+  ["যাতায়াত ও জ্বালানি",/fuel|petrol|diesel|indian oil|\bauto\b|uber|\bola\b|rapido|irctc|redbus|railway|metro|toll|fastag|parking/i],
+  ["বাড়ি ও মেরামত",/hardware|engineering|\belec|plumb|paint|repair|service|traders|furniture|cement/i],
+  ["পুজো ও দান",/puja|committee|dashakarma|temple|mandir|donat|seva/i],
+  ["নগদ তোলা",/\batm\b|cash ?wd|cash withdrawal|cwdr|\bnwd\b/i]
+];
+const TAGCAT={"বাজার":"বাজার ও মুদি","ওষুধ":"স্বাস্থ্য ও ওষুধ","যাতায়াত":"যাতায়াত ও জ্বালানি","খাবার":"খাবার ও মিষ্টি","নগদ তোলা":"নগদ তোলা"};
+function payeeOf(e){
+  if(e.src!=="imp") return "হাতে লেখা: "+e.tag;
+  const n=(e.desc||"").replace(/^(paid to|payment to)\s*/i,"").trim();
+  return n||"নাম নেই";
+}
+function catOf(e){
+  if(e.tag==="সঞ্চয়") return "সঞ্চয়";
+  const k=payeeOf(e).toUpperCase();
+  if(!S.payeeCat[k]&&/gold|jewel|tanishq|senco|kalyan|malabar/i.test(e.desc||"")) return "সঞ্চয়";
+  if(S.payeeCat[k]) return S.payeeCat[k];
+  if(e.src!=="imp") return TAGCAT[e.tag]||"অন্যান্য";
+  const d=e.desc||"";
+  for(const [c,re] of RULES) if(re.test(d)) return c;
+  return e.a<300?"বাজার ও মুদি":"অন্যান্য";
+}
+const rsShort=n=>n>=100000?"₹"+(n/100000).toLocaleString(LOC(),{maximumFractionDigits:1})+T("লা","L"):n>=1000?"₹"+(n/1000).toLocaleString(LOC(),{maximumFractionDigits:1})+T("হা","k"):rs(n);
+let dashP=null;
+function periodRange(p){
+  const t=new Date();t.setHours(0,0,0,0);
+  const first=(add)=>new Date(t.getFullYear(),t.getMonth()+add,1);
+  if(p==="m0") return [iso(first(0)),iso(t)];
+  if(p==="m1") {const e=first(0);e.setDate(0);return [iso(first(-1)),iso(e)];}
+  if(p==="m3") return [iso(first(-2)),iso(t)];
+  const all=S.exp.map(e=>e.d).sort();
+  return [all[0]||iso(t),iso(t)];
+}
+function renderDash(){
+  const body=$("dashBody");
+  if(!S.exp.length){
+    body.innerHTML=`<p class="note">${T("খরচ লিখলে বা উপরে স্টেটমেন্ট আনলে এখানে আপনার খরচের খাত-ভিত্তিক ছবি আসবে।","Once you add spending or import a statement, your spending by category appears here.")}</p>`;return;
+  }
+  if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"m0":"all";}
+  document.querySelectorAll("#dashPeriod .chip").forEach(c=>c.setAttribute("aria-pressed",String(c.dataset.p===dashP)));
+  const [from,to]=periodRange(dashP);
+  const rows=S.exp.filter(e=>e.d>=from&&e.d<=to).map(e=>({...e,cat:catOf(e),payee:payeeOf(e)}));
+  const spend=rows.filter(r=>r.cat!=="সঞ্চয়"), saved=rows.filter(r=>r.cat==="সঞ্চয়");
+  const sum=a=>a.reduce((s,r)=>s+r.a,0);
+  const days=Math.max(1,Math.round((new Date(to+"T00:00:00")-new Date(from+"T00:00:00"))/864e5)+1);
+  const total=sum(spend);
+  if(!rows.length){body.innerHTML=`<p class="note">${T("এই সময়ে কোনো খরচ নেই। অন্য সময় বেছে দেখুন।","No spending in this period. Try another period.")}</p>`;return;}
+
+  const byCat={};spend.forEach(r=>{byCat[r.cat]=(byCat[r.cat]||0)+r.a});
+  const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const maxC=cats.length?cats[0][1]:1;
+
+  const byP={};spend.forEach(r=>{const k=r.payee.toUpperCase();byP[k]=byP[k]||{name:r.payee,a:0,n:0,cat:r.cat,imp:r.src==="imp"};byP[k].a+=r.a;byP[k].n++;});
+  const payees=Object.entries(byP).sort((a,b)=>b[1].a-a[1].a).slice(0,10);
+
+  const months=[];for(let i=-5;i<=0;i++)months.push(mKey(i));
+  const mt=months.map(m=>S.exp.filter(e=>e.d.slice(0,7)===m&&catOf(e)!=="সঞ্চয়").reduce((s,e)=>s+e.a,0));
+
+  const ins=[];
+  const topC=cats.find(([c])=>c!=="অন্যান্য");
+  if(topC) ins.push(["",T(`চেনা খাতগুলোর মধ্যে সবচেয়ে বেশি খরচ "${topC[0]}" খাতে: ${rs(topC[1])}, মোটের ${bn(topC[1]/total*100)}%।`,`Among known categories, you spent most on "${catLabel(topC[0])}": ${rs(topC[1])}, ${bn(topC[1]/total*100)}% of the total.`)]);
+  if(payees.length) ins.push(["",T(`সবচেয়ে বেশি টাকা গেছে ${payees[0][1].name}-কে: ${rs(payees[0][1].a)} (${bn(payees[0][1].n)} বার)।`,`The most money went to ${payeeLabel(payees[0][1].name)}: ${rs(payees[0][1].a)} (${bn(payees[0][1].n)} ${payees[0][1].n===1?"time":"times"}).`)]);
+  const tm=mKey(0),lm=mKey(-1),t=new Date();
+  const thisM=S.exp.filter(e=>e.d.slice(0,7)===tm&&catOf(e)!=="সঞ্চয়").reduce((s,e)=>s+e.a,0)/t.getDate();
+  const lastDays=new Date(t.getFullYear(),t.getMonth(),0).getDate();
+  const lastM=S.exp.filter(e=>e.d.slice(0,7)===lm&&catOf(e)!=="সঞ্চয়").reduce((s,e)=>s+e.a,0)/lastDays;
+  if(thisM>0&&lastM>0){const ch=(thisM-lastM)/lastM*100;
+    ins.push([ch>10?"warn":ch<-10?"good":"",T(`এ মাসে রোজ গড়ে ${rs(thisM)} খরচ হচ্ছে, গত মাসে ছিল ${rs(lastM)}। `,`This month you spend about ${rs(thisM)} a day; last month it was ${rs(lastM)}. `)+(Math.abs(ch)<5?T("প্রায় একই রকম।","About the same."):ch>0?T(`${bn(ch)}% বেশি।`,`${bn(ch)}% more.`):T(`${bn(-ch)}% কম।`,`${bn(-ch)}% less.`))]);}
+  const small=spend.filter(r=>r.a<100);
+  if(small.length>=10) ins.push(["warn",T(`₹১০০-র কম পেমেন্ট ${bn(small.length)} বার, মোট ${rs(sum(small))}। ছোট ছোট খরচ মিলে বড় অঙ্ক হয়।`,`${bn(small.length)} payments under ₹100, totalling ${rs(sum(small))}. Small payments add up.`)]);
+  if(saved.length) ins.push(["good",T(`এই সময়ে সঞ্চয়ে গেছে ${rs(sum(saved))}। এটা খরচ নয়, তাই উপরের হিসেবে ধরা হয়নি।`,`${rs(sum(saved))} went to savings in this period. That is not spending, so it is left out above.`)]);
+  const other=byCat["অন্যান্য"]||0;
+  if(other>0) ins.push(["warn",T(`${rs(other)} এখনও "অন্যান্য" খাতে। নিচের "কাকে কত" তালিকায় নামের পাশে ঠিক খাত বেছে দিন, ছবিটা আরও সঠিক হবে।`,`${rs(other)} is still under "Other". Pick the right category next to each name in "Who got how much" below to make the picture more accurate.`)]);
+
+  const W=360,H=150,top=18,bot=22,bw=W/6,mx=Math.max(1,...mt);
+  let svg="";mt.forEach((v,i)=>{const h=(H-top-bot)*v/mx,x=i*bw+bw*0.2,y=H-bot-h;
+    svg+=`<rect class="bar" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(bw*0.6).toFixed(1)}" height="${Math.max(h,v?2:0).toFixed(1)}" rx="4"><title>${mName(months[i])}: ${rs(v)}</title></rect>`;
+    if(v) svg+=`<text class="val" x="${(i*bw+bw/2).toFixed(1)}" y="${(y-5).toFixed(1)}" text-anchor="middle">${rsShort(v)}</text>`;
+    svg+=`<text x="${(i*bw+bw/2).toFixed(1)}" y="${H-6}" text-anchor="middle">${mShort(months[i])}</text>`;});
+
+  const opts=sel=>CATS.map(c=>`<option value="${c}"${c===sel?" selected":""}>${catLabel(c)}</option>`).join("");
+  body.innerHTML=
+    `<div class="kgrid">
+      <div class="kbox"><span class="k">${T("মোট খরচ","Total spent")}</span><span class="v">${rs(total)}</span></div>
+      <div class="kbox"><span class="k">${T("রোজের গড়","Daily average")}</span><span class="v">${rs(total/days)}</span></div>
+      <div class="kbox"><span class="k">${T("লেনদেন","Payments")}</span><span class="v">${cnt(spend.length)}</span></div>
+      <div class="kbox"><span class="k">${T("সঞ্চয়","Savings")}</span><span class="v">${rs(sum(saved))}</span></div>
+    </div>
+    <p class="note">${T(`${bnDate(from)} থেকে ${bnDate(to)}`,`${bnDate(from)} to ${bnDate(to)}`)}</p>
+    <h3>${T("কোন খাতে কত","By category")}</h3>
+    <div class="cbars">${cats.map(([c,v])=>`<div class="cbar${c==="অন্যান্য"?" other":""}"><span class="nm">${esc(catLabel(c))}</span><span class="am">${rs(v)} · ${bn(v/total*100)}%</span><span class="t"><i style="width:${(v/maxC*100).toFixed(1)}%"></i></span></div>`).join("")}</div>
+    <h3>${T("মাস অনুযায়ী খরচ","Spending by month")}</h3>
+    <div class="mchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${T("গত ছয় মাসের খরচ","Spending over the last six months")}">${svg}</svg></div>
+    <h3>${T("কী বোঝা যাচ্ছে","What this shows")}</h3>
+    <ul class="ins">${ins.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>
+    <h3>${T("কাকে কত (সবচেয়ে বেশি ১০)","Who got how much (top 10)")}</h3>
+    <p class="note">${T("খাত ভুল মনে হলে পাশের ঘর থেকে বদলে দিন। ওই নামের সব খরচ নতুন খাতে চলে যাবে।","If a category looks wrong, change it in the box alongside. All payments to that name move to the new category.")}</p>
+    <ul id="payeeList">${payees.map(([k,p],i)=>`<li class="payee"><span class="what">${esc(payeeLabel(p.name))}<small>${bn(p.n)} ${T("বার",p.n===1?"time":"times")} · ${rs(p.a)}</small></span><select data-i="${i}" aria-label="${esc(T(p.name+"-এর খাত","Category for "+payeeLabel(p.name)))}">${opts(p.cat)}</select></li>`).join("")}</ul>`;
+  $("payeeList").querySelectorAll("select").forEach(s=>s.addEventListener("change",()=>{
+    const k=payees[+s.dataset.i][0];S.payeeCat[k]=s.value;save();render();}));
+}
+$("dashPeriod").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(!b)return;dashP=b.dataset.p;renderDash();});
+
+/* ---------- backup ---------- */
+$("bkCopy").onclick=async()=>{
+  const text="AJKER-KHOROCH-BACKUP:"+JSON.stringify({...S,exp:S.exp.map(({k,id,...r})=>r)});
+  const out=$("bkOut");out.value=text;
+  try{await navigator.clipboard.writeText(text);$("bkMsg").textContent=T("ব্যাকআপ কপি হয়েছে। এবার WhatsApp-এ নিজেকে পাঠিয়ে রাখুন।","Backup copied. Now send it to yourself on WhatsApp.");out.hidden=true;}
+  catch(_){out.hidden=false;out.focus();out.select();$("bkMsg").textContent=T("নিজে থেকে কপি হলো না। নিচের লেখাটা চেপে ধরে সব বেছে কপি করুন।","Couldn't copy automatically. Press and hold the text below, select it all and copy.");}
+};
+$("bkLoad").onclick=()=>{$("bkAsk").hidden=false};
+$("bkNo").onclick=()=>{$("bkAsk").hidden=true};
+$("bkYes").onclick=()=>{
+  $("bkAsk").hidden=true;
+  const raw=$("bkIn").value.trim().replace(/^AJKER-KHOROCH-BACKUP:/,"");
+  try{
+    const d=JSON.parse(raw);
+    if(!d||!Array.isArray(d.exp)||!Array.isArray(d.fixed)) throw 0;
+    d.exp=d.exp.map(e=>({...e,id:Math.random(),k:e.src==="imp"?e.d+"|"+e.a+"|"+(e.desc||""):undefined}));
+    S={...blank(),...d,sample:false};
+    if(!S.future)S.future=blankFuture();if(!S.payeeCat)S.payeeCat={};
+    save();render();$("bkIn").value="";$("bkMsg").textContent=T(`ফিরিয়ে আনা হলো: ${bn(S.exp.length)}টা খরচ।`,`Restored: ${bn(S.exp.length)} payments.`);
+  }catch(_){$("bkMsg").textContent=T("এই লেখাটা ব্যাকআপ হিসেবে চেনা গেল না। পুরো লেখাটা কপি হয়েছে কিনা দেখুন।","This text was not recognised as a backup. Check that the whole text was copied.");}
+};
+
+/* ---------- share the app ---------- */
+$("shareApp").addEventListener("click",async e=>{
+  if(!navigator.share) return;
+  e.preventDefault();
+  try{await navigator.share({title:T("আজকের খরচ","Ajker Khoroch"),text:shareText(),url:"https://pappa6.github.io/ajker-khoroch/"});}
+  catch(err){ if(err&&err.name!=="AbortError") window.location.href=$("shareApp").href; }
+});
+
+/* ---------- first-run guide ---------- */
+const OB_KEY="ajkerKhoroch.onboarded";
+function obSeen(){try{return localStorage.getItem(OB_KEY)==="1"}catch(_){return false}}
+function obMark(){try{localStorage.setItem(OB_KEY,"1")}catch(_){}}
+function obShow(v){$("onboard").hidden=!v;if(v)$("onboard").scrollIntoView({behavior:"smooth",block:"start"});}
+$("onboard").hidden=obSeen();
+$("obOpen").onclick=()=>{$("sampleAgainRow").hidden=S.sample;$("sampleAsk").hidden=true;obShow(true);};
+function loadSample(){S=sample();S.payeeCat={};dashP=null;save();render();$("sampleAgainRow").hidden=true;window.scrollTo({top:0,behavior:"smooth"});}
+$("sampleAgain").onclick=()=>{
+  const hasOwn=S.exp.length||S.income||S.fixed.length;
+  if(hasOwn){$("sampleAsk").hidden=false;} else loadSample();
+};
+$("sampleYes").onclick=loadSample;
+$("sampleNo").onclick=()=>{$("sampleAsk").hidden=true};
+$("obClose").onclick=$("obLater").onclick=()=>{obMark();obShow(false)};
+$("obStart").onclick=()=>{obMark();$("onboard").hidden=true;
+  if(S.sample){S=blank();save();render();}
+  $("setup").open=true;$("setup").scrollIntoView({behavior:"smooth",block:"start"});};
+
+/* ---------- feedback ---------- */
+["fbName","fb1","fb2","fb3","fb4","fb5"].forEach(id=>{
+  try{const v=localStorage.getItem("ajkerKhoroch.fb."+id);if(v)$(id).value=v;}catch(_){}
+  $(id).addEventListener("input",()=>{try{localStorage.setItem("ajkerKhoroch.fb."+id,$(id).value)}catch(_){}});
+  $(id).addEventListener("change",()=>{try{localStorage.setItem("ajkerKhoroch.fb."+id,$(id).value)}catch(_){}});
+});
+$("fbCopy").onclick=async()=>{
+  const days=new Set(S.exp.map(e=>e.d)).size, imp=S.exp.filter(e=>e.src==="imp").length, man=S.exp.filter(e=>e.src!=="imp").length;
+  const q=LANG==="en"?["Statement import","What was new","Difficulties","What else is wanted","Buy for ₹99?"]:["স্টেটমেন্ট আনা","নতুন কী জানলেন","অসুবিধা","আর কী চাই","₹৯৯-এ কিনবেন?"];
+  const text=T(`আজকের খরচ: মতামত\nনাম: `,`Ajker Khoroch: feedback\nName: `)+`${$("fbName").value||"-"}\n`+
+    ["fb1","fb2","fb3","fb4","fb5"].map((id,i)=>`${bn(i+1)}. ${q[i]}: ${(id==="fb5"?($("fb5").selectedIndex>0?$("fb5").options[$("fb5").selectedIndex].text:""):$(id).value.trim())||"-"}`).join("\n")+
+    T(`\n(অ্যাপ থেকে: ${bn(days)} দিনের খরচ আছে, স্টেটমেন্ট থেকে ${bn(imp)}টা, হাতে লেখা ${bn(man)}টা)`,`\n(From the app: ${bn(days)} days of spending, ${bn(imp)} from statements, ${bn(man)} entered by hand)`);
+  const out=$("fbOut");out.value=text;
+  try{await navigator.clipboard.writeText(text);out.hidden=true;$("fbMsg").textContent=T("মতামত কপি হয়েছে। এবার WhatsApp খুলে পেস্ট করে পাঠিয়ে দিন। ধন্যবাদ!","Feedback copied. Now open WhatsApp, paste and send. Thank you!");}
+  catch(_){out.hidden=false;out.focus();out.select();$("fbMsg").textContent=T("নিজে থেকে কপি হলো না। নিচের লেখাটা চেপে ধরে সব বেছে কপি করুন।","Couldn't copy automatically. Press and hold the text below, select it all and copy.");}
+};
+
+/* ---------- statement import ---------- */
+const loaded={};
+function loadScript(src){return loaded[src]||(loaded[src]=new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=()=>{delete loaded[src];rej(new Error("load"))};document.head.appendChild(s)}))}
+
+const MON={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+const yr=y=>{y=+y;return y<100?2000+y:y};
+function mk(y,m,d){if(y<2000||y>2100||m<0||m>11||d<1||d>31)return null;const dt=new Date(y,m,d);return dt.getMonth()===m?iso(dt):null}
+function pDate(v){
+  if(v instanceof Date&&!isNaN(v)) return iso(new Date(v.getTime()+6e5));
+  if(typeof v==="number"&&v>30000&&v<80000){const d=new Date(Math.round((v-25569)*864e5));return mk(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())}
+  if(typeof v!=="string") return null;
+  const s=v.trim(); let m,r;
+  if((m=s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/))&&(r=mk(+m[1],+m[2]-1,+m[3])))return r;
+  if((m=s.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/))&&(r=mk(yr(m[3]),+m[2]-1,+m[1])))return r;
+  if((m=s.match(/(\d{1,2})[\s\-\/]*([A-Za-z]{3})[a-z]*[\s\-\/,]*'?(\d{2,4})/))&&MON[m[2].toLowerCase()]!=null&&(r=mk(yr(m[3]),MON[m[2].toLowerCase()],+m[1])))return r;
+  if((m=s.match(/([A-Za-z]{3})[a-z]*\.?\s+(\d{1,2}),?\s+(\d{4})/))&&MON[m[1].toLowerCase()]!=null&&(r=mk(+m[3],MON[m[1].toLowerCase()],+m[2])))return r;
+  return null;
+}
+function pAmt(v){if(typeof v==="number")return v;if(v==null)return NaN;
+  return parseFloat(String(v).replace(/INR|Rs\.?|₹|,|\s/gi,"").replace(/(Dr|Cr)\.?$/i,""))}
+let isPhonePe=false;
+function classify(desc){
+  if(/gold saved|digi ?gold|safe ?gold|\bsip\b|mutual fund|recurring deposit/i.test(desc))return "SAVE";
+  if(isPhonePe||/upi|phonepe|paid to|payment to|gpay|google ?pay|paytm|bhim/i.test(desc))return "UPI";
+  if(/\batm\b|cash ?wd|cash withdrawal|cwdr|\bnwd\b|\bawb\b|atw/i.test(desc))return "ATM";
+  return "OTHER";
+}
+
+function parseRows(rows){
+  let h=-1,cD=-1,cDesc=-1,cDeb=-1,cAmt=-1,cType=-1;
+  for(let i=0;i<Math.min(rows.length,60);i++){
+    const r=(rows[i]||[]).map(x=>String(x??"").toLowerCase().replace(/\s+/g," ").trim());
+    const d=r.findIndex(x=>/date|\bdt\b/.test(x));
+    const deb=r.findIndex(x=>(/debit|withdraw/.test(x)&&!/credit|deposit/.test(x))||x==="dr");
+    const amt=r.findIndex(x=>/amount|\bamt\b/.test(x)&&!/balance/.test(x));
+    if(d>=0&&(deb>=0||amt>=0)){
+      h=i;cD=d;cDeb=deb;cAmt=amt;
+      cDesc=r.findIndex(x=>/narration|description|particular|remark|details|name/.test(x));
+      cType=r.findIndex((x,j)=>j!==cDeb&&j!==cAmt&&/type|dr ?\/ ?cr|cr ?\/ ?dr|debit ?\/ ?credit/.test(x));
+      break;
+    }
+  }
+  if(h<0) return null;
+  const out=[];
+  for(const row of rows.slice(h+1)){
+    if(!row) continue;
+    const d=pDate(row[cD]); if(!d) continue;
+    let a;
+    if(cDeb>=0){a=pAmt(row[cDeb]);}
+    else{
+      const raw=row[cAmt]; a=pAmt(raw);
+      const t=cType>=0?String(row[cType]??""):String(raw??"");
+      const isDr=/\bdr\b|debit|paid|withdraw/i.test(t)||a<0;
+      const isCr=/\bcr\b|credit|received|deposit/i.test(t);
+      if(!isDr||isCr&&!/debit|\bdr\b/i.test(t)) continue;
+      a=Math.abs(a);
+    }
+    if(!(a>0)) continue;
+    const desc=cDesc>=0?String(row[cDesc]??"").replace(/\s+/g," ").trim():"";
+    out.push({d,a,desc});
+  }
+  return out;
+}
+
+async function pdfLines(buf,pw){
+  await Promise.all([loadScript(PDF_SRC),loadScript(PDFW_SRC)]);
+  const doc=await window.pdfjsLib.getDocument({data:buf,password:pw||undefined}).promise;
+  const lines=[];
+  for(let p=1;p<=doc.numPages;p++){
+    const tc=await (await doc.getPage(p)).getTextContent();
+    const rows={};
+    tc.items.forEach(it=>{if(!it.str.trim())return;const y=Math.round(it.transform[5]/3);(rows[y]=rows[y]||[]).push({x:it.transform[4],s:it.str})});
+    Object.keys(rows).sort((a,b)=>b-a).forEach(y=>lines.push(rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join(" ").replace(/\s+/g," ").trim()));
+  }
+  return lines;
+}
+function parsePdf(lines){
+  const out=[];
+  for(const L of lines){
+    const d=pDate(L.slice(0,32)); if(!d) continue;
+    const deb=/\bDEBIT\b|\bDr\.?\b|Paid to|Withdrawal|\bWDL\b|\bDR\b/i.test(L);
+    const cr=/\bCREDIT\b|Received from|\bCr\.?\b/i.test(L);
+    if(!deb||(cr&&!/\bDEBIT\b|Paid to/i.test(L))) continue;
+    let a=NaN;
+    const cur=[...L.matchAll(/(?:₹|INR|Rs\.?)\s*([\d,]+(?:\.\d{1,2})?)/gi)];
+    if(cur.length) a=pAmt(cur[0][1]);
+    if(!(a>0)){const dec=[...L.matchAll(/\b\d{1,3}(?:,\d{2,3})*\.\d{2}\b/g)];if(dec.length)a=pAmt(dec[0][0]);}
+    if(!(a>0)) continue;
+    let desc=L.replace(/^\s*([A-Za-z]{3}\s+\d{1,2},?\s+\d{4}|\d{1,2}[\s\-\/][A-Za-z]{3}[a-z]*[\s\-\/,]*\d{2,4}|\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4})\s*/,"").replace(/\s*\b(DEBIT|DR)\b\s*(₹|INR|Rs\.?)?\s*[\d,]+(\.\d{1,2})?\s*$/i,"").trim()||L;
+    out.push({d,a,desc:desc.length>80?desc.slice(0,80)+"…":desc});
+  }
+  return out;
+}
+
+let pendingFile=null, pending=null;
+function msg(html,cls){$("importMsg").innerHTML=html?`<div class="${cls||"warn"}">${html}</div>`:""}
+
+async function readFile(file,pw){
+  msg(T("ফাইল পড়া হচ্ছে…","Reading the file…"),"warn"); $("preview").hidden=true;
+  const name=file.name.toLowerCase(), buf=await file.arrayBuffer();
+  let rows=null;
+  try{
+    if(name.endsWith(".pdf")||file.type==="application/pdf"){
+      let lines;
+      try{lines=await pdfLines(buf,pw);}
+      catch(e){
+        if(e&&e.name==="PasswordException"){$("pwRow").hidden=false;$("pw").focus();
+          msg(pw?T("পাসওয়ার্ড মেলেনি। আবার চেষ্টা করুন।","Wrong password. Please try again."):T("এই PDF-এ পাসওয়ার্ড আছে। পাসওয়ার্ড দিয়ে \"খুলুন\" চাপুন।","This PDF has a password. Type it and tap \"Open\"."),pw?"err":"warn");return}
+        throw e;
+      }
+      $("pwRow").hidden=true;
+      isPhonePe=lines.some(l=>/phonepe|Transaction Statement for/i.test(l));
+      rows=parsePdf(lines);
+    }else{
+      isPhonePe=false;
+      await loadScript(XLSX_SRC);
+      const isCsv=name.endsWith(".csv");
+      const wb=XLSX.read(buf,{type:"array",cellDates:true,raw:isCsv});
+      for(const sn of wb.SheetNames){
+        const r=parseRows(XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:""}));
+        if(r&&r.length){rows=r;break}
+      }
+    }
+  }catch(e){msg(T("ফাইলটা খোলা গেল না। ইন্টারনেট চালু আছে কিনা দেখে আবার চেষ্টা করুন, অথবা Excel/CSV ফাইল দিন।","Couldn't open the file. Check your internet and try again, or use an Excel/CSV file."),"err");return}
+  if(!rows||!rows.length){msg(T("এই ফাইলে কোনো খরচের লাইন চিনতে পারলাম না। ব্যাঙ্কের Excel বা CSV স্টেটমেন্ট দিয়ে দেখুন।","Couldn't find any payment lines in this file. Try your bank's Excel or CSV statement."),"err");return}
+  rows.forEach(r=>r.type=classify(r.desc));
+  pending=rows; msg(""); showPreview();
+}
+
+function showPreview(){
+  const sum={UPI:[0,0],SAVE:[0,0],ATM:[0,0],OTHER:[0,0]};
+  pending.forEach(r=>{sum[r.type][0]++;sum[r.type][1]+=r.a});
+  const ds=pending.map(r=>r.d).sort();
+  const manualOverlap=S.exp.some(e=>e.src!=="imp"&&e.tag==="UPI"&&e.d>=ds[0]&&e.d<=ds[ds.length-1]);
+  const p=$("preview");
+  const pl=planImport(pending.filter(r=>r.type==="UPI"));
+  p.innerHTML=`<h3>${T(`${bnDate(ds[0])} থেকে ${bnDate(ds[ds.length-1])}: ${bn(pending.length)}টা খরচ পাওয়া গেছে`,`${bnDate(ds[0])} to ${bnDate(ds[ds.length-1])}: ${bn(pending.length)} payments found`)}</h3>`+
+    ((pl.dup||pl.replace.length)?`<p class="note">${T(`UPI খরচের মধ্যে ${bn(pl.add.length)}টা নতুন। `,`${bn(pl.add.length)} of the UPI payments are new. `)}${pl.dup?T(bn(pl.dup)+"টা আগেই অ্যাপে আছে, সেগুলো আবার যোগ হবে না। ",bn(pl.dup)+" are already in the app and won't be added again. "):""}${pl.replace.length?T(bn(pl.replace.length)+"টা আপনার হাতে লেখা খরচের সঙ্গে মিলেছে, সেগুলো দুবার গোনা হবে না।",bn(pl.replace.length)+" match payments you entered by hand and won't be counted twice."):""}</p>`:"")+
+    TYPES.filter(k=>sum[k][0]).map(k=>
+      `<div class="pick"><label for="pk_${k}"><input type="checkbox" id="pk_${k}" ${k==="UPI"?"checked":""}> ${typeLabel(k)} (${cnt(sum[k][0])})</label><span class="num">${rs(sum[k][1])}</span></div>`).join("")+
+    (sum.SAVE[0]?`<p class="note">${T(`সঞ্চয় খরচ নয়। এটা টিক না দিয়ে মাসের সঞ্চয়ের অঙ্কটা "জমানোর লক্ষ্য"-তে বসান।`,`Savings are not spending. Leave this unticked and put your monthly savings amount in "Savings goal".`)}</p>`:"")+
+    `<p class="note">${T(`ATM-এ তোলা টাকা টিক দেবেন না যদি সেই নগদ খরচ হাতে লেখেন, নইলে দু'বার গোনা হবে। অটো-ডেবিট (EMI, বিল) "নির্দিষ্ট খরচ"-এ থাকলে "অন্য ডেবিট"-ও টিক দেবেন না।`,`Don't tick ATM withdrawals if you note that cash spending by hand, or it will be counted twice. If auto-debits (EMI, bills) are in "Fixed costs", don't tick "Other debits" either.`)}</p>`+
+    `<div class="row"><button class="primary" id="doImport">${T("হিসেবে যোগ করুন","Add to my budget")}</button><button id="cancelImport">${T("বাতিল","Cancel")}</button></div>`;
+  p.hidden=false;
+  $("doImport").onclick=doImport;
+  $("cancelImport").onclick=()=>{pending=null;p.hidden=true;$("stmt").value=""};
+}
+
+function planImport(rows){
+  if(S.sample) return {add:rows.slice(),dup:0,replace:[]};
+  const ex={};S.exp.filter(e=>e.src==="imp").forEach(e=>{const k=e.d+"|"+e.a;ex[k]=(ex[k]||0)+1});
+  const pool=S.exp.filter(e=>e.src!=="imp"&&e.tag!=="নগদ");
+  const out={add:[],dup:0,replace:[]};
+  rows.forEach(r=>{
+    const k=r.d+"|"+r.a;
+    if(ex[k]>0){ex[k]--;out.dup++;return}
+    const mi=pool.findIndex(e=>e.d===r.d&&e.a===r.a);
+    if(mi>=0) out.replace.push(pool.splice(mi,1)[0]);
+    out.add.push(r);
+  });
+  return out;
+}
+function doImport(){
+  const want=TYPES.filter(k=>$("pk_"+k)&&$("pk_"+k).checked);
+  if(!want.length){msg(T("অন্তত একটা ঘরে টিক দিন।","Tick at least one box."),"err");return}
+  let extra="";
+  if(S.sample){S.exp=[];S.future=blankFuture();S.sample=false;extra=T(" নমুনা খরচ সরিয়ে দেওয়া হলো। এবার \"আমার মাসের হিসেব\"-এ নিজের আয় ও নির্দিষ্ট খরচ বসান।"," The sample was removed. Now enter your income and fixed costs in \"My monthly budget\".");}
+  const plan=planImport(pending.filter(r=>want.includes(r.type)));
+  S.exp=S.exp.filter(e=>!plan.replace.includes(e));
+  plan.add.forEach(r=>S.exp.push({d:r.d,a:r.a,tag:r.type==="UPI"?"UPI":r.type==="SAVE"?"সঞ্চয়":r.type==="ATM"?"নগদ তোলা":"অন্য ডেবিট",desc:r.desc,src:"imp",k:r.d+"|"+r.a+"|"+r.desc,id:Math.random()}));
+  save();pending=null;$("preview").hidden=true;$("stmt").value="";
+  msg(T(`✅ ${bn(plan.add.length)}টা নতুন খরচ যোগ হলো।`,`✅ ${bn(plan.add.length)} new payments added.`)+
+    (plan.dup?T(` ${bn(plan.dup)}টা আগেই ছিল, তাই আবার যোগ করা হয়নি।`,` ${bn(plan.dup)} were already there, so not added again.`):"")+
+    (plan.replace.length?T(` ${bn(plan.replace.length)}টা হাতে লেখা খরচ স্টেটমেন্টের সঙ্গে মিলে গেছে (একই দিন, একই টাকা), সেগুলো দুবার গোনা হয়নি।`,` ${bn(plan.replace.length)} hand-entered payments matched the statement (same day, same amount) and were not counted twice.`):"")+extra,"warn");
+  render();
+}
+
+$("stmt").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;pendingFile=f;$("pw").value="";$("pwRow").hidden=true;readFile(f)});
+$("pwGo").onclick=()=>{if(pendingFile)readFile(pendingFile,$("pw").value)};
+$("pw").addEventListener("keydown",e=>{if(e.key==="Enter"&&pendingFile)readFile(pendingFile,$("pw").value)});
+
+/* ---------- manual entry & setup ---------- */
+const showToday=()=>{$("today").textContent=new Date().toLocaleDateString(LOC(),{weekday:"long",day:"numeric",month:"long"});};showToday();
+const tagBox=$("tags");
+TAGS.forEach(t=>{const b=document.createElement("button");b.className="tag";b.textContent=tagLabel(t);b.dataset.tag=t;b.setAttribute("aria-pressed",t===pickedTag);
+  b.onclick=()=>{pickedTag=t;tagBox.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b))};tagBox.appendChild(b)});
+
+function addExp(){const inp=$("amt");const a=parseFloat(inp.value);
+  if(!(a>0)){$("addMsg").textContent=T("টাকার অঙ্কটা লিখুন, যেমন ১৫০।","Enter the amount, e.g. 150.");return}
+  S.exp.push({d:iso(new Date()),a,tag:pickedTag,id:Math.random()});inp.value="";
+  $("addMsg").textContent=`${tagLabel(pickedTag)}: ${rs(a)} ${T("যোগ হলো।","added.")}`;save();render()}
+$("addBtn").onclick=addExp;
+$("amt").addEventListener("keydown",e=>{if(e.key==="Enter")addExp()});
+
+$("fxAdd").onclick=()=>{const n=$("fxName"),a=$("fxAmt");
+  if(!n.value.trim()||!(+a.value>0))return;S.fixed.push({n:n.value.trim(),a:+a.value});n.value="";a.value="";save();render()};
+$("saveSetup").onclick=()=>{
+  if(S.sample){S.exp=S.exp.filter(e=>!e.src);S.future=blankFuture();S.sample=false;}
+  S.income=+$("income").value||0;
+  S.payday=Math.min(Math.max(+$("payday").value||1,1),28);
+  S.saving=+$("saving").value||0;
+  S.sample=false;save();render();$("setup").open=false;window.scrollTo({top:0,behavior:"smooth"})};
+$("clearSample").onclick=()=>{S=blank();save();render();$("setup").open=true};
+$("resetBtn").onclick=()=>{$("resetAsk").hidden=false};
+$("resetNo").onclick=()=>{$("resetAsk").hidden=true};
+$("resetYes").onclick=()=>{S=blank();save();$("resetAsk").hidden=true;msg("");render();$("setup").open=true};
+$("impDel").onclick=()=>{$("impDelAsk").hidden=false};
+$("impDelNo").onclick=()=>{$("impDelAsk").hidden=true};
+$("impDelYes").onclick=()=>{S.exp=S.exp.filter(e=>e.src!=="imp");save();$("impDelAsk").hidden=true;
+  render()};
+/* ---------- statement how-to flowchart ---------- */
+document.querySelectorAll("#howFlow [data-src]").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("#howFlow [data-src]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  $("fc-pp").hidden=b.dataset.src!=="pp";$("fc-bank").hidden=b.dataset.src!=="bank";});
+$("howFlow").open=!S.exp.some(e=>e.src==="imp")||S.sample;
+
+/* ---------- install & receive shared statements (only on the real website) ---------- */
+const ON_SITE=location.hostname.endsWith("github.io");
+$("shareTip").hidden=!ON_SITE;
+if(ON_SITE&&"serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}
+let deferredInstall=null;
+const isInstalled=()=>window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+if(isInstalled()) $("installHint").hidden=true;
+$("installTop").hidden=!ON_SITE||isInstalled();
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredInstall=e;$("installBtn").hidden=false;$("installHint").hidden=true;});
+async function doInstall(){
+  if(deferredInstall){deferredInstall.prompt();try{await deferredInstall.userChoice}catch(_){};deferredInstall=null;$("installBtn").hidden=true;}
+  else{$("installHelp").hidden=false;$("installHelp").scrollIntoView({behavior:"smooth",block:"start"});}
+}
+$("installBtn").onclick=doInstall;
+$("installTop").onclick=doInstall;
+$("installHelpClose").onclick=()=>{$("installHelp").hidden=true};
+window.addEventListener("appinstalled",()=>{["installBtn","installHint","installTop","installHelp"].forEach(id=>$(id).hidden=true);});
+async function takeShared(){
+  if(!/[?&]shared=1/.test(location.search)||!("caches" in window))return;
+  history.replaceState(null,"",location.pathname);
+  try{
+    const c=await caches.open("ajker-khoroch-share");
+    const r=await c.match("shared-statement");
+    if(!r){msg(T("শেয়ার করা ফাইল পাওয়া গেল না। আবার Share করে দেখুন।","The shared file did not arrive. Please share it again."),"err");return}
+    const blob=await r.blob();
+    const name=decodeURIComponent(r.headers.get("X-File-Name")||"statement");
+    await c.delete("shared-statement");
+    const file=new File([blob],name,{type:blob.type});
+    obMark();$("onboard").hidden=true;$("howFlow").open=false;
+    pendingFile=file;$("pw").value="";$("pwRow").hidden=true;
+    document.querySelector("section.import").scrollIntoView({behavior:"smooth",block:"start"});
+    readFile(file);
+  }catch(_){msg(T("শেয়ার করা ফাইল খোলা গেল না। \"স্টেটমেন্ট ফাইল বেছে নিন\" থেকে বেছে দেখুন।","Could not open the shared file. Try picking it with \"Choose statement file\"."),"err");}
+}
+
+/* ---------- language ---------- */
+const APP_URL="https://pappa6.github.io/ajker-khoroch/";
+function shareText(){return T("আজকের খরচ অ্যাপ: রোজ জানুন আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। লগইন নেই, সব তথ্য শুধু আপনার ফোনে।","Ajker Khoroch app: know every day how much you can safely spend today. No login, all your data stays on your phone.");}
+function applyLang(){
+  document.documentElement.lang=LANG;
+  document.title=T("আজকের খরচ","Ajker Khoroch · Today's Spend");
+  document.querySelectorAll("[data-en]").forEach(el=>{
+    if(el.dataset.bn===undefined) el.dataset.bn=el.tagName==="OPTION"?el.textContent:el.innerHTML;
+    const v=LANG==="en"?el.dataset.en:el.dataset.bn;
+    if(el.tagName==="OPTION") el.textContent=v; else if(LANG==="en") el.textContent=v; else el.innerHTML=v;
+  });
+  document.querySelectorAll("[data-en-ph]").forEach(el=>{
+    if(el.dataset.bnPh===undefined) el.dataset.bnPh=el.placeholder;
+    el.placeholder=LANG==="en"?el.dataset.enPh:el.dataset.bnPh;
+  });
+  $("langBtn").textContent=LANG==="en"?"বাংলা":"English";
+  $("shareApp").href="https://wa.me/?text="+encodeURIComponent(shareText()+" "+APP_URL);
+  tagBox.querySelectorAll("button").forEach(b=>b.textContent=tagLabel(b.dataset.tag));
+  showToday();
+}
+$("langBtn").onclick=()=>{
+  LANG=LANG==="en"?"bn":"en";
+  try{localStorage.setItem(LANG_KEY,LANG)}catch(_){}
+  if(S.sample){S=sample();S.payeeCat={};save();}
+  applyLang();render();
+  if(pending&&!$("preview").hidden) showPreview();
+};
+applyLang();
+render();
+takeShared();
+</script>
+
+</body>
+</html>
