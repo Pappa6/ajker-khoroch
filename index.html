@@ -162,6 +162,11 @@ li.payee select{flex:0 1 46%;font-size:.85rem;padding:6px 8px}
 .tile b{display:block;font-size:1.15rem;margin-top:8px;font-variant-numeric:tabular-nums}
 .tile span{display:block;font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
 .tile i{position:absolute;right:10px;top:12px;font-style:normal;font-size:.75rem;font-weight:700;background:var(--k);color:#101820;border-radius:999px;padding:1px 9px}
+.inc{background:linear-gradient(145deg,color-mix(in srgb,#3ddc97 22%,var(--card)),var(--card));border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.uns{background:var(--wait-bg);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}.uns h3{margin:0}
+.inc h3{margin:0}.incbig{font-size:1.9rem;font-weight:800;color:#0f8a5f}
+.incrow{display:flex;justify-content:space-between;gap:10px;font-size:1rem}
+.preview select{width:100%;margin-top:4px}
 .mchart{background:linear-gradient(160deg,#0f1f3d,#0a1226);border-radius:24px;padding:10px 8px 4px}
 .mchart text{fill:#9fb0d0}.mchart .val{fill:#e8f0ff}
 .mchart .grid{stroke:#ffffff22}
@@ -370,6 +375,8 @@ textarea{font:inherit;font-size:.85rem;color:var(--ink);background:var(--bg);bor
       <button class="chip" data-p="m3"><span data-en="3 months">৩ মাস</span></button>
       <button class="chip" data-p="all"><span data-en="All time">সব সময়</span></button>
     </div>
+    <div id="unsBox"></div>
+    <div id="incCard"></div>
     <div id="dashBody" style="display:flex;flex-direction:column;gap:14px"></div>
   </section>
 
@@ -488,6 +495,16 @@ const payeeLabel=p=>p.startsWith(HAND)?T(HAND,"Entered by hand: ")+tagLabel(p.sl
 const TAGS=["নগদ","বাজার","ওষুধ","যাতায়াত","খাবার","অন্যান্য"];
 const TYPES=["UPI","SAVE","ATM","OTHER"];
 const typeLabel=k=>({UPI:"UPI",SAVE:T("সঞ্চয় (সোনা, SIP ইত্যাদি)","Savings (gold, SIP etc.)"),ATM:T("ATM থেকে নগদ তোলা","ATM cash withdrawal"),OTHER:T("অন্য ডেবিট (কার্ড, অটো-ডেবিট ইত্যাদি)","Other debits (card, auto-debit etc.)")})[k];
+const CTYPES=["SAL","INT","REF","RCV","OTH"];
+const ctypeLabel=k=>({SAL:T("বেতন / পেনশন","Salary / pension"),INT:T("সুদ","Interest"),REF:T("ফেরত বা রিফান্ড (এটা আয় নয়)","Refunds (not income)"),RCV:T("অন্যের কাছ থেকে পাওয়া টাকা","Money received from others"),OTH:T("অন্য জমা","Other credits")})[k];
+const kindLabel=k=>({SAL:T("বেতন / পেনশন","Salary / pension"),INT:T("সুদ","Interest"),REF:T("ফেরত","Refunds"),RCV:T("অন্যের কাছ থেকে","From others"),OTH:T("অন্য","Other")})[k]||k;
+function classifyCr(desc){
+  if(/salary|\bsal\b|payroll|pension|\bppo\b|stipend|wages/i.test(desc))return "SAL";
+  if(/interest|\bint\.? ?(pd|paid|cr|credit|coll)|\bint\b|\bsb ?int/i.test(desc))return "INT";
+  if(/refund|reversal|reversed|cashback|chargeback|\brev\b/i.test(desc))return "REF";
+  if(/upi|neft|rtgs|imps|received|transfer|\bfrom\b|clg|cheque|\bchq\b|deposit/i.test(desc))return "RCV";
+  return "OTH";
+}
 const XLSX_SRC="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
 const PDF_SRC="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
 const PDFW_SRC="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -513,12 +530,15 @@ function sample(){
 }
 function mKey(add){const d=new Date();const x=new Date(d.getFullYear(),d.getMonth()+add,1);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")}
 const blankFuture=()=>({buffer:0,infl:5,changes:[],liab:[]});
-const blank=()=>({sample:false,income:0,payday:1,saving:0,fixed:[],exp:[],future:blankFuture(),payeeCat:{}});
+const blank=()=>({sample:false,income:0,payday:1,saving:0,fixed:[],exp:[],future:blankFuture(),payeeCat:{},inc:[],maps:{},seen:[]});
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY))}catch(_){}
 if(!S) S=sample();
 if(!S.future) S.future=blankFuture();
 if(!S.payeeCat) S.payeeCat={};
+if(!S.inc) S.inc=[];
+if(!S.maps) S.maps={};
+if(!S.seen) S.seen=[];
 let storeOK=true;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){storeOK=false}}
 
@@ -576,7 +596,7 @@ function render(){
   $("cycleNote").textContent=T(`পরের আয় ${nd}। আজ সমেত আর ${bn(c.daysLeft)} দিন চালাতে হবে। আজ কম খরচ করলে কালকের সীমা নিজে থেকেই বাড়বে।`,`Next income on ${nd}. You need to manage ${bn(c.daysLeft)} more days, including today. Spend less today and tomorrow's limit goes up by itself.`);
 
   const imps=S.exp.filter(e=>e.src==="imp");
-  $("impDelRow").hidden=!imps.length||S.sample;
+  $("impDelRow").hidden=!(imps.length||(S.inc||[]).some(e=>e.src==="imp"))||S.sample;
   if(imps.length&&!S.sample){const last=imps.reduce((m,e)=>e.d>m?e.d:m,"");
     $("importStatus").textContent=T(`স্টেটমেন্ট আছে ${bnDate(last)} পর্যন্ত। তার পরের UPI খরচ পরের স্টেটমেন্টে আসবে, অথবা নিচে হাতে লিখে রাখুন।`,`Statements cover up to ${bnDate(last)}. Later UPI payments will come with your next statement, or note them by hand below.`);}
   else $("importStatus").textContent=T("ব্যাঙ্ক বা PhonePe-র স্টেটমেন্ট দিলে সব UPI খরচ নিজে থেকেই ঢুকে যাবে।","Add a bank or PhonePe statement and all UPI payments are added automatically.");
@@ -689,7 +709,11 @@ const RULES=[
 const TAGCAT={"বাজার":"বাজার ও মুদি","ওষুধ":"স্বাস্থ্য ও ওষুধ","যাতায়াত":"যাতায়াত ও জ্বালানি","খাবার":"খাবার ও মিষ্টি","নগদ তোলা":"নগদ তোলা"};
 function payeeOf(e){
   if(e.src!=="imp") return "হাতে লেখা: "+e.tag;
-  const n=(e.desc||"").replace(/^(paid to|payment to)\s*/i,"").trim();
+  let n=(e.desc||"").replace(/^(paid to|payment to)\s*/i,"").trim();
+  if(/^(UPI|NEFT|IMPS|RTGS|POS)[-\/ ]/i.test(n)){ /* bank narration: keep just the name part */
+    const q=n.split(/[-\/]/).slice(1).map(x=>x.trim()).find(x=>/[A-Za-z]{3,}/.test(x)&&!/@/.test(x)&&!(/\d/.test(x)&&/^[A-Z0-9]{9,}$/i.test(x))&&!/^(CR|DR|UPI|REFUND|PAYMENT|ORDER)$/i.test(x));
+    if(q)n=q;
+  }
   return n||"নাম নেই";
 }
 function catOf(e){
@@ -710,7 +734,7 @@ function periodRange(p){
   if(p==="m0") return [iso(first(0)),iso(t)];
   if(p==="m1") {const e=first(0);e.setDate(0);return [iso(first(-1)),iso(e)];}
   if(p==="m3") return [iso(first(-2)),iso(t)];
-  const all=S.exp.map(e=>e.d).sort();
+  const all=S.exp.map(e=>e.d).concat((S.inc||[]).map(e=>e.d)).sort();
   return [all[0]||iso(t),iso(t)];
 }
 const CAT_STYLE={"বাজার ও মুদি":["#3ddc97","🛒"],"স্বাস্থ্য ও ওষুধ":["#ff5c5c","💊"],"বিল ও রিচার্জ":["#ffb020","💡"],"খাবার ও মিষ্টি":["#ff8a3d","🍲"],"যাতায়াত ও জ্বালানি":["#4d9bff","🚗"],"পোশাক ও কেনাকাটা":["#b36bff","👗"],"বাড়ি ও মেরামত":["#c08a5d","🏠"],"পুজো ও দান":["#ffd23f","🪔"],"ডিজিটাল ও বিনোদন":["#27d3e6","📱"],"পরিবার ও ব্যক্তিগত":["#ff5fa2","👨‍👩‍👧"],"নগদ তোলা":["#7f90b5","💵"],"অন্যান্য":["#9aa5a3","📦"],"সঞ্চয়":["#2ec4b6","🏦"]};
@@ -767,7 +791,44 @@ function weekdaySvg(avg){
     s+=`<text class="nm${t?" top":""}" x="${(x+w/2).toFixed(1)}" y="${H-7}" text-anchor="middle">${T(WD_BN[i],WD_EN[i])}</text>`;});
   return s;
 }
+/* payments the app could not sort by name: the person sorts them once, the choice is remembered */
+let unsAll=false;
+function unsorted(){
+  const m={};
+  S.exp.filter(e=>e.src==="imp"&&e.tag!=="সঞ্চয়"&&e.tag!=="নগদ তোলা").forEach(e=>{
+    const name=payeeOf(e),k=name.toUpperCase(),d=e.desc||"";
+    if(S.payeeCat[k]||/gold|jewel|tanishq|senco|kalyan|malabar/i.test(d)||RULES.some(([c,re])=>re.test(d)))return;
+    const o=m[k]=m[k]||{k,name,n:0,a:0};o.n++;o.a+=e.a;
+  });
+  return Object.values(m).sort((x,y)=>y.a-x.a);
+}
+function renderUns(){
+  const box=$("unsBox"),list=unsorted();
+  if(S.sample||!list.length){box.innerHTML=S.exp.some(e=>e.src==="imp")&&!S.sample?`<p class="note">${T("✅ সব নাম চেনা হয়ে গেছে।","✅ Every name has been sorted.")}</p>`:"";return}
+  const tot=list.reduce((t,x)=>t+x.a,0),cnt_=list.reduce((t,x)=>t+x.n,0),shown=unsAll?list:list.slice(0,12);
+  const opts=`<option value="" selected disabled>${T("খাত বেছে নিন","Pick a category")}</option>`+CATS.filter(c=>c!=="নগদ তোলা").map(c=>`<option value="${esc(c)}">${esc(catLabel(c))}</option>`).join("");
+  box.innerHTML=`<div class="uns"><h3>${T(`❓ চিনতে পারিনি: ${bn(list.length)}টা নাম`,`❓ Not sure about: ${bn(list.length)} names`)}</h3>
+    <p class="note">${T(`মোট ${bn(cnt_)}টা খরচ, ${rs(tot)}। একবার খাত বেছে দিলে ওই নামের সব খরচ সেই খাতে যাবে, আর পরের স্টেটমেন্টেও মনে থাকবে। ঠিক খাত না থাকলে "অন্যান্য" বেছে দিন।`,`${bn(cnt_)} payments, ${rs(tot)}. Pick a category once and every payment to that name moves there, and it is remembered for future statements. If none fits, choose "Other".`)}</p>
+    <ul id="unsList">${shown.map((x,i)=>`<li class="payee"><span class="what">${esc(payeeLabel(x.name))}<small>${bn(x.n)} ${T("বার",x.n===1?"time":"times")} · ${rs(x.a)}</small></span><select data-k="${esc(x.k)}" aria-label="${esc(T(x.name+"-এর খাত","Category for "+x.name))}">${opts}</select></li>`).join("")}</ul>
+    ${list.length>12?`<button id="unsMore">${unsAll?T("কম দেখান","Show fewer"):T(`আরও ${bn(list.length-12)}টা দেখান`,`Show ${bn(list.length-12)} more`)}</button>`:""}</div>`;
+  $("unsList").querySelectorAll("select").forEach(sl=>sl.addEventListener("change",()=>{S.payeeCat[sl.dataset.k]=sl.value;save();render()}));
+  const mb=$("unsMore");if(mb)mb.onclick=()=>{unsAll=!unsAll;renderUns()};
+}
+function renderInc(){
+  const box=$("incCard"),inc=S.inc||[];
+  if(!inc.length){box.innerHTML="";return}
+  const [from,to]=periodRange(dashP||"all");
+  const rows=inc.filter(e=>e.d>=from&&e.d<=to);
+  if(!rows.length){box.innerHTML=`<div class="inc"><h3>${T("আয়ের হিসেব","Money in")}</h3><p class="note">${T("এই সময়ে কোনো আয় নেই।","No income in this period.")}</p></div>`;return}
+  const by={};rows.forEach(r=>by[r.kind]=(by[r.kind]||0)+r.a);
+  const tot=rows.reduce((t,r)=>t+r.a,0);
+  box.innerHTML=`<div class="inc"><h3>${T("আয়ের হিসেব","Money in")}</h3><div class="incbig">${rs(tot)}</div>`+
+    Object.entries(by).sort((x,y)=>y[1]-x[1]).map(([k,v])=>`<div class="incrow"><span>${esc(kindLabel(k))}</span><b>${rs(v)}</b></div>`).join("")+
+    `<p class="note">${T("এটা স্টেটমেন্ট থেকে পাওয়া জমার হিসেব। দৈনিক সীমার হিসেবে এখনও আপনার \"আমার মাসের হিসেব\"-এর আয়ই ধরা হয়।","This tallies credits read from statements. Your daily limit still uses the income you entered in \"My monthly budget\".")}</p></div>`;
+}
 function renderDash(){
+  if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"m0":"all";}
+  renderInc();renderUns();
   const body=$("dashBody");
   if(!S.exp.length){
     body.innerHTML=`<p class="note">${T("খরচ লিখলে বা উপরে স্টেটমেন্ট আনলে এখানে আপনার খরচের খাত-ভিত্তিক ছবি আসবে।","Once you add spending or import a statement, your spending by category appears here.")}</p>`;return;
@@ -850,7 +911,7 @@ $("bkYes").onclick=()=>{
     if(!d||!Array.isArray(d.exp)||!Array.isArray(d.fixed)) throw 0;
     d.exp=d.exp.map(e=>({...e,id:Math.random(),k:e.src==="imp"?e.d+"|"+e.a+"|"+(e.desc||""):undefined}));
     S={...blank(),...d,sample:false};
-    if(!S.future)S.future=blankFuture();if(!S.payeeCat)S.payeeCat={};
+    if(!S.future)S.future=blankFuture();if(!S.payeeCat)S.payeeCat={};if(!Array.isArray(S.inc))S.inc=[];if(!S.maps)S.maps={};if(!Array.isArray(S.seen))S.seen=[];
     save();render();$("bkIn").value="";$("bkMsg").textContent=T(`ফিরিয়ে আনা হলো: ${bn(S.exp.length)}টা খরচ।`,`Restored: ${bn(S.exp.length)} payments.`);
   }catch(_){$("bkMsg").textContent=T("এই লেখাটা ব্যাকআপ হিসেবে চেনা গেল না। পুরো লেখাটা কপি হয়েছে কিনা দেখুন।","This text was not recognised as a backup. Check that the whole text was copied.");}
 };
@@ -922,45 +983,96 @@ function pAmt(v){if(typeof v==="number")return v;if(v==null)return NaN;
 let isPhonePe=false;
 function classify(desc){
   if(/gold saved|digi ?gold|safe ?gold|\bsip\b|mutual fund|recurring deposit/i.test(desc))return "SAVE";
+  if(!isPhonePe&&/\batm\b|cash ?wd|cash withdrawal|cwdr|\bnwd\b|\bawb\b|atw/i.test(desc))return "ATM";
   if(isPhonePe||/upi|phonepe|paid to|payment to|gpay|google ?pay|paytm|bhim/i.test(desc))return "UPI";
   if(/\batm\b|cash ?wd|cash withdrawal|cwdr|\bnwd\b|\bawb\b|atw/i.test(desc))return "ATM";
   return "OTHER";
 }
 
-function parseRows(rows){
-  let h=-1,cD=-1,cDesc=-1,cDeb=-1,cAmt=-1,cType=-1;
-  for(let i=0;i<Math.min(rows.length,60);i++){
-    const r=(rows[i]||[]).map(x=>String(x??"").toLowerCase().replace(/\s+/g," ").trim());
-    const d=r.findIndex(x=>/date|\bdt\b/.test(x));
-    const deb=r.findIndex(x=>(/debit|withdraw/.test(x)&&!/credit|deposit/.test(x))||x==="dr");
-    const amt=r.findIndex(x=>/amount|\bamt\b/.test(x)&&!/balance/.test(x));
-    if(d>=0&&(deb>=0||amt>=0)){
-      h=i;cD=d;cDeb=deb;cAmt=amt;
-      cDesc=r.findIndex(x=>/narration|description|particular|remark|details|name/.test(x));
-      cType=r.findIndex((x,j)=>j!==cDeb&&j!==cAmt&&/type|dr ?\/ ?cr|cr ?\/ ?dr|debit ?\/ ?credit/.test(x));
-      break;
+const hx=x=>String(x??"").toLowerCase().replace(/\s+/g," ").trim();
+function detectMap(rows){
+  for(let i=0;i<Math.min(rows.length,80);i++){
+    const r=(rows[i]||[]).map(hx);
+    const pick=(re,not)=>r.findIndex(x=>x&&re.test(x)&&!(not&&not.test(x)));
+    let d=pick(/^(txn|tran\w*|posting|post)\.? ?date/);
+    if(d<0)d=pick(/^date$|^dt$/);
+    if(d<0)d=pick(/date|\bdt\b/,/value|\bval/);
+    if(d<0)d=pick(/date|\bdt\b/);
+    const deb=pick(/debit|withdraw|paid out|money out|\bdr\b/,/credit|deposit|\bcr\b|balance/);
+    const cr=pick(/credit|deposit|paid in|money in|\bcr\b/,/debit|withdraw|\bdr\b|balance/);
+    const amt=pick(/amount|\bamt\b/,/balance|\bbal\b|credit|debit|withdraw|deposit|\bdr\b|\bcr\b/);
+    if(d>=0&&(deb>=0||cr>=0||amt>=0)){
+      const used=[d,deb,cr,amt];
+      return {h:i,d,deb,cr,amt:(deb>=0||cr>=0)?-1:amt,
+        desc:pick(/narration|description|particular|remark|details|name/),
+        type:r.findIndex((x,j)=>!used.includes(j)&&/type|dr ?\/ ?cr|cr ?\/ ?dr|debit ?\/ ?credit|indicator|^dr$|^cr$/.test(x)),
+        bal:pick(/balance|\bbal\b/)};
     }
   }
-  if(h<0) return null;
-  const out=[];
-  for(const row of rows.slice(h+1)){
-    if(!row) continue;
-    const d=pDate(row[cD]); if(!d) continue;
-    let a;
-    if(cDeb>=0){a=pAmt(row[cDeb]);}
-    else{
-      const raw=row[cAmt]; a=pAmt(raw);
-      const t=cType>=0?String(row[cType]??""):String(raw??"");
-      const isDr=/\bdr\b|debit|paid|withdraw/i.test(t)||a<0;
-      const isCr=/\bcr\b|credit|received|deposit/i.test(t);
-      if(!isDr||isCr&&!/debit|\bdr\b/i.test(t)) continue;
+  return null;
+}
+function parseTable(rows,m){
+  const out=[];let prev=null;
+  for(const row of rows.slice(m.h+1)){
+    if(!row)continue;
+    const d=pDate(row[m.d]); if(!d)continue;
+    const bal=m.bal>=0?pAmt(row[m.bal]):NaN;
+    let a=NaN,dir=null;
+    if(m.deb>=0||m.cr>=0){
+      const x=m.deb>=0?pAmt(row[m.deb]):NaN, y=m.cr>=0?pAmt(row[m.cr]):NaN;
+      if(x>0){a=x;dir="D"}else if(y>0){a=y;dir="C"}
+    }else if(m.amt>=0){
+      const raw=row[m.amt]; a=pAmt(raw);
+      const t=(m.type>=0?String(row[m.type]??""):"")+" "+(typeof raw==="string"?raw:"");
+      const dr=/\bdr\b|debit|paid|withdraw/i.test(t), c=/\bcr\b|credit|received|deposit/i.test(t);
+      if(dr&&!c)dir="D";else if(c&&!dr)dir="C";
+      else if(!dr&&!c){
+        if(a<0)dir="D";
+        else if(!isNaN(bal)&&prev!=null)dir=Math.abs(prev+a-bal)<.02?"C":Math.abs(prev-a-bal)<.02?"D":null;
+      }
       a=Math.abs(a);
     }
-    if(!(a>0)) continue;
-    const desc=cDesc>=0?String(row[cDesc]??"").replace(/\s+/g," ").trim():"";
-    out.push({d,a,desc});
+    if(!isNaN(bal))prev=bal;
+    if(!(a>0)||!dir)continue;
+    const desc=m.desc>=0?String(row[m.desc]??"").replace(/\s+/g," ").trim():"";
+    out.push({d,a,desc,dir});
   }
   return out;
+}
+/* when the columns can't be recognised, the person points them out once */
+const sigOf=(rows,f)=>hx((rows[f-1]||[]).join("|"))+"#"+Math.max(...rows.slice(f,f+5).map(r=>(r||[]).length));
+function dataStart(rows){for(let i=0;i<Math.min(rows.length,120);i++){if((rows[i]||[]).some(v=>pDate(v)))return i}return -1}
+let mapCtx=null;
+function showMapper(rows,f){
+  mapCtx={rows,f};
+  const n=Math.max(...rows.slice(f,f+30).map(r=>(r||[]).length));
+  const head=rows[f-1]||[];
+  const samp=j=>{for(let i=f;i<Math.min(rows.length,f+40);i++){const v=(rows[i]||[])[j];if(v!==""&&v!=null)return String(v instanceof Date?iso(v):v).slice(0,22)}return ""};
+  const opts=['<option value="-1">— '+T("নেই","none")+' —</option>'].concat(Array.from({length:n},(_,j)=>`<option value="${j}">${T("কলাম","Column")} ${bn(j+1)}${hx(head[j])?" · "+esc(String(head[j]).slice(0,18)):""} · ${esc(samp(j))}</option>`)).join("");
+  const sel=(id,lab)=>`<label for="mp_${id}">${lab}<select id="mp_${id}">${opts}</select></label>`;
+  const p=$("preview");
+  p.innerHTML=`<h3>${T("কলামগুলো একবার দেখিয়ে দিন","Show me the columns once")}</h3>
+    <p class="note">${T("এই স্টেটমেন্টের কলাম নিজে চিনতে পারিনি। প্রতিটা ঘরে ঠিক কলামটা বেছে দিন। একবার দেখালে এই ব্যাংকের ফাইল পরের বার নিজেই চিনব।","I couldn't recognise this statement's columns. Pick the right column for each box. Once shown, I'll recognise this bank's file next time.")}</p>`+
+    sel("d",T("তারিখ *","Date *"))+sel("desc",T("বিবরণ (Narration)","Description (narration)"))+
+    sel("deb",T("খরচ / Withdrawal / Debit কলাম","Debit / Withdrawal column"))+sel("cr",T("জমা / Deposit / Credit কলাম","Credit / Deposit column"))+
+    sel("amt",T("অথবা একটাই টাকার কলাম","Or a single Amount column"))+sel("type",T("Dr/Cr লেখা কলাম (থাকলে)","Dr/Cr column (if any)"))+sel("bal",T("ব্যালেন্স কলাম (থাকলে)","Balance column (if any)"))+
+    `<div class="row"><button class="primary" id="mpGo">${T("এভাবে পড়ুন","Read it this way")}</button><button id="mpNo">${T("বাতিল","Cancel")}</button></div>`;
+  // guess date + description columns
+  let bd=-1,bt=0,bl=0,bsl=-1;
+  for(let j=0;j<n;j++){let dc=0,len=0,k=0;for(let i=f;i<Math.min(rows.length,f+30);i++){const v=(rows[i]||[])[j];if(v==null||v==="")continue;k++;if(pDate(v)&&bd<0)dc++;len+=String(v).length}
+    if(dc>=3&&bd<0)bd=j;if(k&&len/k>bl&&!(dc>=3)){bl=len/k;bsl=j}}
+  if(bd>=0)$("mp_d").value=bd; if(bsl>=0)$("mp_desc").value=bsl;
+  p.hidden=false;
+  $("mpNo").onclick=()=>{mapCtx=null;p.hidden=true;$("stmt").value=""};
+  $("mpGo").onclick=()=>{
+    const g=id=>+$("mp_"+id).value;
+    const m={h:f-1,d:g("d"),desc:g("desc"),deb:g("deb"),cr:g("cr"),amt:g("amt"),type:g("type"),bal:g("bal")};
+    if(m.d<0||(m.deb<0&&m.cr<0&&m.amt<0)){msg(T("তারিখ আর অন্তত একটা টাকার কলাম বেছে দিন।","Please pick the date and at least one amount column."),"err");return}
+    const out=parseTable(rows,m);
+    if(!out.length){msg(T("এই কলামগুলো দিয়ে কোনো লাইন পড়া গেল না। অন্য কলাম বেছে দেখুন।","No lines could be read with these columns. Try different ones."),"err");return}
+    S.maps[sigOf(rows,f)]={d:m.d,desc:m.desc,deb:m.deb,cr:m.cr,amt:m.amt,type:m.type,bal:m.bal};save();
+    msg("");finishRows(out);
+  };
 }
 
 async function pdfLines(buf,pw){
@@ -974,6 +1086,41 @@ async function pdfLines(buf,pw){
     Object.keys(rows).sort((a,b)=>b-a).forEach(y=>lines.push(rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join(" ").replace(/\s+/g," ").trim()));
   }
   return lines;
+}
+const DATERE=/\b\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[ \-]?[A-Za-z]{3}[a-z]*[ \-,]*'?\d{2,4}\b/g;
+/* ordinary bank-statement PDF: the credit/debit side is worked out from how the running balance moves */
+function parseBankPdf(lines){
+  let recs=[],open=null;
+  for(const L of lines){
+    if(!recs.length&&open==null){const m=L.match(/(?:opening balance|b\/f|brought forward)\D{0,30}?(\d[\d,]*\.\d{2})/i);if(m){open=pAmt(m[1]);continue}}
+    const d=pDate(L.slice(0,24)); if(!d)continue;
+    const body=L.replace(DATERE,"  ");
+    const nums=[...body.matchAll(/(?<![\d.\/])\d[\d,]*\.\d{2}(?![\d\/])/g)].map(x=>({v:pAmt(x[0]),i:x.index,t:x[0]}));
+    if(nums.length<2)continue;
+    recs.push({d,a:nums[nums.length-2].v,bal:nums[nums.length-1].v,body,nums});
+  }
+  if(!recs.length)return null;
+  const near=(x,y)=>Math.abs(x-y)<.02;
+  const fwd=(arr,o)=>{let k=0,p=o;arr.forEach(r=>{if(p!=null&&(near(p+r.a,r.bal)||near(p-r.a,r.bal)))k++;p=r.bal});return k};
+  const rev=recs.slice().reverse();
+  const fs=fwd(recs,open), rs_=fwd(rev,null);
+  const arr=rs_>fs?rev:recs, o=rs_>fs?null:open, score=Math.max(fs,rs_)/Math.max(1,recs.length-(o==null?1:0));
+  if(recs.length>1&&score<.7)return null;
+  const out=[];let p=o;
+  arr.forEach(r=>{
+    let dir=null;
+    if(p!=null){dir=near(p+r.a,r.bal)?"C":near(p-r.a,r.bal)?"D":null}
+    else{
+      const t=r.body;
+      dir=/\bCR\b|\/CR\b|credit|salary|interest|refund|deposit|received|pension/i.test(t)?"C":/\bDR\b|debit|\batm\b|\bupi\b|\bpos\b|withdraw|chq paid|charges/i.test(t)?"D":null;
+    }
+    p=r.bal;
+    if(!dir)return;
+    let desc=r.body;r.nums.slice().reverse().forEach(n=>{desc=desc.slice(0,n.i)+" "+desc.slice(n.i+n.t.length)});
+    desc=desc.replace(/\s*\b(DR|CR)\b\.?\s*$/i,"").replace(/\s+/g," ").trim();
+    out.push({d:r.d,a:r.a,dir,desc:desc.length>80?desc.slice(0,80)+"…":desc});
+  });
+  return out.length?out:null;
 }
 function parsePdf(lines){
   const out=[];
@@ -1011,36 +1158,70 @@ async function readFile(file,pw){
       }
       $("pwRow").hidden=true;
       isPhonePe=lines.some(l=>/phonepe|Transaction Statement for/i.test(l));
-      rows=parsePdf(lines);
+      rows=isPhonePe?parsePdf(lines):(parseBankPdf(lines)||parsePdf(lines));
     }else{
       isPhonePe=false;
       await loadScript(XLSX_SRC);
       const isCsv=name.endsWith(".csv");
-      const wb=XLSX.read(buf,{type:"array",cellDates:true,raw:isCsv});
-      for(const sn of wb.SheetNames){
-        const r=parseRows(XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:""}));
+      let wb;
+      if(isCsv){let txt;try{txt=new TextDecoder("utf-8",{fatal:true}).decode(buf)}catch(_){txt=new TextDecoder("windows-1252").decode(buf)}
+        wb=XLSX.read(txt,{type:"string",cellDates:true,raw:true});}
+      else wb=XLSX.read(buf,{type:"array",cellDates:true});
+      const sheets=wb.SheetNames.map(sn=>XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:""}));
+      for(const t of sheets){
+        const f=dataStart(t); const m=detectMap(t)||(f>0&&S.maps[sigOf(t,f)]?{...S.maps[sigOf(t,f)],h:f-1}:null);
+        const r=m?parseTable(t,m):null;
         if(r&&r.length){rows=r;break}
+      }
+      if(!rows){
+        for(const t of sheets){const f=dataStart(t); if(f>0){msg("");showMapper(t,f);return}}
       }
     }
   }catch(e){msg(T("ফাইলটা খোলা গেল না। ইন্টারনেট চালু আছে কিনা দেখে আবার চেষ্টা করুন, অথবা Excel/CSV ফাইল দিন।","Couldn't open the file. Check your internet and try again, or use an Excel/CSV file."),"err");return}
   if(!rows||!rows.length){msg(T("এই ফাইলে কোনো খরচের লাইন চিনতে পারলাম না। ব্যাঙ্কের Excel বা CSV স্টেটমেন্ট দিয়ে দেখুন।","Couldn't find any payment lines in this file. Try your bank's Excel or CSV statement."),"err");return}
-  rows.forEach(r=>r.type=classify(r.desc));
+  finishRows(rows);
+}
+function finishRows(rows){
+  rows.forEach(r=>{r.type=r.dir==="C"?classifyCr(r.desc):classify(r.desc)});
+  markOwn(rows);
   pending=rows; msg(""); showPreview();
+}
+/* money moved between the person's own accounts is neither spending nor income */
+function markOwn(rows){
+  const day=d=>Math.round(new Date(d+"T00:00:00").getTime()/864e5);
+  const pool=S.sample?[]:(S.seen||[]).map(q=>({dir:q.x,d:day(q.d),a:q.a}));
+  const big=rows.filter(r=>r.a>=500);
+  const same=(x,y)=>x.a===y.a&&Math.abs(day(x.d)-day(y.d))<=1;
+  big.filter(r=>r.dir==="C").forEach(c=>{
+    const dm=big.find(r=>r.dir!=="C"&&!r.own&&same(r,c));
+    if(dm){dm.own=true;c.own=true;return}
+    const pm=pool.find(q=>q.dir==="D"&&!q.used&&q.a===c.a&&Math.abs(q.d-day(c.d))<=1);
+    if(pm){pm.used=true;c.own=true}
+  });
+  big.filter(r=>r.dir!=="C"&&!r.own).forEach(dbt=>{
+    const pm=pool.find(q=>q.dir==="C"&&!q.used&&q.a===dbt.a&&Math.abs(q.d-day(dbt.d))<=1);
+    if(pm){pm.used=true;dbt.own=true}
+  });
 }
 
 function showPreview(){
-  const sum={UPI:[0,0],SAVE:[0,0],ATM:[0,0],OTHER:[0,0]};
-  pending.forEach(r=>{sum[r.type][0]++;sum[r.type][1]+=r.a});
+  const deb=pending.filter(r=>r.dir!=="C"), cr=pending.filter(r=>r.dir==="C");
+  const own=pending.filter(r=>r.own);
+  const sum={},add=(k,r)=>{(sum[k]=sum[k]||[0,0]);sum[k][0]++;sum[k][1]+=r.a};
+  pending.filter(r=>!r.own).forEach(r=>add(r.type,r));
   const ds=pending.map(r=>r.d).sort();
-  const manualOverlap=S.exp.some(e=>e.src!=="imp"&&e.tag==="UPI"&&e.d>=ds[0]&&e.d<=ds[ds.length-1]);
   const p=$("preview");
-  const pl=planImport(pending.filter(r=>r.type==="UPI"));
-  p.innerHTML=`<h3>${T(`${bnDate(ds[0])} থেকে ${bnDate(ds[ds.length-1])}: ${bn(pending.length)}টা খরচ পাওয়া গেছে`,`${bnDate(ds[0])} to ${bnDate(ds[ds.length-1])}: ${bn(pending.length)} payments found`)}</h3>`+
+  const pl=planImport(deb.filter(r=>r.type==="UPI"&&!r.own));
+  const row=(k,lab,on)=>sum[k]?`<div class="pick"><label for="pk_${k}"><input type="checkbox" id="pk_${k}" ${on?"checked":""}> ${lab} (${cnt(sum[k][0])})</label><span class="num">${rs(sum[k][1])}</span></div>`:"";
+  p.innerHTML=`<h3>${T(`${bnDate(ds[0])} থেকে ${bnDate(ds[ds.length-1])}: ${bn(deb.length)}টা খরচ`+(cr.length?` ও ${bn(cr.length)}টা জমা`:"")+" পাওয়া গেছে",`${bnDate(ds[0])} to ${bnDate(ds[ds.length-1])}: ${bn(deb.length)} payments`+(cr.length?` and ${bn(cr.length)} credits`:"")+" found")}</h3>`+
     ((pl.dup||pl.replace.length)?`<p class="note">${T(`UPI খরচের মধ্যে ${bn(pl.add.length)}টা নতুন। `,`${bn(pl.add.length)} of the UPI payments are new. `)}${pl.dup?T(bn(pl.dup)+"টা আগেই অ্যাপে আছে, সেগুলো আবার যোগ হবে না। ",bn(pl.dup)+" are already in the app and won't be added again. "):""}${pl.replace.length?T(bn(pl.replace.length)+"টা আপনার হাতে লেখা খরচের সঙ্গে মিলেছে, সেগুলো দুবার গোনা হবে না।",bn(pl.replace.length)+" match payments you entered by hand and won't be counted twice."):""}</p>`:"")+
-    TYPES.filter(k=>sum[k][0]).map(k=>
-      `<div class="pick"><label for="pk_${k}"><input type="checkbox" id="pk_${k}" ${k==="UPI"?"checked":""}> ${typeLabel(k)} (${cnt(sum[k][0])})</label><span class="num">${rs(sum[k][1])}</span></div>`).join("")+
-    (sum.SAVE[0]?`<p class="note">${T(`সঞ্চয় খরচ নয়। এটা টিক না দিয়ে মাসের সঞ্চয়ের অঙ্কটা "জমানোর লক্ষ্য"-তে বসান।`,`Savings are not spending. Leave this unticked and put your monthly savings amount in "Savings goal".`)}</p>`:"")+
-    `<p class="note">${T(`ATM-এ তোলা টাকা টিক দেবেন না যদি সেই নগদ খরচ হাতে লেখেন, নইলে দু'বার গোনা হবে। অটো-ডেবিট (EMI, বিল) "নির্দিষ্ট খরচ"-এ থাকলে "অন্য ডেবিট"-ও টিক দেবেন না।`,`Don't tick ATM withdrawals if you note that cash spending by hand, or it will be counted twice. If auto-debits (EMI, bills) are in "Fixed costs", don't tick "Other debits" either.`)}</p>`+
+    (deb.length?`<h3>${T("খরচ","Spending")}</h3>`:"")+
+    TYPES.map(k=>row(k,typeLabel(k),k==="UPI")).join("")+
+    (sum.SAVE?`<p class="note">${T(`সঞ্চয় খরচ নয়। এটা টিক না দিয়ে মাসের সঞ্চয়ের অঙ্কটা "জমানোর লক্ষ্য"-তে বসান।`,`Savings are not spending. Leave this unticked and put your monthly savings amount in "Savings goal".`)}</p>`:"")+
+    (cr.length?`<h3>${T("জমা (আয়)","Credits (income)")}</h3>`+CTYPES.map(k=>row(k,ctypeLabel(k),k==="SAL"||k==="INT")).join("")+
+      `<p class="note">${T("বেতন/পেনশন আর সুদ টিক দেওয়া আছে। অন্যের কাছ থেকে পাওয়া টাকা কোনো ধার ফেরত বা নিজের টাকা হতে পারে, তাই সেটা আপনি বুঝে টিক দিন।","Salary/pension and interest are ticked. Money from others may be a loan repayment or your own money, so tick it only if it is really income.")}</p>`:"")+
+    (own.length?`<div class="pick"><label for="pk_OWN"><input type="checkbox" id="pk_OWN"> ${T(`নিজের এক অ্যাকাউন্ট থেকে অন্যটায় সরানো টাকা (${cnt(own.length)}) এগুলোও গুনুন`,`Money moved between your own accounts (${cnt(own.length)}) count these too`)}</label><span class="num">${rs(own.reduce((t,r)=>t+r.a,0)/2)}</span></div><p class="note">${T("একই টাকা একই দিনে বা পরের দিনে একবার বেরিয়েছে আর একবার ঢুকেছে, তাই এগুলোকে নিজের টাকা সরানো ধরে খরচ বা আয় থেকে বাদ রেখেছি। ভুল মনে হলে টিক দিন।","The same amount went out and came in on the same or next day, so I treated these as moving your own money and left them out of spending and income. Tick if that looks wrong.")}</p>`:"")+
+    (sum.ATM||sum.OTHER?`<p class="note">${T(`ATM-এ তোলা টাকা টিক দেবেন না যদি সেই নগদ খরচ হাতে লেখেন, নইলে দু'বার গোনা হবে। অটো-ডেবিট (EMI, বিল) "নির্দিষ্ট খরচ"-এ থাকলে "অন্য ডেবিট"-ও টিক দেবেন না।`,`Don't tick ATM withdrawals if you note that cash spending by hand, or it will be counted twice. If auto-debits (EMI, bills) are in "Fixed costs", don't tick "Other debits" either.`)}</p>`:"")+
     `<div class="row"><button class="primary" id="doImport">${T("হিসেবে যোগ করুন","Add to my budget")}</button><button id="cancelImport">${T("বাতিল","Cancel")}</button></div>`;
   p.hidden=false;
   $("doImport").onclick=doImport;
@@ -1062,17 +1243,31 @@ function planImport(rows){
   return out;
 }
 function doImport(){
-  const want=TYPES.filter(k=>$("pk_"+k)&&$("pk_"+k).checked);
-  if(!want.length){msg(T("অন্তত একটা ঘরে টিক দিন।","Tick at least one box."),"err");return}
+  const want=[...TYPES,...CTYPES].filter(k=>$("pk_"+k)&&$("pk_"+k).checked);
+  const ownOK=!!($("pk_OWN")&&$("pk_OWN").checked);
+  if(!want.length&&!ownOK){msg(T("অন্তত একটা ঘরে টিক দিন।","Tick at least one box."),"err");return}
+  const ok=r=>(r.own?ownOK:want.includes(r.type));
   let extra="";
-  if(S.sample){S.exp=[];S.future=blankFuture();S.sample=false;extra=T(" নমুনা খরচ সরিয়ে দেওয়া হলো। এবার \"আমার মাসের হিসেব\"-এ নিজের আয় ও নির্দিষ্ট খরচ বসান।"," The sample was removed. Now enter your income and fixed costs in \"My monthly budget\".");}
-  const plan=planImport(pending.filter(r=>want.includes(r.type)));
+  if(S.sample){S.exp=[];S.inc=[];S.future=blankFuture();S.sample=false;extra=T(" নমুনা খরচ সরিয়ে দেওয়া হলো। এবার \"আমার মাসের হিসেব\"-এ নিজের আয় ও নির্দিষ্ট খরচ বসান।"," The sample was removed. Now enter your income and fixed costs in \"My monthly budget\".");}
+  const plan=planImport(pending.filter(r=>r.dir!=="C"&&ok(r)));
   S.exp=S.exp.filter(e=>!plan.replace.includes(e));
   plan.add.forEach(r=>S.exp.push({d:r.d,a:r.a,tag:r.type==="UPI"?"UPI":r.type==="SAVE"?"সঞ্চয়":r.type==="ATM"?"নগদ তোলা":"অন্য ডেবিট",desc:r.desc,src:"imp",k:r.d+"|"+r.a+"|"+r.desc,id:Math.random()}));
+  /* incomes, never added twice */
+  const have={};(S.inc||[]).filter(e=>e.src==="imp").forEach(e=>{const k=e.d+"|"+e.a+"|"+e.kind;have[k]=(have[k]||0)+1});
+  let incAdd=0,incDup=0;
+  pending.filter(r=>r.dir==="C"&&ok(r)).forEach(r=>{
+    const kind=r.own?"RCV":r.type,k=r.d+"|"+r.a+"|"+kind;
+    if(have[k]>0){have[k]--;incDup++;return}
+    S.inc.push({d:r.d,a:r.a,kind,desc:r.desc,src:"imp"});incAdd++;
+  });
+  /* remember big amounts (date, amount, in/out only) so a transfer shown in another account's statement is recognised */
+  const sc={};(S.seen||[]).forEach(q=>{const k=q.x+q.d+"|"+q.a;sc[k]=(sc[k]||0)+1});
+  pending.filter(r=>r.a>=500).forEach(r=>{const x=r.dir==="C"?"C":"D",k=x+r.d+"|"+r.a;if(sc[k]>0){sc[k]--;return}(S.seen=S.seen||[]).push({x,d:r.d,a:r.a})});
+  if(S.seen&&S.seen.length>600)S.seen=S.seen.slice(-600);
   save();pending=null;$("preview").hidden=true;$("stmt").value="";
-  msg(T(`✅ ${bn(plan.add.length)}টা নতুন খরচ যোগ হলো।`,`✅ ${bn(plan.add.length)} new payments added.`)+
-    (plan.dup?T(` ${bn(plan.dup)}টা আগেই ছিল, তাই আবার যোগ করা হয়নি।`,` ${bn(plan.dup)} were already there, so not added again.`):"")+
-    (plan.replace.length?T(` ${bn(plan.replace.length)}টা হাতে লেখা খরচ স্টেটমেন্টের সঙ্গে মিলে গেছে (একই দিন, একই টাকা), সেগুলো দুবার গোনা হয়নি।`,` ${bn(plan.replace.length)} hand-entered payments matched the statement (same day, same amount) and were not counted twice.`):"")+extra,"warn");
+  msg(T(`✅ ${bn(plan.add.length)}টা নতুন খরচ`+(incAdd?` ও ${bn(incAdd)}টা আয়`:"")+" যোগ হলো।",`✅ ${bn(plan.add.length)} new payments`+(incAdd?` and ${bn(incAdd)} income entries`:"")+" added.")+
+    ((plan.dup+incDup)?T(` ${bn(plan.dup+incDup)}টা আগেই ছিল, তাই আবার যোগ করা হয়নি।`,` ${bn(plan.dup+incDup)} were already there, so not added again.`):"")+
+    (plan.replace.length?T(` ${bn(plan.replace.length)}টা হাতে লেখা খরচ স্টেটমেন্টের সঙ্গে মিলে গেছে (একই দিন, একই টাকা), সেগুলো দুবার গোনা হয়নি।`,` ${bn(plan.replace.length)} hand-entered payments matched the statement (same day, same amount) and were not counted twice.`):"")+extra+(unsorted().length?T(` ${bn(unsorted().length)}টা নাম চিনতে পারিনি, "আমার খরচের ছবি"-র ওপরের তালিকায় খাত বেছে দিন।`,` ${bn(unsorted().length)} names weren't recognised; pick their categories in the list at the top of "My spending picture".`):""),"warn");
   render();
 }
 
@@ -1107,7 +1302,7 @@ $("resetNo").onclick=()=>{$("resetAsk").hidden=true};
 $("resetYes").onclick=()=>{S=blank();save();$("resetAsk").hidden=true;msg("");render();$("setup").open=true};
 $("impDel").onclick=()=>{$("impDelAsk").hidden=false};
 $("impDelNo").onclick=()=>{$("impDelAsk").hidden=true};
-$("impDelYes").onclick=()=>{S.exp=S.exp.filter(e=>e.src!=="imp");save();$("impDelAsk").hidden=true;
+$("impDelYes").onclick=()=>{S.exp=S.exp.filter(e=>e.src!=="imp");S.inc=(S.inc||[]).filter(e=>e.src!=="imp");save();$("impDelAsk").hidden=true;
   render()};
 /* ---------- statement how-to flowchart ---------- */
 document.querySelectorAll("#howFlow [data-src]").forEach(b=>b.onclick=()=>{
