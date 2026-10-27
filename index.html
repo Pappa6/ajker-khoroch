@@ -172,6 +172,12 @@ ul.ins li::before{content:"💡";position:absolute;left:12px;top:8px}
 ul.ins li.warn{border-left-color:var(--wait)}ul.ins li.warn::before{content:"⚠️"}
 ul.ins li.good{border-left-color:var(--go)}ul.ins li.good::before{content:"✅"}
 @media (prefers-reduced-motion:reduce){.tile,.hero .sl,.hero .sd{animation:none!important}}
+.wk{margin-top:2px}
+.wk .bar{fill:url(#wkN)} .wk .bar.top{fill:url(#wkT)}
+.wk .nm{fill:#9fb0d0;font-size:11px;font-family:var(--f-body)} .wk .nm.top{fill:#ffd9a8;font-weight:700}
+.wk .v{fill:#e8f0ff;font-size:10.5px;font-weight:700} .wk .v.top{fill:#ffd9a8}
+.wk rect.bar{transform-box:fill-box;transform-origin:bottom;animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
+@media (prefers-reduced-motion:reduce){.wk rect.bar{animation:none!important}}
 .onb{background:var(--card);border:2px solid var(--accent);border-radius:18px;padding:18px 16px;display:flex;flex-direction:column;gap:12px}
 .onb .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .onb h2{font-family:var(--f-display);color:var(--accent);font-size:1.25rem}
@@ -744,6 +750,23 @@ function areaSvg(vals,labels,titles,W,H){
     s+=`<text x="${x.toFixed(1)}" y="${H-6}" text-anchor="middle">${labels[i]}</text>`;});
   return s;
 }
+const WD_BN=["সোম","মঙ্গল","বুধ","বৃহ","শুক্র","শনি","রবি"],WD_BN_FULL=["সোমবার","মঙ্গলবার","বুধবার","বৃহস্পতিবার","শুক্রবার","শনিবার","রবিবার"],WD_EN=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],WD_EN_FULL=["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+function weekdayStats(spend,from,to){
+  const sum=[0,0,0,0,0,0,0],occ=[0,0,0,0,0,0,0];
+  for(let d=new Date(from+"T00:00:00"),end=new Date(to+"T00:00:00");d<=end;d.setDate(d.getDate()+1))occ[(d.getDay()+6)%7]++;
+  spend.forEach(r=>{sum[(new Date(r.d+"T00:00:00").getDay()+6)%7]+=r.a});
+  return sum.map((v,i)=>occ[i]?v/occ[i]:0);
+}
+function weekdaySvg(avg){
+  const W=360,H=180,top=34,bot=26,l=14,r=14,bw=(W-l-r)/7,mx=Math.max(1,...avg),hi=avg.indexOf(Math.max(...avg));
+  let s=`<defs><linearGradient id="wkN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cf5d3"/><stop offset=".55" stop-color="#4d9bff"/><stop offset="1" stop-color="#7a4dff" stop-opacity=".3"/></linearGradient><linearGradient id="wkT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset=".55" stop-color="#ff8a3d"/><stop offset="1" stop-color="#ff5fa2" stop-opacity=".4"/></linearGradient></defs>`;
+  [0.5,1].forEach(f=>{const y=(H-bot-(H-top-bot)*f).toFixed(1);s+=`<line class="grid" x1="${l-4}" x2="${W-r+4}" y1="${y}" y2="${y}"/>`;});
+  avg.forEach((v,i)=>{const h=(H-top-bot)*v/mx,w=bw*0.62,x=l+i*bw+(bw-w)/2,y=H-bot-h,t=i===hi;
+    s+=`<rect class="bar${t?" top":""}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(h,v?3:0).toFixed(1)}" rx="8" style="animation-delay:${(i*0.05).toFixed(2)}s${t?";filter:drop-shadow(0 0 8px #ff8a3daa)":""}"><title>${T(WD_BN_FULL[i],WD_EN_FULL[i])}: ${rs(v)}</title></rect>`;
+    if(v)s+=`<text class="v${t?" top":""}" x="${(x+w/2).toFixed(1)}" y="${(y-7).toFixed(1)}" text-anchor="middle">${t?"🔥 ":""}${rsShort(v)}</text>`;
+    s+=`<text class="nm${t?" top":""}" x="${(x+w/2).toFixed(1)}" y="${H-7}" text-anchor="middle">${T(WD_BN[i],WD_EN[i])}</text>`;});
+  return s;
+}
 function renderDash(){
   const body=$("dashBody");
   if(!S.exp.length){
@@ -787,6 +810,9 @@ function renderDash(){
 
   const svg=areaSvg(mt,months.map(mShort),months.map((m,i)=>`${mName(m)}: ${rs(mt[i])}`),360,170);
 
+  const wkAvg=days>=7?weekdayStats(spend,from,to):null;
+  if(wkAvg&&total>0){const hi=wkAvg.indexOf(Math.max(...wkAvg)),pos=wkAvg.map((v,i)=>[v,i]).filter(x=>x[0]>0),lo=pos.length>1?pos.reduce((m,x)=>x[0]<m[0]?x:m):null;
+    ins.unshift(["warn",T(`সপ্তাহের মধ্যে ${WD_BN_FULL[hi]} সবচেয়ে বেশি খরচ হয়: গড়ে ${rs(wkAvg[hi])}।`,`You spend the most on ${WD_EN_FULL[hi]}s: about ${rs(wkAvg[hi])} on average.`)+(lo&&lo[1]!==hi?T(` সবচেয়ে কম ${WD_BN_FULL[lo[1]]}: ${rs(lo[0])}।`,` Least on ${WD_EN_FULL[lo[1]]}s: ${rs(lo[0])}.`):"")]);}
   const opts=sel=>CATS.map(c=>`<option value="${c}"${c===sel?" selected":""}>${catLabel(c)}</option>`).join("");
   body.innerHTML=
     `<div class="hero"><small>${T(`মোট খরচ · ${bnDate(from)} থেকে ${bnDate(to)}`,`Total spent · ${bnDate(from)} to ${bnDate(to)}`)}</small><div class="big">${rs(total)}</div><div class="row"><span class="chip2">${T("রোজের গড়","Daily average")} ${rs(total/days)}</span><span class="chip2">${T("লেনদেন","Payments")} ${cnt(spend.length)}</span>${saved.length?`<span class="chip2">${T("সঞ্চয়","Savings")} ${rs(sum(saved))}</span>`:""}</div>${sparkSvg(mt)}</div>
@@ -795,6 +821,8 @@ function renderDash(){
     <div class="tiles">${cats.map(([c,v],i)=>`<div class="tile" style="--k:${catStyle(c)[0]};animation-delay:${(i*0.05).toFixed(2)}s"><i>${bn(v/total*100)}%</i><div class="e" aria-hidden="true">${catStyle(c)[1]}</div><b>${rs(v)}</b><span>${esc(catLabel(c))}</span></div>`).join("")}</div>
     <h3>${T("মাস অনুযায়ী খরচ","Spending by month")}</h3>
     <div class="mchart"><svg viewBox="0 0 360 170" role="img" aria-label="${T("গত ছয় মাসের খরচ","Spending over the last six months")}">${svg}</svg></div>
+    <h3>${T("সপ্তাহের কোন দিন বেশি খরচ","Which day of the week you spend most")}</h3>
+    ${wkAvg?`<div class="mchart wk"><svg viewBox="0 0 360 180" role="img" aria-label="${esc(T("সপ্তাহের প্রতি দিনে গড় খরচ","Average spending on each day of the week"))}">${weekdaySvg(wkAvg)}</svg></div><p class="note">${T("প্রতিটা বারে ওই বারের রোজকার গড় খরচ। কমলা বারটা সবচেয়ে বেশি খরচের দিন।","Each bar is your average spending on that day of the week. The orange bar is your biggest day.")}</p>`:`<p class="note">${T("অন্তত ৭ দিনের খরচ থাকলে এখানে দেখা যাবে কোন বারে আপনার খরচ বেশি হয়।","With at least 7 days of spending, this shows which day of the week you spend most.")}</p>`}
     <h3>${T("কী বোঝা যাচ্ছে","What this shows")}</h3>
     <ul class="ins">${ins.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>
     <h3>${T("কাকে কত (সবচেয়ে বেশি ১০)","Who got how much (top 10)")}</h3>
