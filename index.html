@@ -163,6 +163,7 @@ li.payee select{flex:0 1 46%;font-size:.85rem;padding:6px 8px}
 .tile span{display:block;font-size:.85rem;color:var(--muted);overflow-wrap:anywhere}
 .tile i{position:absolute;right:10px;top:12px;font-style:normal;font-size:.75rem;font-weight:700;background:var(--k);color:#101820;border-radius:999px;padding:1px 9px}
 .inc{background:linear-gradient(145deg,color-mix(in srgb,#3ddc97 22%,var(--card)),var(--card));border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.uns{background:var(--wait-bg);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}.uns h3{margin:0}
 .inc h3{margin:0}.incbig{font-size:1.9rem;font-weight:800;color:#0f8a5f}
 .incrow{display:flex;justify-content:space-between;gap:10px;font-size:1rem}
 .preview select{width:100%;margin-top:4px}
@@ -368,6 +369,7 @@ textarea{font:inherit;font-size:.85rem;color:var(--ink);background:var(--bg);bor
       <button class="chip" data-p="m3"><span data-en="3 months">৩ মাস</span></button>
       <button class="chip" data-p="all"><span data-en="All time">সব সময়</span></button>
     </div>
+    <div id="unsBox"></div>
     <div id="incCard"></div>
     <div id="dashBody" style="display:flex;flex-direction:column;gap:14px"></div>
   </section>
@@ -701,7 +703,11 @@ const RULES=[
 const TAGCAT={"বাজার":"বাজার ও মুদি","ওষুধ":"স্বাস্থ্য ও ওষুধ","যাতায়াত":"যাতায়াত ও জ্বালানি","খাবার":"খাবার ও মিষ্টি","নগদ তোলা":"নগদ তোলা"};
 function payeeOf(e){
   if(e.src!=="imp") return "হাতে লেখা: "+e.tag;
-  const n=(e.desc||"").replace(/^(paid to|payment to)\s*/i,"").trim();
+  let n=(e.desc||"").replace(/^(paid to|payment to)\s*/i,"").trim();
+  if(/^(UPI|NEFT|IMPS|RTGS|POS)[-\/ ]/i.test(n)){ /* bank narration: keep just the name part */
+    const q=n.split(/[-\/]/).slice(1).map(x=>x.trim()).find(x=>/[A-Za-z]{3,}/.test(x)&&!/@/.test(x)&&!(/\d/.test(x)&&/^[A-Z0-9]{9,}$/i.test(x))&&!/^(CR|DR|UPI|REFUND|PAYMENT|ORDER)$/i.test(x));
+    if(q)n=q;
+  }
   return n||"নাম নেই";
 }
 function catOf(e){
@@ -762,6 +768,29 @@ function areaSvg(vals,labels,titles,W,H){
     s+=`<text x="${x.toFixed(1)}" y="${H-6}" text-anchor="middle">${labels[i]}</text>`;});
   return s;
 }
+/* payments the app could not sort by name: the person sorts them once, the choice is remembered */
+let unsAll=false;
+function unsorted(){
+  const m={};
+  S.exp.filter(e=>e.src==="imp"&&e.tag!=="সঞ্চয়"&&e.tag!=="নগদ তোলা").forEach(e=>{
+    const name=payeeOf(e),k=name.toUpperCase(),d=e.desc||"";
+    if(S.payeeCat[k]||/gold|jewel|tanishq|senco|kalyan|malabar/i.test(d)||RULES.some(([c,re])=>re.test(d)))return;
+    const o=m[k]=m[k]||{k,name,n:0,a:0};o.n++;o.a+=e.a;
+  });
+  return Object.values(m).sort((x,y)=>y.a-x.a);
+}
+function renderUns(){
+  const box=$("unsBox"),list=unsorted();
+  if(S.sample||!list.length){box.innerHTML=S.exp.some(e=>e.src==="imp")&&!S.sample?`<p class="note">${T("✅ সব নাম চেনা হয়ে গেছে।","✅ Every name has been sorted.")}</p>`:"";return}
+  const tot=list.reduce((t,x)=>t+x.a,0),cnt_=list.reduce((t,x)=>t+x.n,0),shown=unsAll?list:list.slice(0,12);
+  const opts=`<option value="" selected disabled>${T("খাত বেছে নিন","Pick a category")}</option>`+CATS.filter(c=>c!=="নগদ তোলা").map(c=>`<option value="${esc(c)}">${esc(catLabel(c))}</option>`).join("");
+  box.innerHTML=`<div class="uns"><h3>${T(`❓ চিনতে পারিনি: ${bn(list.length)}টা নাম`,`❓ Not sure about: ${bn(list.length)} names`)}</h3>
+    <p class="note">${T(`মোট ${bn(cnt_)}টা খরচ, ${rs(tot)}। একবার খাত বেছে দিলে ওই নামের সব খরচ সেই খাতে যাবে, আর পরের স্টেটমেন্টেও মনে থাকবে। ঠিক খাত না থাকলে "অন্যান্য" বেছে দিন।`,`${bn(cnt_)} payments, ${rs(tot)}. Pick a category once and every payment to that name moves there, and it is remembered for future statements. If none fits, choose "Other".`)}</p>
+    <ul id="unsList">${shown.map((x,i)=>`<li class="payee"><span class="what">${esc(payeeLabel(x.name))}<small>${bn(x.n)} ${T("বার",x.n===1?"time":"times")} · ${rs(x.a)}</small></span><select data-k="${esc(x.k)}" aria-label="${esc(T(x.name+"-এর খাত","Category for "+x.name))}">${opts}</select></li>`).join("")}</ul>
+    ${list.length>12?`<button id="unsMore">${unsAll?T("কম দেখান","Show fewer"):T(`আরও ${bn(list.length-12)}টা দেখান`,`Show ${bn(list.length-12)} more`)}</button>`:""}</div>`;
+  $("unsList").querySelectorAll("select").forEach(sl=>sl.addEventListener("change",()=>{S.payeeCat[sl.dataset.k]=sl.value;save();render()}));
+  const mb=$("unsMore");if(mb)mb.onclick=()=>{unsAll=!unsAll;renderUns()};
+}
 function renderInc(){
   const box=$("incCard"),inc=S.inc||[];
   if(!inc.length){box.innerHTML="";return}
@@ -776,7 +805,7 @@ function renderInc(){
 }
 function renderDash(){
   if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"m0":"all";}
-  renderInc();
+  renderInc();renderUns();
   const body=$("dashBody");
   if(!S.exp.length){
     body.innerHTML=`<p class="note">${T("খরচ লিখলে বা উপরে স্টেটমেন্ট আনলে এখানে আপনার খরচের খাত-ভিত্তিক ছবি আসবে।","Once you add spending or import a statement, your spending by category appears here.")}</p>`;return;
@@ -1210,7 +1239,7 @@ function doImport(){
   save();pending=null;$("preview").hidden=true;$("stmt").value="";
   msg(T(`✅ ${bn(plan.add.length)}টা নতুন খরচ`+(incAdd?` ও ${bn(incAdd)}টা আয়`:"")+" যোগ হলো।",`✅ ${bn(plan.add.length)} new payments`+(incAdd?` and ${bn(incAdd)} income entries`:"")+" added.")+
     ((plan.dup+incDup)?T(` ${bn(plan.dup+incDup)}টা আগেই ছিল, তাই আবার যোগ করা হয়নি।`,` ${bn(plan.dup+incDup)} were already there, so not added again.`):"")+
-    (plan.replace.length?T(` ${bn(plan.replace.length)}টা হাতে লেখা খরচ স্টেটমেন্টের সঙ্গে মিলে গেছে (একই দিন, একই টাকা), সেগুলো দুবার গোনা হয়নি।`,` ${bn(plan.replace.length)} hand-entered payments matched the statement (same day, same amount) and were not counted twice.`):"")+extra,"warn");
+    (plan.replace.length?T(` ${bn(plan.replace.length)}টা হাতে লেখা খরচ স্টেটমেন্টের সঙ্গে মিলে গেছে (একই দিন, একই টাকা), সেগুলো দুবার গোনা হয়নি।`,` ${bn(plan.replace.length)} hand-entered payments matched the statement (same day, same amount) and were not counted twice.`):"")+extra+(unsorted().length?T(` ${bn(unsorted().length)}টা নাম চিনতে পারিনি, "আমার খরচের ছবি"-র ওপরের তালিকায় খাত বেছে দিন।`,` ${bn(unsorted().length)} names weren't recognised; pick their categories in the list at the top of "My spending picture".`):""),"warn");
   render();
 }
 
