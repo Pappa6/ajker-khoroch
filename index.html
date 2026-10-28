@@ -243,7 +243,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
     <button class="helpbtn" id="obOpen"><span data-en="How to use">কীভাবে ব্যবহার করবেন?</span></button>
     <a class="helpbtn sharebtn" id="shareApp" href="https://wa.me/?text=%E0%A6%86%E0%A6%9C%E0%A6%95%E0%A7%87%E0%A6%B0%20%E0%A6%96%E0%A6%B0%E0%A6%9A%20%E0%A6%85%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%AA%3A%20%E0%A6%B0%E0%A7%8B%E0%A6%9C%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A7%81%E0%A6%A8%20%E0%A6%86%E0%A6%9C%20%E0%A6%95%E0%A6%A4%20%E0%A6%9F%E0%A6%BE%E0%A6%95%E0%A6%BE%20%E0%A6%A8%E0%A6%BF%E0%A6%B6%E0%A7%8D%E0%A6%9A%E0%A6%BF%E0%A6%A8%E0%A7%8D%E0%A6%A4%E0%A7%87%20%E0%A6%96%E0%A6%B0%E0%A6%9A%20%E0%A6%95%E0%A6%B0%E0%A6%BE%20%E0%A6%AF%E0%A6%BE%E0%A6%AF%E0%A6%BC%E0%A5%A4%20%E0%A6%B2%E0%A6%97%E0%A6%87%E0%A6%A8%20%E0%A6%A8%E0%A7%87%E0%A6%87%2C%20%E0%A6%B8%E0%A6%AC%20%E0%A6%A4%E0%A6%A5%E0%A7%8D%E0%A6%AF%20%E0%A6%B6%E0%A7%81%E0%A6%A7%E0%A7%81%20%E0%A6%86%E0%A6%AA%E0%A6%A8%E0%A6%BE%E0%A6%B0%20%E0%A6%AB%E0%A7%8B%E0%A6%A8%E0%A7%87%E0%A5%A4%20https%3A%2F%2Fpappa6.github.io%2Fajker-khoroch%2F" target="_blank" rel="noopener"><span data-en="Share with a friend">বন্ধুকে পাঠান</span></a>
     <button class="helpbtn installtop" id="installTop" hidden><span data-en="📲 Install on phone">📲 ফোনে বসান</span></button>
-    <button class="helpbtn" id="exitBtn" hidden aria-label="Exit">🔒 Exit</button>
+    <button class="helpbtn" id="exitBtn" aria-label="Exit">🔒 Exit</button>
     <button class="helpbtn" id="langBtn" aria-label="ভাষা / Language">English</button>
   </header>
 
@@ -1650,9 +1650,16 @@ function lkPanel(){
   }
 }
 /* Exit button (top bar): locks the app right now, so the PIN is asked again next time. Shown only while PIN lock is on. */
-function lkSyncExit(){$("exitBtn").hidden=!(lkRead()&&lkOK())}
-$("exitBtn").onclick=()=>{if(lkRead()&&lkOK())lkShow()};
-lkSyncExit();
+function lkSyncExit(){}
+$("exitBtn").onclick=()=>{
+  if(lkRead()&&lkOK()){lkShow();return}
+  /* PIN lock is not on yet: take the person to the place where it is switched on */
+  $("lockSet").open=true;
+  setTimeout(()=>{lkPanel();
+    const m=$("lsMsg");if(m){m.textContent=lkOK()?T("আগে পিন-লক চালু করুন, তারপর Exit চাপলে অ্যাপ লক হবে।","Turn on the PIN lock first. After that, Exit locks the app."):T("এই ব্রাউজারে পিন-লক চালানো যাচ্ছে না।","PIN lock can't run in this browser.");m.className="lkmsg bad"}
+  },60);
+  $("lockSet").scrollIntoView({behavior:"smooth",block:"start"});
+};
 $("lockSet").addEventListener("toggle",()=>{if($("lockSet").open)lkPanel()});
 
 /* lock at start. After that it locks again when the app has been left untouched, or was away
