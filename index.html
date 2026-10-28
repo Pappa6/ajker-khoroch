@@ -501,7 +501,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
   <section>
     <details id="feedback">
       <summary><span data-en="Give feedback">মতামত দিন</span></summary>
-      <p class="note"><span data-en="After using the app for a while, write your answers and tap &quot;Copy feedback&quot;, then paste and send it on WhatsApp to whoever shared the app with you. None of your spending amounts are included.">কিছুদিন ব্যবহারের পরে উত্তরগুলো লিখে "মতামত কপি করুন" চাপুন, তারপর যিনি অ্যাপটা পাঠিয়েছেন তাঁকে WhatsApp-এ পেস্ট করে পাঠান। আপনার খরচের কোনো অঙ্ক এতে যায় না।</span></p>
+      <p class="note"><span data-en="Write your answers and tap &quot;Send on WhatsApp&quot;. WhatsApp opens with your message already typed, and nothing is sent until you press Send yourself. Only the words you write here go. No spending amounts, no PIN, nothing else from the app.">উত্তরগুলো লিখে "WhatsApp-এ পাঠান" চাপুন। WhatsApp খুলে আপনার লেখা আগে থেকেই বসানো থাকবে, আপনি নিজে Send না চাপলে কিছুই যাবে না। শুধু এখানে আপনি যা লিখবেন সেটুকুই যাবে। খরচের কোনো অঙ্ক, পিন বা অ্যাপের আর কোনো তথ্য যাবে না।</span></p>
       <label class="fbq" for="fbName"><span data-en="Your name">আপনার নাম</span><input id="fbName"></label>
       <label class="fbq" for="fb1"><span data-en="1. Did statement import work? Which app&#x27;s or bank&#x27;s statement did you use?">1. স্টেটমেন্ট আনা ঠিকঠাক কাজ করেছে? কোন অ্যাপ বা ব্যাঙ্কের স্টেটমেন্ট দিয়েছিলেন?</span><textarea id="fb1"></textarea></label>
       <label class="fbq" for="fb2"><span data-en="2. Did the spending picture show you anything new?">2. খরচের ছবি দেখে নতুন কিছু জানলেন?</span><textarea id="fb2"></textarea></label>
@@ -509,7 +509,8 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
       <label class="fbq" for="fb4"><span data-en="4. What else would make it better?">4. আর কী থাকলে ভালো হতো?</span><textarea id="fb4"></textarea></label>
       <label class="fbq" for="fb5"><span data-en="5. Would you pay ₹99 once to buy it?">5. একবারে ₹99 দিয়ে কিনতে রাজি হতেন?</span>
         <select id="fb5"><option data-en="Choose" value="">বেছে নিন</option><option value="হ্যাঁ" data-en="Yes">হ্যাঁ</option><option value="হয়তো" data-en="Maybe">হয়তো</option><option value="না" data-en="No">না</option></select></label>
-      <button class="primary" id="fbCopy"><span data-en="Copy feedback">মতামত কপি করুন</span></button>
+      <button class="primary" id="fbWA"><span data-en="Send on WhatsApp">WhatsApp-এ পাঠান</span></button>
+      <button id="fbCopy" style="margin-top:8px"><span data-en="Copy only (if WhatsApp does not open)">শুধু কপি করুন (WhatsApp না খুললে)</span></button>
       <p class="note" id="fbMsg" aria-live="polite"></p>
       <textarea id="fbOut" hidden readonly aria-label="মতামতের লেখা"></textarea>
     </details>
@@ -1065,14 +1066,21 @@ $("obStart").onclick=()=>{obMark();$("onboard").hidden=true;
   $(id).addEventListener("input",()=>{try{localStorage.setItem("ajkerKhoroch.fb."+id,$(id).value)}catch(_){}});
   $(id).addEventListener("change",()=>{try{localStorage.setItem("ajkerKhoroch.fb."+id,$(id).value)}catch(_){}});
 });
-$("fbCopy").onclick=async()=>{
-  const days=new Set(S.exp.map(e=>e.d)).size, imp=S.exp.filter(e=>e.src==="imp").length, man=S.exp.filter(e=>e.src!=="imp").length;
+const FB_WA="918001195515";
+function fbText(){
   const q=LANG==="en"?["Statement import","What was new","Difficulties","What else is wanted","Buy for ₹99?"]:["স্টেটমেন্ট আনা","নতুন কী জানলেন","অসুবিধা","আর কী চাই","₹99-এ কিনবেন?"];
-  const text=T(`আজকের খরচ: মতামত\nনাম: `,`Ajker Khoroch: feedback\nName: `)+`${$("fbName").value||"-"}\n`+
-    ["fb1","fb2","fb3","fb4","fb5"].map((id,i)=>`${bn(i+1)}. ${q[i]}: ${(id==="fb5"?($("fb5").selectedIndex>0?$("fb5").options[$("fb5").selectedIndex].text:""):$(id).value.trim())||"-"}`).join("\n")+
-    T(`\n(অ্যাপ থেকে: ${bn(days)} দিনের খরচ আছে, স্টেটমেন্ট থেকে ${bn(imp)}টা, হাতে লেখা ${bn(man)}টা)`,`\n(From the app: ${bn(days)} days of spending, ${bn(imp)} from statements, ${bn(man)} entered by hand)`);
-  const out=$("fbOut");out.value=text;
-  try{await navigator.clipboard.writeText(text);out.hidden=true;$("fbMsg").textContent=T("মতামত কপি হয়েছে। এবার WhatsApp খুলে পেস্ট করে পাঠিয়ে দিন। ধন্যবাদ!","Feedback copied. Now open WhatsApp, paste and send. Thank you!");}
+  return T(`আজকের খরচ: মতামত\nনাম: `,`Ajker Khoroch: feedback\nName: `)+`${$("fbName").value.trim()||"-"}\n`+
+    ["fb1","fb2","fb3","fb4","fb5"].map((id,i)=>`${i+1}. ${q[i]}: ${(id==="fb5"?($("fb5").selectedIndex>0?$("fb5").options[$("fb5").selectedIndex].text:""):$(id).value.trim())||"-"}`).join("\n");
+}
+$("fbWA").onclick=()=>{
+  const url="https://wa.me/"+FB_WA+"?text="+encodeURIComponent(fbText());
+  $("fbMsg").textContent=T("WhatsApp খুলছে। সেখানে Send চাপলে তবেই মতামত যাবে। ধন্যবাদ!","Opening WhatsApp. Your feedback goes only when you press Send there. Thank you!");
+  const w=window.open(url,"_blank","noopener");
+  if(!w)location.href=url;
+};
+$("fbCopy").onclick=async()=>{
+  const text=fbText(),out=$("fbOut");out.value=text;
+  try{await navigator.clipboard.writeText(text);out.hidden=true;$("fbMsg").textContent=T("মতামত কপি হয়েছে। এবার WhatsApp খুলে 8001195515 নম্বরে পেস্ট করে পাঠিয়ে দিন। ধন্যবাদ!","Feedback copied. Now open WhatsApp, paste it to 8001195515 and send. Thank you!");}
   catch(_){out.hidden=false;out.focus();out.select();$("fbMsg").textContent=T("নিজে থেকে কপি হলো না। নিচের লেখাটা চেপে ধরে সব বেছে কপি করুন।","Couldn't copy automatically. Press and hold the text below, select it all and copy.");}
 };
 
