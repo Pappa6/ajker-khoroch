@@ -470,7 +470,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
   <section>
     <details id="lockSet">
       <summary><span data-en="PIN lock (optional)">পিন-লক (ঐচ্ছিক)</span></summary>
-      <p class="note"><span data-en="Ask for a 4-digit PIN whenever the app is opened. It keeps the app away from someone who picks up your phone. It is a lock on the screen, not a scrambler of your data.">অ্যাপ খুললেই ৪ অঙ্কের পিন চাইবে। কেউ আপনার ফোন হাতে নিলে অ্যাপটা দেখতে পাবে না। এটা পর্দার তালা, ডেটা গুলিয়ে রাখার ব্যবস্থা নয়।</span></p>
+      <p class="note"><span data-en="Ask for a 4-digit PIN when the app is opened, and again after it has been left alone or away for the time you choose. It keeps the app away from someone who picks up your phone. It is a lock on the screen, not a scrambler of your data.">অ্যাপ খুললে ৪ অঙ্কের পিন চাইবে, আর আপনার বেছে নেওয়া সময় অ্যাপ ফেলে রাখলে বা অন্য অ্যাপে থাকলে আবার চাইবে। কেউ আপনার ফোন হাতে নিলে অ্যাপটা দেখতে পাবে না। এটা পর্দার তালা, ডেটা গুলিয়ে রাখার ব্যবস্থা নয়।</span></p>
       <div id="lockBody" class="lkset"></div>
     </details>
   </section>
@@ -1555,7 +1555,11 @@ async function lkCheck(text,rec){const x=await lkHash(text,rec.s);return lkSame(
 function lkWait(L){return Math.max(0,Math.ceil(((L.u||0)-Date.now())/1000))}
 function lkFail(L){L.f=(L.f||0)+1;if(L.f%5===0)L.u=Date.now()+Math.min(3600,30*Math.pow(2,L.f/5-1))*1000;lkWrite(L)}
 const lkClear=L=>{L.f=0;L.u=0;lkWrite(L)};
-let lkHiddenAt=0;
+/* auto-lock time (seconds), chosen by each person on their own phone; 5 minutes unless changed */
+const LTKEY="ajkerKhoroch.lockTime",LK_TIMES=[30,60,120,300,600,900,1800];
+const lkLimit=()=>{try{const v=+localStorage.getItem(LTKEY);return LK_TIMES.includes(v)?v:300}catch(_){return 300}};
+const lkTimeTxt=s=>s<60?T(`${bn(s)} সেকেন্ড`,`${s} seconds`):T(`${bn(s/60)} মিনিট`,s===60?"1 minute":`${s/60} minutes`);
+let lkLast=Date.now();
 
 function lkShow(mode){
   const L=lkRead(),box=$("lockscr");if(!L)return;
@@ -1605,7 +1609,7 @@ function lkShow(mode){
   };
   setTimeout(()=>{try{inp.focus()}catch(_){}} ,50);
 }
-function lkOpen(){document.body.classList.remove("locked");$("lockscr").hidden=true;$("lockscr").innerHTML=""}
+function lkOpen(){lkLast=Date.now();document.body.classList.remove("locked");$("lockscr").hidden=true;$("lockscr").innerHTML=""}
 
 /* settings panel */
 function lkPanel(){
@@ -1632,7 +1636,10 @@ function lkPanel(){
     b.innerHTML=`<p class="note ok">✔ ${T("পিন-লক চালু আছে।","PIN lock is on.")}</p>
       <label class="fbq">${T("বন্ধ করতে বা বদলাতে এখনকার পিন লিখুন","To turn off or change, type your current PIN")}<input id="lsCur" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></label>
       <button id="lsOff">${T("পিন-লক বন্ধ করুন","Turn PIN lock off")}</button>
-      <button id="lsChg">${T("পিন ও গোপন প্রশ্ন বদলান","Change PIN and secret question")}</button>${note()}`;
+      <button id="lsChg">${T("পিন ও গোপন প্রশ্ন বদলান","Change PIN and secret question")}</button>
+      <label class="fbq">${T("কতক্ষণ পর নিজে থেকে লক হবে","Lock by itself after")}<select id="lsT">${LK_TIMES.map(t=>`<option value="${t}"${t===lkLimit()?" selected":""}>${esc(lkTimeTxt(t))}</option>`).join("")}</select></label>
+      <p class="note">${T("অ্যাপ খুলে রেখে কিছু না ছুঁলে, বা অন্য অ্যাপে চলে গেলে, এই সময় পরে আবার পিন চাইবে।","If you leave the app untouched, or switch to another app, it asks for the PIN again after this time.")}</p>${note()}`;
+    $("lsT").onchange=()=>{try{localStorage.setItem(LTKEY,$("lsT").value);lkLast=Date.now();say(T("সময় ঠিক হয়ে গেল।","Time saved."))}catch(_){say(T("সংরক্ষণ করা গেল না।","Couldn't save."),1)}};
     const cur=async()=>{const L2=lkRead(),w=lkWait(L2);
       if(w){say(T(`অপেক্ষা করুন, ${bn(w)} সেকেন্ড।`,`Please wait ${w} seconds.`),1);return false}
       if(await lkCheck($("lsCur").value,L2.p)){lkClear(L2);return true}
@@ -1643,13 +1650,26 @@ function lkPanel(){
 }
 $("lockSet").addEventListener("toggle",()=>{if($("lockSet").open)lkPanel()});
 
-/* lock at start, and again when the app was away for 2 minutes */
+/* lock at start. After that it locks again when the app has been left untouched, or was away
+   (another app, screen off), for the time the person chose. Away time is measured from the moment
+   they left, and a 5-second check covers phones that pause the page while it is in the background. */
 if(lkRead()&&lkOK())lkShow();
 else if(lkRead()&&!lkOK()){/* cannot verify, never trap the person out */}
+function lkIdleCheck(){
+  if(!lkRead()||!lkOK()||!$("lockscr").hidden)return;
+  if(Date.now()-lkLast>lkLimit()*1000)lkShow();
+}
+function lkTouch(){if($("lockscr").hidden)lkLast=Date.now()}
+["touchstart","pointerdown","keydown","click"].forEach(e=>document.addEventListener(e,lkTouch,{passive:true,capture:true}));
+document.addEventListener("scroll",lkTouch,{passive:true,capture:true});
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){lkHiddenAt=Date.now();return}
-  if(lkHiddenAt&&Date.now()-lkHiddenAt>120000&&lkRead()&&lkOK()&&$("lockscr").hidden)lkShow();
+  if(document.hidden){lkTouch();return}
+  lkIdleCheck();lkTouch();
 });
+window.addEventListener("pagehide",lkTouch);
+window.addEventListener("pageshow",()=>{lkIdleCheck();lkTouch()});
+window.addEventListener("focus",()=>{lkIdleCheck()});
+setInterval(lkIdleCheck,5000);
 </script>
 
 </body>
