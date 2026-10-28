@@ -6,9 +6,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#1f5f5b">
 <title>আজকের খরচ · শুরু করার গাইড</title>
-<meta name="description" content="আজকের খরচ: 7টা সহজ ধাপে অ্যাপটা শুরু করুন। Today's Spend: start in 7 easy steps.">
+<meta name="description" content="আজকের খরচ: 8টা সহজ ধাপে অ্যাপটা শুরু করুন। Today's Spend: start in 8 easy steps.">
 <meta property="og:title" content="আজকের খরচ · Today's Spend">
-<meta property="og:description" content="রোজ জানুন আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। 7টা সহজ ধাপ। No login, your data stays on your phone.">
+<meta property="og:description" content="রোজ জানুন আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। 8টা সহজ ধাপ। No login, your data stays on your phone.">
 <meta property="og:image" content="https://pappa6.github.io/ajker-khoroch/icon-512.png">
 <meta property="og:type" content="website">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -59,6 +59,7 @@ ol.steps{list-style:none;margin:0;padding:0}
 .card p+p{margin-top:8px}
 .card .sub{color:var(--muted);font-size:1rem}
 b,strong{font-weight:700}
+.step.alert .num{background:var(--stop);color:#fff}.step.alert .card{border:2px solid var(--stop);background:var(--stop-bg)}.step.alert .card h2,.step.alert .card h2 svg{color:var(--stop)}.step.alert .rule{background:var(--card);border:1px solid var(--stop)}
 .how{margin:10px 0 0}.how h3{margin:0 0 2px;font-size:1.02rem;color:var(--teal);font-weight:700}
 ol.mini{margin:0;padding-left:22px}ol.mini li{margin:3px 0;padding-left:2px}
 .rule{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--teal-soft);font-size:1rem}
@@ -102,7 +103,7 @@ ol.mini{margin:0;padding-left:22px}ol.mini li{margin:3px 0;padding-left:2px}
     </ul>
   </header>
 
-  <p class="lead" data-bn="অ্যাপ খোলার আগে এই 7টা ধাপ পড়ে নিন। 2 মিনিট লাগবে।" data-en="Read these 7 steps before you open the app. It takes 2 minutes.">অ্যাপ খোলার আগে এই 7টা ধাপ পড়ে নিন। 2 মিনিট লাগবে।</p>
+  <p class="lead" data-bn="অ্যাপ খোলার আগে এই 8টা ধাপ পড়ে নিন। 2 মিনিট লাগবে।" data-en="Read these 8 steps before you open the app. It takes 2 minutes.">অ্যাপ খোলার আগে এই 8টা ধাপ পড়ে নিন। 2 মিনিট লাগবে।</p>
 
   <ol class="steps">
 
@@ -123,8 +124,18 @@ ol.mini{margin:0;padding-left:22px}ol.mini li{margin:3px 0;padding-left:2px}
       </div>
     </li>
 
-    <li class="step">
+    <li class="step alert">
       <div class="num" aria-hidden="true">3</div>
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span data-bn="নিজের পিন বসান (নিরাপত্তার জন্য)" data-en="Set your own PIN (for your safety)">নিজের পিন বসান (নিরাপত্তার জন্য)</span></h2>
+        <p data-bn="অ্যাপ খুলে নিচে স্ক্রল করে <b>পিন-লক</b> খুলুন। নিজের 4 অঙ্কের পিন বসান আর একটা গোপন প্রশ্নের উত্তর দিন। তাহলে কেউ আপনার ফোন হাতে নিলেও আপনার হিসেব দেখতে পাবে না।" data-en="Open the app, scroll down and open <b>PIN lock</b>. Choose your own 4-digit PIN and answer one secret question. Then nobody who picks up your phone can see your budget.">অ্যাপ খুলে নিচে স্ক্রল করে <b>পিন-লক</b> খুলুন। নিজের 4 অঙ্কের পিন বসান আর একটা গোপন প্রশ্নের উত্তর দিন। তাহলে কেউ আপনার ফোন হাতে নিলেও আপনার হিসেব দেখতে পাবে না।</p>
+        <div class="rule" data-bn="পিন শুধু আপনার নিজের ফোনে থাকে। অন্য কেউ আপনার পিন জানতে পারে না, কারও কাছে যায়ও না। পিন ভুলে গেলে গোপন প্রশ্নের উত্তর লাগবে, তাই সেটা মনে রাখুন।" data-en="Your PIN stays only on your own phone. Nobody else can see it and it is never sent anywhere. If you forget the PIN you need the secret answer, so remember it.">পিন শুধু আপনার নিজের ফোনে থাকে। অন্য কেউ আপনার পিন জানতে পারে না, কারও কাছে যায়ও না। পিন ভুলে গেলে গোপন প্রশ্নের উত্তর লাগবে, তাই সেটা মনে রাখুন।</div>
+        <p class="sub" data-bn="পিন না বসালেও অ্যাপ চলবে, কিন্তু বসিয়ে নেওয়াই ভালো।" data-en="The app also works without a PIN, but setting one is better.">পিন না বসালেও অ্যাপ চলবে, কিন্তু বসিয়ে নেওয়াই ভালো।</p>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="num" aria-hidden="true">4</div>
       <div class="card">
         <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 016.5 5H18a2 2 0 012 2v2H6.5A2.5 2.5 0 014 6.5zM4 7.5V17a2 2 0 002 2h13a1 1 0 001-1V9H6.5"/><circle cx="16" cy="14" r="1.2"/></svg><span data-bn="মাসের হিসেব লিখুন" data-en="Enter your monthly budget">মাসের হিসেব লিখুন</span></h2>
         <p data-bn="অ্যাপে <b>আমার মাসের হিসেব</b> খুলুন। মাসের আয়, কোন তারিখে আসে, আর নির্দিষ্ট খরচ (ভাড়া, বিল, EMI) লিখুন।" data-en="Open <b>My monthly budget</b> in the app. Enter your income, the date it arrives, and fixed costs (rent, bills, EMI).">অ্যাপে <b>আমার মাসের হিসেব</b> খুলুন। মাসের আয়, কোন তারিখে আসে, আর নির্দিষ্ট খরচ (ভাড়া, বিল, EMI) লিখুন।</p>
@@ -132,7 +143,7 @@ ol.mini{margin:0;padding-left:22px}ol.mini li{margin:3px 0;padding-left:2px}
     </li>
 
     <li class="step">
-      <div class="num" aria-hidden="true">4</div>
+      <div class="num" aria-hidden="true">5</div>
       <div class="card">
         <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 11v6M9.5 14.5L12 17l2.5-2.5"/></svg><span data-bn="স্টেটমেন্ট ডাউনলোড করুন" data-en="Download your statement">স্টেটমেন্ট ডাউনলোড করুন</span></h2>
         <div class="how"><h3>PhonePe</h3><ol class="mini"><li data-bn="PhonePe খুলে নিচে <b>History</b> চাপুন" data-en="Open PhonePe and tap <b>History</b> at the bottom">PhonePe খুলে নিচে <b>History</b> চাপুন</li><li data-bn="উপরে <b>Download Statement</b> চাপুন" data-en="Tap <b>Download Statement</b> at the top">উপরে <b>Download Statement</b> চাপুন</li><li data-bn="মাস বেছে <b>Proceed</b> চাপুন" data-en="Choose the months and tap <b>Proceed</b>">মাস বেছে <b>Proceed</b> চাপুন</li><li data-bn="PDF আপনার ইমেলে আসবে। ইমেল খুলে ফাইলটা ডাউনলোড করুন" data-en="The PDF arrives in your email. Open it and download the file">PDF আপনার ইমেলে আসবে। ইমেল খুলে ফাইলটা ডাউনলোড করুন</li></ol></div>
@@ -142,7 +153,7 @@ ol.mini{margin:0;padding-left:22px}ol.mini li{margin:3px 0;padding-left:2px}
     </li>
 
     <li class="step">
-      <div class="num" aria-hidden="true">5</div>
+      <div class="num" aria-hidden="true">6</div>
       <div class="card">
         <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/><path d="M12 15V4M8.5 7.5L12 4l3.5 3.5"/></svg><span data-bn="স্টেটমেন্ট অ্যাপে আনুন" data-en="Bring the statement into the app">স্টেটমেন্ট অ্যাপে আনুন</span></h2>
         <ol class="mini"><li data-bn="অ্যাপে <b>স্টেটমেন্ট ফাইল বেছে নিন</b> ঘরে চাপুন" data-en="In the app tap <b>Choose statement file</b>">অ্যাপে <b>স্টেটমেন্ট ফাইল বেছে নিন</b> ঘরে চাপুন</li><li data-bn="<b>Downloads</b> থেকে ফাইলটা বাছুন। পাসওয়ার্ড চাইলে লিখে <b>খুলুন</b> চাপুন" data-en="Pick the file from <b>Downloads</b>. If it asks for a password, type it and tap <b>Open</b>"><b>Downloads</b> থেকে ফাইলটা বাছুন। পাসওয়ার্ড চাইলে লিখে <b>খুলুন</b> চাপুন</li><li data-bn="<b>হিসেবে যোগ করুন</b> চাপুন। সব UPI খরচ বসে গেল" data-en="Tap <b>Add to my budget</b>. All your UPI payments are in"><b>হিসেবে যোগ করুন</b> চাপুন। সব UPI খরচ বসে গেল</li></ol>
@@ -152,7 +163,7 @@ ol.mini{margin:0;padding-left:22px}ol.mini li{margin:3px 0;padding-left:2px}
     </li>
 
     <li class="step">
-      <div class="num" aria-hidden="true">6</div>
+      <div class="num" aria-hidden="true">7</div>
       <div class="card">
         <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5v.01M17.5 14.5v.01"/></svg><span data-bn="নগদ টাকার নিয়ম" data-en="The cash rule">নগদ টাকার নিয়ম</span></h2>
         <p data-bn="ATM বা ব্যাঙ্ক কাউন্টার থেকে যা তুলবেন, <b>পুরোটাই সেদিন খরচ ধরা হয়</b>, কারণ টাকাটা ব্যাঙ্ক থেকে বেরিয়ে গেছে।" data-en="Whatever you take out at an ATM or bank counter <b>counts as spent in full that day</b>, because it has left your bank.">ATM বা ব্যাঙ্ক কাউন্টার থেকে যা তুলবেন, <b>পুরোটাই সেদিন খরচ ধরা হয়</b>, কারণ টাকাটা ব্যাঙ্ক থেকে বেরিয়ে গেছে।</p>
@@ -161,7 +172,7 @@ ol.mini{margin:0;padding-left:22px}ol.mini li{margin:3px 0;padding-left:2px}
     </li>
 
     <li class="step">
-      <div class="num" aria-hidden="true">7</div>
+      <div class="num" aria-hidden="true">8</div>
       <div class="card">
         <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2.5" width="8" height="19" rx="4"/><circle cx="12" cy="7.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="16.5" r="1.2"/></svg><span data-bn="রোজ রঙটা দেখুন" data-en="Check the colour every day">রোজ রঙটা দেখুন</span></h2>
         <p data-bn="অ্যাপের উপরের বড় ঘরটাই আপনার রোজের সংকেত।" data-en="The big box at the top of the app is your daily signal.">অ্যাপের উপরের বড় ঘরটাই আপনার রোজের সংকেত।</p>
@@ -176,9 +187,8 @@ ol.mini{margin:0;padding-left:22px}ol.mini li{margin:3px 0;padding-left:2px}
   </ol>
 
   <section class="safe" aria-labelledby="safeH">
-    <h2 id="safeH"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span data-bn="তথ্য সুরক্ষিত রাখুন" data-en="Keep your data safe">তথ্য সুরক্ষিত রাখুন</span></h2>
+    <h2 id="safeH"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span data-bn="আরও দুটো কথা" data-en="Two more things">আরও দুটো কথা</span></h2>
     <ul>
-      <li data-bn="সেটিংসে <b>পিন-লক</b> চালু করুন।" data-en="Turn on the <b>PIN lock</b> in settings.">সেটিংসে <b>পিন-লক</b> চালু করুন।</li>
       <li data-bn="কাজ শেষ হলে উপরের <b>Exit</b> চাপুন।" data-en="When you finish, tap <b>Exit</b> at the top.">কাজ শেষ হলে উপরের <b>Exit</b> চাপুন।</li>
       <li data-bn="সপ্তাহে একবার <b>ব্যাকআপ</b> নিন।" data-en="Take a <b>backup</b> once a week.">সপ্তাহে একবার <b>ব্যাকআপ</b> নিন।</li>
     </ul>
