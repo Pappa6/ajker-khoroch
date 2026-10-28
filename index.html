@@ -220,9 +220,19 @@ ul.ins li.good{border-left-color:var(--go)}ul.ins li.good::before{content:"✅"}
 .installhelp li{display:list-item;border:0;padding:0}
 textarea{font:inherit;font-size:.85rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:90px;resize:vertical}
 @media (prefers-reduced-motion:reduce){.meter span{transition:none}}
+body.locked>*:not(#lockscr){visibility:hidden!important}
+#lockscr{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+#lockscr .lk{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;text-align:center}
+#lockscr h2{margin:0;font-size:1.3rem}
+.pinin{font-size:1.8rem;letter-spacing:.6em;text-align:center;width:100%;box-sizing:border-box}
+.lkmsg{min-height:1.4em;color:var(--muted);font-size:.95rem;margin:0}
+.lkmsg.bad{color:#b3261e}
+.lklink{background:none;border:0;color:var(--accent);text-decoration:underline;padding:6px}
+.lkset{display:flex;flex-direction:column;gap:10px}
 </style>
 </head>
 <body>
+<div id="lockscr" hidden role="dialog" aria-modal="true"></div>
 
 
 <div class="wrap">
@@ -453,6 +463,14 @@ textarea{font:inherit;font-size:.85rem;color:var(--ink);background:var(--bg);bor
         <span id="resetAsk" hidden><span data-en="Sure?">নিশ্চিত?</span> <button id="resetYes"><span data-en="Yes, erase">হ্যাঁ, মুছুন</span></button> <button id="resetNo"><span data-en="No">না</span></button></span>
       </div>
       <p class="note"><span data-en="All data stays only on this phone. Nothing is sent anywhere.">সব তথ্য শুধু এই ফোনেই থাকে। কোথাও পাঠানো হয় না।</span></p>
+    </details>
+  </section>
+
+  <section>
+    <details id="lockSet">
+      <summary><span data-en="PIN lock (optional)">পিন-লক (ঐচ্ছিক)</span></summary>
+      <p class="note"><span data-en="Ask for a 4-digit PIN whenever the app is opened. It keeps the app away from someone who picks up your phone. It is a lock on the screen, not a scrambler of your data.">অ্যাপ খুললেই ৪ অঙ্কের পিন চাইবে। কেউ আপনার ফোন হাতে নিলে অ্যাপটা দেখতে পাবে না। এটা পর্দার তালা, ডেটা গুলিয়ে রাখার ব্যবস্থা নয়।</span></p>
+      <div id="lockBody" class="lkset"></div>
     </details>
   </section>
 
@@ -1512,6 +1530,125 @@ $("langBtn").onclick=()=>{
 applyLang();
 render();
 takeShared();
+
+/* ===== optional PIN lock =====
+   PIN and the recovery answer are never stored as they are typed: each is turned into a salted
+   PBKDF2-SHA256 hash (150,000 rounds). Forgot the PIN? Answer the personal question set at the
+   time, then choose a new PIN; the data stays. Forgot both? Only "erase and start again" is left. */
+const LKEY="ajkerKhoroch.lock";
+const LK_Q=[["আপনার প্রথম স্কুলের নাম?","Name of your first school?"],["আপনার ছোটবেলার ডাকনাম?","Your childhood nickname?"],["আপনার জন্মস্থানের নাম?","Your place of birth?"],["আপনার প্রিয় শিক্ষকের নাম?","Name of your favourite teacher?"]];
+const lkRead=()=>{try{return JSON.parse(localStorage.getItem(LKEY)||"null")}catch(_){return null}};
+const lkWrite=o=>{try{if(o)localStorage.setItem(LKEY,JSON.stringify(o));else localStorage.removeItem(LKEY);return true}catch(_){return false}};
+const lkOK=()=>!!(window.crypto&&crypto.subtle&&crypto.getRandomValues);
+const b64=u=>btoa(String.fromCharCode(...u)),unb64=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+async function lkHash(text,saltB64){
+  const salt=saltB64?unb64(saltB64):crypto.getRandomValues(new Uint8Array(16));
+  const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(text),"PBKDF2",false,["deriveBits"]);
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",hash:"SHA-256",salt,iterations:150000},key,256);
+  return {s:b64(salt),h:b64(new Uint8Array(bits))};
+}
+const lkSame=(a,b)=>{if(a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0};
+const lkNorm=t=>String(t).normalize("NFC").toLowerCase().replace(/[\s\p{P}]/gu,"");
+async function lkCheck(text,rec){const x=await lkHash(text,rec.s);return lkSame(x.h,rec.h)}
+/* wrong tries are counted; every 5th wrong try makes the person wait (30s, 1m, 2m ... up to 1 hour) */
+function lkWait(L){return Math.max(0,Math.ceil(((L.u||0)-Date.now())/1000))}
+function lkFail(L){L.f=(L.f||0)+1;if(L.f%5===0)L.u=Date.now()+Math.min(3600,30*Math.pow(2,L.f/5-1))*1000;lkWrite(L)}
+const lkClear=L=>{L.f=0;L.u=0;lkWrite(L)};
+let lkHiddenAt=0;
+
+function lkShow(mode){
+  const L=lkRead(),box=$("lockscr");if(!L)return;
+  document.body.classList.add("locked");box.hidden=false;
+  const wait=lkWait(L);
+  const msg=(t,bad)=>{const m=$("lkMsg");m.textContent=t;m.className="lkmsg"+(bad?" bad":"")};
+  const waitTxt=w=>T(`অনেকবার ভুল হয়েছে। ${bn(w)} সেকেন্ড অপেক্ষা করুন।`,`Too many wrong tries. Wait ${w} seconds.`);
+  if(mode==="forgot"){
+    box.innerHTML=`<div class="lk"><h2>${T("নতুন পিন বসান","Set a new PIN")}</h2>
+      <p class="note">${T("আপনার গোপন প্রশ্নের উত্তর দিন:","Answer your secret question:")}<br><b>${esc(T(L.q[0],L.q[1]))}</b></p>
+      <input id="lkAns" autocomplete="off" aria-label="${esc(T("উত্তর","Answer"))}">
+      <input id="lkNew" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off" placeholder="••••" aria-label="${esc(T("নতুন পিন","New PIN"))}">
+      <button class="primary" id="lkGo">${T("পিন বদলান","Change PIN")}</button>
+      <p class="lkmsg" id="lkMsg"></p>
+      <button class="lklink" id="lkBack">${T("← পিন দিয়ে খুলুন","← Back to PIN")}</button>
+      <button class="lklink" id="lkWipe">${T("উত্তরও মনে নেই? সব মুছে নতুন করে শুরু","Forgot this too? Erase everything and start again")}</button></div>`;
+    $("lkBack").onclick=()=>lkShow();
+    $("lkWipe").onclick=()=>{box.innerHTML=`<div class="lk"><h2>${T("সব মুছে ফেলবেন?","Erase everything?")}</h2><p class="note">${T("এই ফোনে অ্যাপের সব হিসেব চিরতরে মুছে যাবে। ব্যাকআপ থাকলে পরে ফিরিয়ে আনতে পারবেন।","All app data on this phone will be erased for good. If you have a backup you can restore it later.")}</p><button class="primary" id="lkYes">${T("হ্যাঁ, মুছুন","Yes, erase")}</button><button id="lkNo">${T("না","No")}</button></div>`;
+      $("lkNo").onclick=()=>lkShow("forgot");
+      $("lkYes").onclick=()=>{try{localStorage.removeItem(KEY);localStorage.removeItem(OB_KEY)}catch(_){}lkWrite(null);location.reload()}};
+    $("lkGo").onclick=async()=>{
+      const L2=lkRead(),w=lkWait(L2);if(w){msg(waitTxt(w),1);return}
+      const a=$("lkAns").value,n=$("lkNew").value;
+      if(!lkNorm(a)){msg(T("উত্তর লিখুন।","Type the answer."),1);return}
+      if(!/^\d{4}$/.test(n)){msg(T("পিন ঠিক ৪টা অঙ্কের হতে হবে।","The PIN must be exactly 4 digits."),1);return}
+      if(!(await lkCheck(lkNorm(a),L2.a))){lkFail(L2);const w2=lkWait(lkRead());msg(w2?waitTxt(w2):T("উত্তর মেলেনি।","That answer doesn't match."),1);return}
+      const p=await lkHash(n);L2.p=p;lkClear(L2);lkWrite(L2);lkOpen();
+    };
+    return;
+  }
+  box.innerHTML=`<div class="lk"><h2>🔒 ${T("আজকের খরচ","Ajker Khoroch")}</h2>
+    <p class="note">${T("পিন দিয়ে খুলুন","Enter your PIN")}</p>
+    <input id="lkPin" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off" placeholder="••••" aria-label="PIN">
+    <p class="lkmsg" id="lkMsg"></p>
+    <button class="lklink" id="lkForgot">${T("পিন ভুলে গেছি","I forgot my PIN")}</button></div>`;
+  $("lkForgot").onclick=()=>lkShow("forgot");
+  const inp=$("lkPin");
+  if(wait)msg(waitTxt(wait),1);
+  inp.oninput=async()=>{
+    inp.value=inp.value.replace(/\D/g,"");
+    if(inp.value.length<4)return;
+    const L2=lkRead(),w=lkWait(L2);
+    if(w){msg(waitTxt(w),1);inp.value="";return}
+    if(await lkCheck(inp.value,L2.p)){lkClear(L2);lkOpen();return}
+    lkFail(L2);inp.value="";const w2=lkWait(lkRead());
+    msg(w2?waitTxt(w2):T("ভুল পিন, আবার চেষ্টা করুন।","Wrong PIN, try again."),1);
+  };
+  setTimeout(()=>{try{inp.focus()}catch(_){}} ,50);
+}
+function lkOpen(){document.body.classList.remove("locked");$("lockscr").hidden=true;$("lockscr").innerHTML=""}
+
+/* settings panel */
+function lkPanel(){
+  const b=$("lockBody"),L=lkRead();
+  if(!lkOK()){b.innerHTML=`<p class="note">${T("এই ব্রাউজারে পিন-লক চালানো যাচ্ছে না।","PIN lock can't run in this browser.")}</p>`;return}
+  const note=m=>`<p class="lkmsg" id="lsMsg">${m||""}</p>`;
+  const say=(t,bad)=>{const m=$("lsMsg");m.textContent=t;m.className="lkmsg"+(bad?" bad":"")};
+  if(!L){
+    b.innerHTML=`<label class="fbq">${T("৪ অঙ্কের পিন","4-digit PIN")}<input id="lsPin" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></label>
+      <label class="fbq">${T("পিন আবার লিখুন","Type the PIN again")}<input id="lsPin2" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></label>
+      <label class="fbq">${T("গোপন প্রশ্ন (পিন ভুললে এটাই চাবি)","Secret question (your key if you forget the PIN)")}<select id="lsQ">${LK_Q.map((q,i)=>`<option value="${i}">${esc(T(q[0],q[1]))}</option>`).join("")}</select></label>
+      <label class="fbq">${T("এর উত্তর (শুধু আপনিই জানেন এমন)","Your answer (something only you know)")}<input id="lsA" autocomplete="off"></label>
+      <button class="primary" id="lsOn">${T("পিন-লক চালু করুন","Turn PIN lock on")}</button>${note()}`;
+    $("lsOn").onclick=async()=>{
+      const p=$("lsPin").value,p2=$("lsPin2").value,a=lkNorm($("lsA").value),qi=+$("lsQ").value;
+      if(!/^\d{4}$/.test(p)){say(T("পিন ঠিক ৪টা অঙ্কের হতে হবে।","The PIN must be exactly 4 digits."),1);return}
+      if(p!==p2){say(T("দুটো পিন মেলেনি।","The two PINs don't match."),1);return}
+      if(a.length<2){say(T("গোপন প্রশ্নের উত্তর লিখুন।","Type the answer to the secret question."),1);return}
+      const ph=await lkHash(p),ah=await lkHash(a);
+      if(!lkWrite({p:ph,a:ah,q:LK_Q[qi],f:0,u:0})){say(T("সংরক্ষণ করা গেল না।","Couldn't save."),1);return}
+      lkPanel();
+    };
+  }else{
+    b.innerHTML=`<p class="note ok">✔ ${T("পিন-লক চালু আছে।","PIN lock is on.")}</p>
+      <label class="fbq">${T("বন্ধ করতে বা বদলাতে এখনকার পিন লিখুন","To turn off or change, type your current PIN")}<input id="lsCur" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></label>
+      <button id="lsOff">${T("পিন-লক বন্ধ করুন","Turn PIN lock off")}</button>
+      <button id="lsChg">${T("পিন ও গোপন প্রশ্ন বদলান","Change PIN and secret question")}</button>${note()}`;
+    const cur=async()=>{const L2=lkRead(),w=lkWait(L2);
+      if(w){say(T(`অপেক্ষা করুন, ${bn(w)} সেকেন্ড।`,`Please wait ${w} seconds.`),1);return false}
+      if(await lkCheck($("lsCur").value,L2.p)){lkClear(L2);return true}
+      lkFail(L2);say(T("ভুল পিন।","Wrong PIN."),1);return false};
+    $("lsOff").onclick=async()=>{if(await cur()){lkWrite(null);lkPanel()}};
+    $("lsChg").onclick=async()=>{if(await cur()){lkWrite(null);lkPanel()}};
+  }
+}
+$("lockSet").addEventListener("toggle",()=>{if($("lockSet").open)lkPanel()});
+
+/* lock at start, and again when the app was away for 2 minutes */
+if(lkRead()&&lkOK())lkShow();
+else if(lkRead()&&!lkOK()){/* cannot verify, never trap the person out */}
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){lkHiddenAt=Date.now();return}
+  if(lkHiddenAt&&Date.now()-lkHiddenAt>120000&&lkRead()&&lkOK()&&$("lockscr").hidden)lkShow();
+});
 </script>
 
 </body>
