@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f5f5b">
+<title>আজকের খরচ · শুরু করার গাইড</title>
+<meta name="description" content="আজকের খরচ: ৬টা সহজ ধাপে অ্যাপটা শুরু করুন। Today's Spend: start in 6 easy steps.">
+<meta property="og:title" content="আজকের খরচ · Today's Spend">
+<meta property="og:description" content="রোজ জানুন আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। ৬টা সহজ ধাপ। No login, your data stays on your phone.">
+<meta property="og:image" content="https://pappa6.github.io/ajker-khoroch/icon-512.png">
+<meta property="og:type" content="website">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@600;800&display=swap">
+<style>
+:root{
+  color-scheme:light dark;
+  --bg:#eef4f2; --card:#ffffff; --ink:#16302e; --muted:#566b68; --line:#d3e0dc;
+  --teal:#1f5f5b; --teal-soft:#dcebe7; --on-teal:#ffffff;
+  --go:#2f7d3b; --go-bg:#e4f2e5; --wait:#8f5a00; --wait-bg:#fbf0d9; --stop:#b3261e; --stop-bg:#fbe4e1;
+  --f-display:"Noto Serif Bengali","Hind Siliguri",Georgia,serif;
+  --f-body:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0f1816; --card:#17221f; --ink:#e6eeeb; --muted:#9fb2ad; --line:#2a3a36;
+  --teal:#6cc0b8; --teal-soft:#1d3330; --on-teal:#0f1816;
+  --go:#7fd08a; --go-bg:#1d3221; --wait:#f0b84c; --wait-bg:#3a2e14; --stop:#f2877f; --stop-bg:#3d1f1c}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:19px;line-height:1.6}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 56px}
+.top{display:flex;justify-content:flex-end;padding-bottom:8px}
+.lang{display:inline-flex;border:2px solid var(--teal);border-radius:999px;overflow:hidden}
+.lang button{font:inherit;font-size:.9rem;font-weight:600;border:0;background:transparent;color:var(--teal);padding:6px 16px;min-height:40px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--teal);color:var(--on-teal)}
+:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+
+.cover{display:flex;flex-direction:column;gap:14px;padding:8px 0 28px}
+.cover img{width:76px;height:76px;border-radius:20px;display:block}
+h1{font-family:var(--f-display);font-weight:800;font-size:2.1rem;line-height:1.2;margin:0;color:var(--teal)}
+.promise{font-size:1.2rem;margin:0;max-width:30ch}
+.facts{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:1rem}
+.facts li{display:flex;gap:10px;align-items:center}
+.facts svg{flex:none;width:20px;height:20px}
+.lead{margin:0 0 6px;font-weight:600}
+
+ol.steps{list-style:none;margin:0;padding:0}
+.step{position:relative;display:grid;grid-template-columns:48px 1fr;gap:14px;padding-bottom:18px}
+.step::before{content:"";position:absolute;left:23px;top:50px;bottom:-2px;width:2px;background:var(--line)}
+.step:last-child::before{display:none}
+.num{width:48px;height:48px;border-radius:50%;background:var(--teal);color:var(--on-teal);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:1.35rem;position:relative}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px 16px}
+.card h2{display:flex;align-items:center;gap:10px;margin:0 0 4px;font-size:1.2rem;line-height:1.3}
+.card h2 svg{flex:none;width:26px;height:26px;color:var(--teal)}
+.card p{margin:0;color:var(--ink)}
+.card p+p{margin-top:8px}
+.card .sub{color:var(--muted);font-size:1rem}
+b,strong{font-weight:700}
+.rule{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--teal-soft);font-size:1rem}
+.lights{display:grid;gap:8px;margin-top:10px}
+.light{display:flex;align-items:center;gap:12px;border-radius:12px;padding:10px 12px;font-weight:600;font-size:1.05rem}
+.light i{flex:none;width:16px;height:16px;border-radius:50%;background:currentColor}
+.light.go{background:var(--go-bg);color:var(--go)}
+.light.wait{background:var(--wait-bg);color:var(--wait)}
+.light.stop{background:var(--stop-bg);color:var(--stop)}
+.light span{color:var(--ink)}
+
+.safe{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:6px 0 22px}
+.safe h2{display:flex;align-items:center;gap:10px;margin:0 0 6px;font-size:1.2rem}
+.safe h2 svg{flex:none;width:26px;height:26px;color:var(--teal)}
+.safe ul{margin:0;padding-left:20px}
+.safe li{margin:2px 0}
+
+.open{display:flex;align-items:center;justify-content:center;gap:10px;min-height:60px;border-radius:16px;background:var(--teal);color:var(--on-teal);font-weight:700;font-size:1.25rem;text-decoration:none;padding:12px 20px}
+.open:active{transform:translateY(1px)}
+.note{margin:12px 2px 0;color:var(--muted);font-size:.95rem;text-align:center}
+@media (max-width:380px){body{font-size:18px}h1{font-size:1.8rem}.step{grid-template-columns:40px 1fr;gap:10px}.num{width:40px;height:40px;font-size:1.15rem}.step::before{left:19px;top:42px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="lang" role="group" aria-label="Language / ভাষা">
+      <button type="button" id="bBn" aria-pressed="true">বাংলা</button>
+      <button type="button" id="bEn" aria-pressed="false">English</button>
+    </div>
+  </div>
+
+  <header class="cover">
+    <img src="icon-192.png" alt="" width="76" height="76">
+    <h1 data-bn="আজকের খরচ" data-en="Today's Spend">আজকের খরচ</h1>
+    <p class="promise" data-bn="রোজ জানুন, আজ কত টাকা নিশ্চিন্তে খরচ করা যায়।" data-en="Know every day how much you can safely spend today.">রোজ জানুন, আজ কত টাকা নিশ্চিন্তে খরচ করা যায়।</p>
+    <ul class="facts">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span data-bn="লগইন লাগে না, বিনামূল্যে" data-en="No login, free to use">লগইন লাগে না, বিনামূল্যে</span></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg><span data-bn="আপনার সব তথ্য শুধু আপনার ফোনে থাকে" data-en="Your data stays only on your phone">আপনার সব তথ্য শুধু আপনার ফোনে থাকে</span></li>
+    </ul>
+  </header>
+
+  <p class="lead" data-bn="অ্যাপ খোলার আগে এই 6টা ধাপ পড়ে নিন। 2 মিনিট লাগবে।" data-en="Read these 6 steps before you open the app. It takes 2 minutes.">অ্যাপ খোলার আগে এই 6টা ধাপ পড়ে নিন। 2 মিনিট লাগবে।</p>
+
+  <ol class="steps">
+
+    <li class="step">
+      <div class="num" aria-hidden="true">1</div>
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg><span data-bn="লিংকটা ব্রাউজারে খুলুন" data-en="Open the link in your browser">লিংকটা ব্রাউজারে খুলুন</span></h2>
+        <p data-bn="Android ফোনে Chrome-এ, iPhone-এ Safari-তে।" data-en="Use Chrome on an Android phone, Safari on an iPhone.">Android ফোনে Chrome-এ, iPhone-এ Safari-তে।</p>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="num" aria-hidden="true">2</div>
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M12 8v6M9 11h6"/></svg><span data-bn="হোম স্ক্রিনে বসান" data-en="Add it to your home screen">হোম স্ক্রিনে বসান</span></h2>
+        <p data-bn="Chrome-এ উপরে ডানদিকে <b>⋮</b> চাপুন, তারপর <b>Install app</b> বা <b>Add to Home screen</b>।" data-en="In Chrome tap <b>⋮</b> at the top right, then <b>Install app</b> or <b>Add to Home screen</b>.">Chrome-এ উপরে ডানদিকে <b>⋮</b> চাপুন, তারপর <b>Install app</b> বা <b>Add to Home screen</b>।</p>
+        <p class="sub" data-bn="iPhone-এ নিচের Share চিহ্ন চেপে <b>Add to Home Screen</b>।" data-en="On iPhone tap the Share icon, then <b>Add to Home Screen</b>.">iPhone-এ নিচের Share চিহ্ন চেপে <b>Add to Home Screen</b>।</p>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="num" aria-hidden="true">3</div>
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 016.5 5H18a2 2 0 012 2v2H6.5A2.5 2.5 0 014 6.5zM4 7.5V17a2 2 0 002 2h13a1 1 0 001-1V9H6.5"/><circle cx="16" cy="14" r="1.2"/></svg><span data-bn="মাসের হিসেব লিখুন" data-en="Enter your monthly budget">মাসের হিসেব লিখুন</span></h2>
+        <p data-bn="অ্যাপে <b>আমার মাসের হিসেব</b> খুলুন। মাসের আয়, কোন তারিখে আসে, আর নির্দিষ্ট খরচ (ভাড়া, বিল, EMI) লিখুন।" data-en="Open <b>My monthly budget</b> in the app. Enter your income, the date it arrives, and fixed costs (rent, bills, EMI).">অ্যাপে <b>আমার মাসের হিসেব</b> খুলুন। মাসের আয়, কোন তারিখে আসে, আর নির্দিষ্ট খরচ (ভাড়া, বিল, EMI) লিখুন।</p>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="num" aria-hidden="true">4</div>
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5M12 11v6M9.5 14.5L12 17l2.5-2.5"/></svg><span data-bn="স্টেটমেন্ট দিন" data-en="Add your statement">স্টেটমেন্ট দিন</span></h2>
+        <p data-bn="PhonePe বা ব্যাঙ্কের স্টেটমেন্ট (PDF বা Excel) বেছে নিন। UPI খরচ নিজে থেকেই ঢুকে যাবে।" data-en="Choose your PhonePe or bank statement (PDF or Excel). Your UPI payments are added automatically.">PhonePe বা ব্যাঙ্কের স্টেটমেন্ট (PDF বা Excel) বেছে নিন। UPI খরচ নিজে থেকেই ঢুকে যাবে।</p>
+        <p class="sub" data-bn="একাধিক ব্যাঙ্ক অ্যাকাউন্ট থাকলে প্রতিটার স্টেটমেন্ট আলাদা নাম দিয়ে দিন।" data-en="With more than one bank account, add each statement under its own name.">একাধিক ব্যাঙ্ক অ্যাকাউন্ট থাকলে প্রতিটার স্টেটমেন্ট আলাদা নাম দিয়ে দিন।</p>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="num" aria-hidden="true">5</div>
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5v.01M17.5 14.5v.01"/></svg><span data-bn="নগদ টাকার নিয়ম" data-en="The cash rule">নগদ টাকার নিয়ম</span></h2>
+        <p data-bn="ATM বা ব্যাঙ্ক কাউন্টার থেকে যা তুলবেন, <b>পুরোটাই সেদিন খরচ ধরা হয়</b>, কারণ টাকাটা ব্যাঙ্ক থেকে বেরিয়ে গেছে।" data-en="Whatever you take out at an ATM or bank counter <b>counts as spent in full that day</b>, because it has left your bank.">ATM বা ব্যাঙ্ক কাউন্টার থেকে যা তুলবেন, <b>পুরোটাই সেদিন খরচ ধরা হয়</b>, কারণ টাকাটা ব্যাঙ্ক থেকে বেরিয়ে গেছে।</p>
+        <div class="rule" data-bn="ওই টাকার খরচ (কাজের লোক, দুধ, বাজার) আর আলাদা করে লিখবেন না। অন্য নগদ কিছু হলে <b>নগদ খরচ লিখুন</b> ঘরে লিখুন।" data-en="Do not enter spending from that cash again (help, milk, groceries). For any other cash, use <b>Add cash spending</b>.">ওই টাকার খরচ (কাজের লোক, দুধ, বাজার) আর আলাদা করে লিখবেন না। অন্য নগদ কিছু হলে <b>নগদ খরচ লিখুন</b> ঘরে লিখুন।</div>
+      </div>
+    </li>
+
+    <li class="step">
+      <div class="num" aria-hidden="true">6</div>
+      <div class="card">
+        <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2.5" width="8" height="19" rx="4"/><circle cx="12" cy="7.5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="16.5" r="1.2"/></svg><span data-bn="রোজ রঙটা দেখুন" data-en="Check the colour every day">রোজ রঙটা দেখুন</span></h2>
+        <p data-bn="অ্যাপের উপরের বড় ঘরটাই আপনার রোজের সংকেত।" data-en="The big box at the top of the app is your daily signal.">অ্যাপের উপরের বড় ঘরটাই আপনার রোজের সংকেত।</p>
+        <div class="lights">
+          <div class="light go"><i></i><span data-bn="সবুজ: নিশ্চিন্তে খরচ করুন" data-en="Green: spend freely">সবুজ: নিশ্চিন্তে খরচ করুন</span></div>
+          <div class="light wait"><i></i><span data-bn="হলুদ: সাবধান" data-en="Yellow: be careful">হলুদ: সাবধান</span></div>
+          <div class="light stop"><i></i><span data-bn="লাল: আজ আর নয়" data-en="Red: stop for today">লাল: আজ আর নয়</span></div>
+        </div>
+      </div>
+    </li>
+
+  </ol>
+
+  <section class="safe" aria-labelledby="safeH">
+    <h2 id="safeH"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><span data-bn="তথ্য সুরক্ষিত রাখুন" data-en="Keep your data safe">তথ্য সুরক্ষিত রাখুন</span></h2>
+    <ul>
+      <li data-bn="সেটিংসে <b>পিন-লক</b> চালু করুন।" data-en="Turn on the <b>PIN lock</b> in settings.">সেটিংসে <b>পিন-লক</b> চালু করুন।</li>
+      <li data-bn="কাজ শেষ হলে উপরের <b>Exit</b> চাপুন।" data-en="When you finish, tap <b>Exit</b> at the top.">কাজ শেষ হলে উপরের <b>Exit</b> চাপুন।</li>
+      <li data-bn="সপ্তাহে একবার <b>ব্যাকআপ</b> নিন।" data-en="Take a <b>backup</b> once a week.">সপ্তাহে একবার <b>ব্যাকআপ</b> নিন।</li>
+    </ul>
+  </section>
+
+  <a class="open" href="./" data-bn="অ্যাপ খুলুন" data-en="Open the app">অ্যাপ খুলুন</a>
+  <p class="note" data-bn="অ্যাপ প্রথমবার খুললে একটা নমুনা হিসেব দেখাবে। নিজের হিসেব শুরু করলে সেটা মুছে যাবে।" data-en="The first time, the app shows a sample budget. It disappears when you start your own.">অ্যাপ প্রথমবার খুললে একটা নমুনা হিসেব দেখাবে। নিজের হিসেব শুরু করলে সেটা মুছে যাবে।</p>
+
+</div>
+<script>
+(function(){
+  var KEY="ajkerKhoroch.guideLang",lang="bn";
+  try{var s=localStorage.getItem(KEY);if(s==="en"||s==="bn")lang=s}catch(e){}
+  function apply(){
+    document.documentElement.lang=lang;
+    var els=document.querySelectorAll("[data-bn]");
+    for(var i=0;i<els.length;i++){var t=els[i].getAttribute("data-"+lang);if(t!==null)els[i].innerHTML=t}
+    document.title=lang==="en"?"Today's Spend · Getting started":"আজকের খরচ · শুরু করার গাইড";
+    document.getElementById("bBn").setAttribute("aria-pressed",lang==="bn");
+    document.getElementById("bEn").setAttribute("aria-pressed",lang==="en");
+  }
+  function set(l){lang=l;try{localStorage.setItem(KEY,l)}catch(e){}apply()}
+  document.getElementById("bBn").onclick=function(){set("bn")};
+  document.getElementById("bEn").onclick=function(){set("en")};
+  apply();
+})();
+</script>
+</body>
+</html>
