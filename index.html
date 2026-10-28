@@ -223,6 +223,7 @@ textarea{font:inherit;font-size:.85rem;color:var(--ink);background:var(--bg);bor
 @media (prefers-reduced-motion:reduce){.meter span{transition:none}}
 body.locked>*:not(#lockscr){visibility:hidden!important}
 #lockscr{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.atmcover{background:var(--bg);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;margin:10px 0}.atmcover p{margin:6px 0 4px}
 #lockscr .lk{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;text-align:center}
 #lockscr h2{margin:0;font-size:1.3rem}
 .pinin{font-size:1.8rem;letter-spacing:.6em;text-align:center;width:100%;box-sizing:border-box}
@@ -263,10 +264,13 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
       <button class="x" id="obClose" aria-label="বন্ধ করুন / Close">✕</button>
     </div>
     <p style="margin:0">এই অ্যাপ রোজ বলে দেয়, আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। কোনো লগইন নেই, আপনার সব তথ্য শুধু আপনার ফোনেই থাকে।<small class="en">This app tells you every day how much you can safely spend today. No login. All your data stays only on your phone.</small></p>
+    <div class="atmcover"><strong>ATM বা ব্যাঙ্ক কাউন্টার থেকে টাকা তুললে কী হয়, আগে জেনে নিন</strong>
+      <p>আপনি যে টাকা তুলবেন, পুরোটাই সেদিন খরচ ধরা হয়, কারণ ব্যাঙ্ক থেকে সেটা বেরিয়ে গেছে। ওই নগদ দিয়ে কাজের লোক, দুধ, বাজার, যা-ই দিন, আলাদা করে লিখতে হবে না। অ্যাপে সেটা "নগদ তোলা (সব নগদ খরচ)" নামে একটা খরচ হিসেবে দেখাবে।</p>
+      <small class="en"><strong>What happens when you withdraw cash:</strong> the full amount you take out at an ATM or bank counter is counted as spent that day, because it has left your bank. Whatever you pay with that cash (domestic help, milk, groceries, anything) you do not need to enter separately. The app shows it as one expense, "Cash withdrawal (all cash spending)".</small></div>
     <ol class="flow">
       <li><b>১</b><span><strong>নিজের হিসেব বসান:</strong> নিচে "আমার মাসের হিসেব" খুলে মাসিক আয়, কত তারিখে আসে, আর নির্দিষ্ট খরচ (ভাড়া, বিল, EMI) লিখুন।<small class="en"><strong>Set up your budget:</strong> open "আমার মাসের হিসেব" (My monthly budget) below and enter your monthly income, the date it arrives, and fixed costs (rent, bills, EMI).</small></span></li>
       <li><b>২</b><span><strong>স্টেটমেন্ট দিন:</strong> "স্টেটমেন্ট থেকে UPI খরচ আনুন"-এ PhonePe বা ব্যাঙ্কের স্টেটমেন্ট (PDF বা Excel) দিন। সব UPI খরচ নিজে থেকেই ঢুকে যাবে।<small class="en"><strong>Add your statement:</strong> in "Import UPI spending from statement", choose your PhonePe or bank statement (PDF or Excel). All UPI payments are added automatically.</small></span></li>
-      <li><b>৩</b><span><strong>নগদ খরচ লিখুন:</strong> নগদে কিছু কিনলে "নগদ খরচ লিখুন"-এ অঙ্কটা লিখুন। রোজ ১০ সেকেন্ড।<small class="en"><strong>Note cash spending:</strong> when you pay in cash, type the amount in "নগদ খরচ লিখুন" (Add cash expense). About 10 seconds a day.</small></span></li>
+      <li><b>৩</b><span><strong>নগদ খরচ লিখুন:</strong> নগদে কিছু কিনলে "নগদ খরচ লিখুন"-এ অঙ্কটা লিখুন। রোজ ১০ সেকেন্ড। তবে ATM থেকে তোলা টাকার খরচ এখানে লিখবেন না, ওটা আগেই গোনা হয়ে গেছে।<small class="en"><strong>Note cash spending:</strong> when you pay in cash, type the amount in "নগদ খরচ লিখুন" (Add cash expense). About 10 seconds a day. Do not enter spending from money you took out at an ATM here; it is already counted.</small></span></li>
       <li><b>৪</b><span><strong>রোজ রঙ দেখুন:</strong> উপরের বড় ঘরে 🟢 সবুজ মানে নিরাপদ, 🟡 হলুদ মানে সাবধান, 🔴 লাল মানে আজ থামুন।<small class="en"><strong>Check the colour daily:</strong> in the big box at the top, 🟢 green means safe, 🟡 yellow means careful, 🔴 red means stop spending today.</small></span></li>
       <li><b>৫</b><span><strong>ব্যাকআপ রাখুন:</strong> সপ্তাহে একবার নিচের "ব্যাকআপ" থেকে কপি করে নিজেকে WhatsApp-এ পাঠান।<small class="en"><strong>Keep a backup:</strong> once a week, copy it from "ব্যাকআপ" (Backup) below and send it to yourself on WhatsApp.</small></span></li>
     </ol>
@@ -518,14 +522,15 @@ let LANG=(()=>{try{return localStorage.getItem(LANG_KEY)==="en"?"en":"bn"}catch(
 const T=(b,e)=>LANG==="en"?e:b;
 const LOC=()=>LANG==="en"?"en-IN":"bn-IN";
 const TAG_EN={"নগদ":"Cash","বাজার":"Market","ওষুধ":"Medicine","যাতায়াত":"Travel","খাবার":"Food","অন্যান্য":"Other","সঞ্চয়":"Savings","নগদ তোলা":"Cash withdrawal","অন্য ডেবিট":"Other debit","কার্ড বিল":"Card bill","UPI":"UPI"};
-const tagLabel=t=>LANG==="en"?(TAG_EN[t]||t):t;
+const CASHW="নগদ তোলা";
+const tagLabel=t=>t===CASHW?(LANG==="en"?"Cash withdrawal (all cash spending)":"নগদ তোলা (সব নগদ খরচ)"):LANG==="en"?(TAG_EN[t]||t):t;
 const CAT_EN={"বাজার ও মুদি":"Groceries & market","স্বাস্থ্য ও ওষুধ":"Health & medicine","বিল ও রিচার্জ":"Bills & recharge","খাবার ও মিষ্টি":"Food & sweets","যাতায়াত ও জ্বালানি":"Travel & fuel","পোশাক ও কেনাকাটা":"Clothes & shopping","বাড়ি ও মেরামত":"Home & repairs","পুজো ও দান":"Puja & donations","ডিজিটাল ও বিনোদন":"Digital & entertainment","পরিবার ও ব্যক্তিগত":"Family & personal","নগদ তোলা":"Cash withdrawal","অন্যান্য":"Other","সঞ্চয়":"Savings"};
-const catLabel=c=>LANG==="en"?(CAT_EN[c]||c):c;
+const catLabel=c=>c===CASHW?(LANG==="en"?"Cash withdrawal (all cash spending)":"নগদ তোলা (সব নগদ খরচ)"):LANG==="en"?(CAT_EN[c]||c):c;
 const HAND="হাতে লেখা: ";
 const payeeLabel=p=>p.startsWith(HAND)?T(HAND,"Entered by hand: ")+tagLabel(p.slice(HAND.length)):p==="নাম নেই"?T(p,"No name"):p;
 const TAGS=["নগদ","বাজার","ওষুধ","যাতায়াত","খাবার","অন্যান্য"];
 const TYPES=["UPI","SAVE","CARD","ATM","OTHER"];
-const typeLabel=k=>({UPI:"UPI",SAVE:T("সঞ্চয় ও বিনিয়োগ (FD, RD, SIP, সোনা ইত্যাদি)","Savings & investments (FD, RD, SIP, gold etc.)"),CARD:T("ক্রেডিট কার্ডের বিল","Credit card bill"),ATM:T("ATM থেকে নগদ তোলা","ATM cash withdrawal"),OTHER:T("অন্য ডেবিট (কার্ড, অটো-ডেবিট ইত্যাদি)","Other debits (card, auto-debit etc.)")})[k];
+const typeLabel=k=>({UPI:"UPI",SAVE:T("সঞ্চয় ও বিনিয়োগ (FD, RD, SIP, সোনা ইত্যাদি)","Savings & investments (FD, RD, SIP, gold etc.)"),CARD:T("ক্রেডিট কার্ডের বিল","Credit card bill"),ATM:T("ATM বা কাউন্টার থেকে নগদ তোলা (কাজের লোক, দুধ ও অন্যান্য সব নগদ খরচ)","Cash withdrawn at an ATM or bank counter (domestic help, milk and all other cash spending)"),OTHER:T("অন্য ডেবিট (কার্ড, অটো-ডেবিট ইত্যাদি)","Other debits (card, auto-debit etc.)")})[k];
 const CTYPES=["SAL","INT","REF","RCV","OTH"];
 const ctypeLabel=k=>({SAL:T("বেতন / পেনশন","Salary / pension"),INT:T("সুদ","Interest"),REF:T("ফেরত বা রিফান্ড (এটা আয় নয়)","Refunds (not income)"),RCV:T("অন্যের কাছ থেকে পাওয়া টাকা","Money received from others"),OTH:T("অন্য জমা","Other credits")})[k];
 const kindLabel=k=>({SAL:T("বেতন / পেনশন","Salary / pension"),INT:T("সুদ","Interest"),REF:T("ফেরত","Refunds"),RCV:T("অন্যের কাছ থেকে","From others"),OTH:T("অন্য","Other")})[k]||k;
@@ -1351,13 +1356,14 @@ function showPreview(){
     ((skipN||chainBad)?`<div class="err" role="alert">${T("⚠️ এই ফাইলের সব লাইন নিশ্চিতভাবে পড়া যায়নি"+(skipN?`: ${bn(skipN)}টা লাইনে টাকা আছে কিন্তু জমা না খরচ বোঝা যায়নি`:"")+(chainBad?`: ${bn(chainBad)}টা লাইনে ব্যালেন্স মিলছে না`:"")+"। মূল স্টেটমেন্টের সঙ্গে মিলিয়ে দেখুন, নয়তো Excel/CSV দিয়ে চেষ্টা করুন। এই লাইনগুলো হিসাবে ধরা হয়নি।","⚠️ Not every line of this file could be read for certain"+(skipN?`: ${bn(skipN)} lines have an amount but credit or debit is unclear`:"")+(chainBad?`: ${bn(chainBad)} lines don't agree with the running balance`:"")+". Compare with the original statement, or try the Excel/CSV version. These lines were not counted.")}</div>`:`<p class="note ok">${T("✔ কোনো অস্পষ্ট বা পড়া-না-যাওয়া লাইন পাওয়া যায়নি।","✔ No unclear or unreadable lines were found.")}</p>`)+
     ((pl.dup||pl.replace.length)?`<p class="note">${T(`UPI খরচের মধ্যে ${bn(pl.add.length)}টা নতুন। `,`${bn(pl.add.length)} of the UPI payments are new. `)}${pl.dup?T(bn(pl.dup)+"টা আগেই অ্যাপে আছে, সেগুলো আবার যোগ হবে না। ",bn(pl.dup)+" are already in the app and won't be added again. "):""}${pl.fuzzy?T(bn(pl.fuzzy)+"টা PhonePe ও ব্যাংকের স্টেটমেন্টে একদিন এদিক-ওদিক তারিখে ছিল, একই টাকা, তাই একটাই গোনা হলো। ","For "+bn(pl.fuzzy)+" payments the PhonePe and bank dates differ by a day with the same amount, so they were counted once. "):""}${pl.replace.length?T(bn(pl.replace.length)+"টা আপনার হাতে লেখা খরচের সঙ্গে মিলেছে, সেগুলো দুবার গোনা হবে না।",bn(pl.replace.length)+" match payments you entered by hand and won't be counted twice."):""}</p>`:"")+
     (deb.length?`<h3>${T("খরচ","Spending")}</h3>`:"")+
-    TYPES.map(k=>row(k,typeLabel(k),k==="UPI"||k==="CARD")).join("")+
+    TYPES.map(k=>row(k,typeLabel(k),k==="UPI"||k==="CARD"||k==="ATM")).join("")+
     (sum.SAVE?`<p class="note">${T(`সঞ্চয় খরচ নয়। এটা টিক না দিয়ে মাসের সঞ্চয়ের অঙ্কটা "জমানোর লক্ষ্য"-তে বসান।`,`Savings are not spending. Leave this unticked and put your monthly savings amount in "Savings goal".`)}</p>`:"")+
     (cr.length?`<h3>${T("জমা (আয়)","Credits (income)")}</h3>`+CTYPES.map(k=>row(k,ctypeLabel(k),k==="SAL"||k==="INT")).join("")+
       `<p class="note">${T("বেতন/পেনশন আর সুদ টিক দেওয়া আছে। অন্যের কাছ থেকে পাওয়া টাকা কোনো ধার ফেরত বা নিজের টাকা হতে পারে, তাই সেটা আপনি বুঝে টিক দিন।","Salary/pension and interest are ticked. Money from others may be a loan repayment or your own money, so tick it only if it is really income.")}</p>`:"")+
     (own.length?`<div class="pick"><label for="pk_OWN"><input type="checkbox" id="pk_OWN"> ${T(`নিজের এক অ্যাকাউন্ট থেকে অন্যটায় সরানো টাকা (${cnt(own.length)}) এগুলোও গুনুন`,`Money moved between your own accounts (${cnt(own.length)}) count these too`)}</label><span class="num">${rs(own.reduce((t,r)=>t+r.a,0)/2)}</span></div><p class="note">${T("একই টাকা একই দিনে বা পরের দিনে একবার বেরিয়েছে আর একবার ঢুকেছে, তাই এগুলোকে নিজের টাকা সরানো ধরে খরচ বা আয় থেকে বাদ রেখেছি। ভুল মনে হলে টিক দিন।","The same amount went out and came in on the same or next day, so I treated these as moving your own money and left them out of spending and income. Tick if that looks wrong.")}</p>`:"")+
     (sum.CARD?`<p class="note">${T("ক্রেডিট কার্ডের বিল ব্যাংক থেকে একবারই বেরোয়, তাই ধরা আছে। কার্ডের কেনাকাটা আলাদা করে হাতে লিখবেন না, নইলে দু'বার গোনা হবে।","A credit card bill leaves the bank only once, so it is counted. Don't also enter the card purchases by hand, or they will be counted twice.")}</p>`:"")+
-    (sum.ATM||sum.OTHER?`<p class="note">${T(`ATM-এ তোলা টাকা টিক দেবেন না যদি সেই নগদ খরচ হাতে লেখেন, নইলে দু'বার গোনা হবে। অটো-ডেবিট (EMI, বিল) "নির্দিষ্ট খরচ"-এ থাকলে "অন্য ডেবিট"-ও টিক দেবেন না।`,`Don't tick ATM withdrawals if you note that cash spending by hand, or it will be counted twice. If auto-debits (EMI, bills) are in "Fixed costs", don't tick "Other debits" either.`)}</p>`:"")+
+    (sum.ATM?`<p class="note">${T("ATM বা কাউন্টার থেকে তোলা টাকা পুরোটাই খরচ ধরা হয়েছে, কারণ ব্যাঙ্ক থেকে সেটা বেরিয়ে গেছে। তাই ওই টাকায় নগদে যা কিনবেন বা দেবেন, আলাদা করে \"নগদ খরচ লিখুন\"-এ লিখবেন না, নইলে দু'বার গোনা হবে।","The full amount you withdrew is counted as spent, because it has left your bank. So do not also enter that cash spending in \"Add cash spending\", or it will be counted twice.")}</p>`:"")+
+    (sum.OTHER?`<p class="note">${T(`অটো-ডেবিট (EMI, বিল) "নির্দিষ্ট খরচ"-এ থাকলে "অন্য ডেবিট"-ও টিক দেবেন না।`,`If auto-debits (EMI, bills) are in "Fixed costs", don't tick "Other debits" either.`)}</p>`:"")+
     `<div class="row"><button class="primary" id="doImport">${T("হিসেবে যোগ করুন","Add to my budget")}</button><button id="cancelImport">${T("বাতিল","Cancel")}</button></div>`;
   p.hidden=false;
   $("doImport").onclick=doImport;
