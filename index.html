@@ -231,8 +231,8 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
 .lklink{background:none;border:0;color:var(--accent);text-decoration:underline;padding:6px}
 .lkset{display:flex;flex-direction:column;gap:10px}
 .credit{text-align:center;color:var(--muted);font-size:.9rem;margin:6px 0 4px}
-.datestrip{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;color:var(--muted);font-size:.98rem;margin:-4px 0 0}
-.datestrip b{color:var(--ink);font-weight:600}
+.datestrip{color:var(--ink);font-size:1.1rem;margin:-4px 0 0}
+.datestrip b{font-weight:700;letter-spacing:.01em}
 #dueSec h2{margin:0;font-size:1.1rem}
 .due{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
 .due.soon{border-color:var(--accent)}
@@ -1714,9 +1714,7 @@ function bengaliOf(y,mo,d){ // mo 0-11 Gregorian
   return {day:dn-best.st+1,m:best.m,year:yr}}
 function paintDateStrip(){
   const t=new Date(),b=bengaliOf(t.getFullYear(),t.getMonth(),t.getDate());
-  const en=t.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-  const g=LANG==="en"?en:t.toLocaleDateString("bn-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
-  $("dateStrip").innerHTML=`<b>${esc(g)}</b><span>${bnN(b.day)} ${BN_M[b.m][LANG==="en"?1:0]} ${bnN(b.year)}${LANG==="en"?" BS":" বঙ্গাব্দ"}</span>`}
+  $("dateStrip").innerHTML=`<b>${bnN(b.day)} ${BN_M[b.m][LANG==="en"?1:0]} ${bnN(b.year)}${LANG==="en"?" BS":" বঙ্গাব্দ"}</b>`}
 window.__bnReady=true;paintDateStrip();
 
 /* ===== yearly money calendar ===== */
