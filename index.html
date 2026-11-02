@@ -1230,16 +1230,71 @@ function showMapper(rows,f){
 async function pdfLines(buf,pw){
   await Promise.all([loadScript(PDF_SRC),loadScript(PDFW_SRC)]);
   const doc=await window.pdfjsLib.getDocument({data:buf,password:pw||undefined}).promise;
-  const lines=[];
+  const lines=[],pages=[];
   for(let p=1;p<=doc.numPages;p++){
     const tc=await (await doc.getPage(p)).getTextContent();
     const rows={};
+    pages.push(tc.items.filter(it=>it.str.trim()).map(it=>({s:it.str.trim(),x:it.transform[4],y:it.transform[5],w:it.width||0,h:it.height||Math.abs(it.transform[3])||8})));
     tc.items.forEach(it=>{if(!it.str.trim())return;const y=Math.round(it.transform[5]/3);(rows[y]=rows[y]||[]).push({x:it.transform[4],s:it.str})});
     Object.keys(rows).sort((a,b)=>b-a).forEach(y=>lines.push(rows[y].sort((a,b)=>a.x-b.x).map(o=>o.s).join(" ").replace(/\s+/g," ").trim()));
   }
+  lines.pages=pages;
   return lines;
 }
 const DATERE=/\b\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[ \-]?[A-Za-z]{3}[a-z]*[ \-,]*'?\d{2,4}\b/g;
+/* bank statement PDF with real Debit / Credit columns (SBI net banking etc.): read each amount from the column it sits in,
+   and join the wrapped narration lines of a cell to its transaction */
+function parseColsPdf(pages){
+  if(!pages||!pages.length)return null;
+  const out=[],cx=o=>o.x+o.w/2,isDate=s=>/^\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}$/.test(s)||/^\d{1,2}[ \-][A-Za-z]{3}[a-z]*[ \-,]*'?\d{2,4}$/.test(s);
+  const isAmt=s=>/^[\d,]+\.\d{2}$/.test(s), isDash=s=>/^[-–—]+$/.test(s);
+  let geo=null,bad=0;
+  for(const items of pages){
+    const find=re=>items.filter(o=>re.test(o.s)&&o.s.length<22);
+    const D=find(/debit|withdraw/i),C=find(/credit|deposit/i),B=find(/balance/i),DT=find(/^(details|description|narration|particulars)/i),RF=find(/^(ref|cheque|chq)/i);
+    if(D.length&&C.length&&B.length&&DT.length){
+      const d=D[0],c=C[0],b=B[0],dt=DT[0];
+      geo={d:cx(d),c:cx(c),b:cx(b),det:cx(dt),ref:RF.length?Math.min(...RF.map(o=>o.x)):null,hy:Math.max(d.y,c.y,b.y)};
+    }
+    if(!geo)continue;
+    const w=Math.abs(geo.c-geo.d)||60;
+    const dL=geo.d-w/2,cL=(geo.d+geo.c)/2,bL=(geo.c+geo.b)/2;
+    const col=o=>{const x=cx(o);return x<dL?null:x<cL?"d":x<bL?"c":"b"};
+    // anchors: pure-date items left of the Details column
+    const dates=items.filter(o=>isDate(o.s)&&cx(o)<geo.det&&o.y<geo.hy-2).sort((a,b)=>b.y-a.y||a.x-b.x);
+    const anchors=[];
+    dates.forEach(o=>{const a=anchors.find(z=>Math.abs(z.y-o.y)<4);if(a){a.right=Math.max(a.right,o.x+o.w)}else anchors.push({y:o.y,d:pDate(o.s),right:o.x+o.w,lines:[]})});
+    if(!anchors.length)continue;
+    const dLeft=Math.max(...anchors.map(a=>a.right))-1;
+    const dRight=geo.ref!=null?geo.ref-1:geo.d-w*1.6;
+    const lh=(items.find(o=>isDate(o.s))||{h:9}).h||9;
+    // narration items of the Details column, in cells (blocks) split where the vertical gap is bigger than a wrapped line
+    const body=items.filter(o=>o.y<geo.hy-2&&o.x>=dLeft&&cx(o)<dRight&&!isDate(o.s)&&!/^page\b/i.test(o.s)).sort((a,b)=>b.y-a.y||a.x-b.x);
+    const lines=[];body.forEach(o=>{const l=lines.find(z=>Math.abs(z.y-o.y)<3);l?(l.t.push(o)):lines.push({y:o.y,t:[o]})});
+    lines.forEach(l=>{l.s=l.t.sort((a,b)=>a.x-b.x).map(o=>o.s).join(" ")});
+    const blocks=[];lines.forEach(l=>{const b=blocks[blocks.length-1];if(b&&b.last-l.y<=lh*1.5){b.s.push(l.s);b.last=l.y;b.ys.push(l.y)}else blocks.push({s:[l.s],last:l.y,ys:[l.y]})});
+    anchors.forEach(a=>{a.desc=""});
+    const same=blocks.length===anchors.length;
+    blocks.forEach((b,i)=>{
+      const mid=(b.ys[0]+b.ys[b.ys.length-1])/2;
+      const a=same?anchors[i]:anchors.reduce((m,z)=>Math.abs(z.y-mid)<Math.abs(m.y-mid)?z:m);
+      if(Math.abs(a.y-mid)>lh*8)return;
+      a.desc=(a.desc+" "+b.s.join(" ")).trim();
+    });
+    anchors.forEach(a=>{
+      const near=items.filter(o=>Math.abs(o.y-a.y)<5&&(isAmt(o.s)||isDash(o.s))&&col(o));
+      const v={};near.forEach(o=>{if(isAmt(o.s))v[col(o)]=pAmt(o.s)});
+      if(!a.d||v.b==null||(v.d==null&&v.c==null))return;
+      if(v.d!=null&&v.c!=null){bad++;return}
+      const dir=v.d!=null?"D":"C",amt=v.d!=null?v.d:v.c;
+      const desc=a.desc.replace(/\s+/g," ").trim();
+      out.push({d:a.d,a:amt,dir,desc:desc.length>80?desc.slice(0,80)+"…":desc,u:refOf(a.desc),bal:v.b});
+    });
+  }
+  if(!out.length)return null;
+  skipN+=bad;
+  return out;
+}
 /* ordinary bank-statement PDF: the credit/debit side is worked out from how the running balance moves */
 function parseBankPdf(lines){
   let recs=[],open=null;
@@ -1314,7 +1369,8 @@ async function readFile(file,pw){
       }
       $("pwRow").hidden=true;
       isPhonePe=lines.some(l=>/phonepe|Transaction Statement for/i.test(l));
-      rows=isPhonePe?parsePdf(lines):(parseBankPdf(lines)||parsePdf(lines));
+      rows=isPhonePe?parsePdf(lines):(parseColsPdf(lines.pages)||parseBankPdf(lines)||parsePdf(lines));
+      if(rows&&!isPhonePe)chainBad+=chainCheck(rows);
     }else{
       isPhonePe=false;
       await loadScript(XLSX_SRC);
