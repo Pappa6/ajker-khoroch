@@ -101,6 +101,22 @@ label{display:flex;flex-direction:column;gap:4px;font-size:.95rem;color:var(--mu
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{padding:6px 14px;border-radius:999px;background:var(--accent-soft);border-color:transparent;font-size:.95rem}
 .chip[aria-pressed="true"]{background:var(--accent);color:var(--card)}
+.chip.dim{opacity:.45}
+.fyhint{margin:12px 0 6px}
+.fyrow{display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 10px}
+.fyc{width:84px;height:84px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;background:var(--accent-soft);border:2px solid transparent;line-height:1.1}
+.fyc b{font-size:1.15rem}.fyc small{font-size:.9rem;opacity:.85}
+.fyc[aria-pressed="true"]{background:var(--accent);color:var(--card);box-shadow:0 4px 14px #0003}
+.fymonths{margin-bottom:10px}
+.svsum{font-weight:600;margin:4px 0 8px}
+.svbars{display:flex;gap:4px;align-items:flex-end;height:110px;padding:6px 0;border-bottom:1px solid var(--line,#0002)}
+.svb{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px}
+.svb i{display:block;width:100%;max-width:26px;border-radius:5px 5px 0 0;background:linear-gradient(#3ddc97,#16a085)}
+.svb small{font-size:.65rem;opacity:.8}
+.svlist{list-style:none;padding:0;margin:8px 0;display:flex;flex-direction:column;gap:4px}
+.svlist li{display:grid;grid-template-columns:90px 1fr;gap:2px 8px;padding:6px 0;border-bottom:1px dashed #0002}
+.svlist li span{text-align:right;font-weight:600}.svlist li small{grid-column:1/3;opacity:.75}
+.svlist li.none{opacity:.5}.svlist li.none span{font-weight:400}
 .kgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .kbox{background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .kbox .k{font-size:.85rem;color:var(--muted)}
@@ -564,7 +580,7 @@ const CTYPES=["SAL","INT","REF","RCV","OTH"];
 const ctypeLabel=k=>({SAL:T("বেতন / পেনশন","Salary / pension"),INT:T("সুদ","Interest"),REF:T("ফেরত বা রিফান্ড (এটা আয় নয়)","Refunds (not income)"),RCV:T("অন্যের কাছ থেকে পাওয়া টাকা","Money received from others"),OTH:T("অন্য জমা","Other credits")})[k];
 const kindLabel=k=>({SAL:T("বেতন / পেনশন","Salary / pension"),INT:T("সুদ","Interest"),REF:T("ফেরত","Refunds"),RCV:T("অন্যের কাছ থেকে","From others"),OTH:T("অন্য","Other")})[k]||k;
 function classifyCr(desc){
-  if(/salary|\bsal\b|payroll|pension|\bppo\b|stipend|wages/i.test(desc))return "SAL";
+  if(/salary|\bsal\b|payroll|pen\s?sion|\bppo\b|stipend|wages/i.test(desc))return "SAL";
   if(/interest|\bint\.? ?(pd|paid|cr|credit|coll)|\bint\b|\bsb ?int/i.test(desc))return "INT";
   if(/refund|reversal|reversed|cashback|chargeback|\brev\b/i.test(desc))return "REF";
   if(/upi|neft|rtgs|imps|received|transfer|\bfrom\b|clg|cheque|\bchq\b|deposit/i.test(desc))return "RCV";
@@ -763,7 +779,7 @@ const RULES=[
   ["পোশাক ও কেনাকাটা",/bastralaya|paridhan|dress|saree|sari\b|cloth|garment|fashion|amazon(?! ?prime)|flipkart|meesho|myntra|ajio|nykaa|shadowfax|delhivery|ekart|dalal/i],
   ["খাবার ও মিষ্টি",/sweet|mistanna|misti|food|restaurant|hotel|cafe|swiggy|zomato|pet ?pooja|snack|biryani|bakery|bakers|dhaba|momo|juice|ice ?cream|tea ?stall|chai/i],
   ["স্বাস্থ্য ও ওষুধ",/pharm|medic|diagnos|hospital|clinic|doctor|arogy|apollo|netmeds|1mg|path ?lab|dental|nursing|surgical|optical|eye care|health ?care|\bdr\.? /i],
-  ["বিল ও রিচার্জ",/bill\b|bill paid|recharg|electric|wbsedcl|cesc|\bgas\b|lpg|indane|bharat ?gas|hp ?gas|broadband|airtel|bsnl|\bjio\b|vodafone|tata ?sky|dish ?tv|insur|\blic\b|premium|godigit|\bdth\b|municipal|property tax|water tax/i],
+  ["বিল ও রিচার্জ",/cbdt|central board of direct|health assist|top-?u\s?p|bill\b|bill paid|recharg|electric|wbsedcl|cesc|\bgas\b|lpg|indane|bharat ?gas|hp ?gas|broadband|airtel|bsnl|\bjio\b|vodafone|tata ?sky|dish ?tv|insur|\blic\b|premium|godigit|\bdth\b|municipal|property tax|water tax/i],
   ["ডিজিটাল ও বিনোদন",/openai|google|godaddy|netflix|hotstar|spotify|youtube|prime|zee5|sonyliv|apple|microsoft|canva|infotech/i],
   ["বাজার ও মুদি",/veg|vagetable|grocer|store|bazar|bazaar|mart\b|variety|verity|blinkit|zepto|bigbasket|instamart|dmart|egg|fish|chicken|meat|fruit|dairy|milk|ruti|kirana|retail|shop\b/i],
   ["যাতায়াত ও জ্বালানি",/fuel|petrol|diesel|indian oil|\bauto\b|uber|\bola\b|rapido|irctc|redbus|railway|metro|toll|fastag|parking/i],
@@ -772,8 +788,28 @@ const RULES=[
   ["নগদ তোলা",/\batm\b|cash ?wd|cash withdrawal|cwdr|\bnwd\b/i]
 ];
 const TAGCAT={"বাজার":"বাজার ও মুদি","ওষুধ":"স্বাস্থ্য ও ওষুধ","যাতায়াত":"যাতায়াত ও জ্বালানি","খাবার":"খাবার ও মিষ্টি","নগদ তোলা":"নগদ তোলা"};
+/* SBI net-banking narrations: "WDL TFR UPI/DR/ref/NAME/BANK/vpa/Paym 00976.. AT 13124 BIDHANNAGAR, DURGAPUR" -> the real name */
+function sbiName(d){
+  let s=String(d||"").replace(/\s+/g," ").trim(),m;
+  s=s.replace(/\s+AT\s+\d{4,6}\b.*$/i,"");
+  if(/^(ATM WDL|CAS CASH|CASH WITHDRAWAL)/i.test(s)||/ATM CASH \d/i.test(s))return "ATM / নগদ তোলা";
+  if((m=s.match(/UPI\/(?:DR|CR)\/\d{6,}\/([^\/]*)\/([^\/]*)\/([^\/]*)/i))){
+    const nm=m[1].replace(/\s+/g,"");if(/[A-Za-z]{2,}/.test(nm))return nm.toUpperCase();
+    const v=m[3].replace(/\s+/g,"").split("@")[0];return (v||"UPI").toUpperCase();}
+  if((m=s.match(/IMPS\/\d+\/([^\/]+)/i)))return m[1].trim();
+  if((m=s.match(/POS ATM PURCH\s+\S+\s+(.*)$/i))){const t=m[1].replace(/\s+(DURGAPUR|KOLKATA|BARDDHAMAN|ASANSOL|BIDHANNAGAR)\s*$/i,"").trim();if(t)return t;}
+  if((m=s.match(/\bINB\s+(.*)$/i))){
+    let t=m[1].split(/\s+\d[\d ]{8,}|\s+OF\s+/i)[0].replace(/^Bilpay\s*~\s*/i,"").replace(/\s*~\s*Autopa.*$/i,"").trim();
+    const of=(m[1].match(/\sOF\s+(.*)$/i)||[])[1];
+    if(of&&(t.length<=3||/^tr$/i.test(t))){const o=of.replace(/^(Mr|Mrs|Ms|Shri|Smt)\.?\s+/i,"").trim();t=/^tr$/i.test(t)?o:(t+" "+o);}
+    if(t.length>=2)return t.slice(0,40);}
+  if((m=s.match(/^(?:WDL TFR|DEP TFR|DEBIT|CREDIT|TO TRANSFER|BY TRANSFER)\s+(?:CMP\s+)?(.*)$/i))){
+    const t=m[1].split(/\s+\d{6,}|\/\d{6,}|[-\/]\d{3,}/)[0].trim();if(t.length>=2)return t.slice(0,40);}
+  return null;
+}
 function payeeOf(e){
   if(e.src!=="imp") return "হাতে লেখা: "+e.tag;
+  if(/\b(WDL TFR|DEP TFR|ATM WDL|POS ATM PURCH|CAS CASH)\b|^DEBIT\s/i.test(e.desc||"")){const sn=sbiName(e.desc);if(sn)return sn;}
   let n=(e.desc||"").replace(/^(paid to|payment to)\s*/i,"").trim();
   if(/^(UPI|NEFT|IMPS|RTGS|POS)[-\/ ]/i.test(n)){ /* bank narration: keep just the name part */
     const q=n.split(/[-\/]/).slice(1).map(x=>x.trim()).find(x=>/[A-Za-z]{3,}/.test(x)&&!/@/.test(x)&&!(/\d/.test(x)&&/^[A-Z0-9]{9,}$/i.test(x))&&!/^(CR|DR|UPI|REFUND|PAYMENT|ORDER)$/i.test(x));
@@ -787,16 +823,18 @@ function catOf(e){
   if(!S.payeeCat[k]&&/gold|jewel|tanishq|senco|kalyan|malabar/i.test(e.desc||"")) return "সঞ্চয়";
   if(S.payeeCat[k]) return S.payeeCat[k];
   if(e.src!=="imp") return TAGCAT[e.tag]||"অন্যান্য";
-  const d=e.desc||"";
-  for(const [c,re] of RULES) if(re.test(d)) return c;
+  const d=(e.desc||"").replace(/\s+AT\s+\d{4,6}\b.*$/i,"");
+  for(const [c,re] of RULES) if(re.test(d)||re.test(d.replace(/\s+/g,""))) return c;
   return e.a<300?"বাজার ও মুদি":"অন্যান্য";
 }
 const rsShort=n=>n>=100000?"₹"+(n/100000).toLocaleString(LOC(),{maximumFractionDigits:1})+T("লা","L"):n>=1000?"₹"+(n/1000).toLocaleString(LOC(),{maximumFractionDigits:1})+T("হা","k"):rs(n);
-let dashP=null;
+let dashP=null,dashFY=null;
+const fyOfMonth=m=>(+m.slice(5,7)>=4)?+m.slice(0,4):+m.slice(0,4)-1;
 function periodRange(p){
   const t=new Date();t.setHours(0,0,0,0);
   const first=(add)=>new Date(t.getFullYear(),t.getMonth()+add,1);
   if(typeof p==="string"&&p.startsWith("ym:")){const a=new Date(p.slice(3)+"-01T00:00:00"),e=new Date(a.getFullYear(),a.getMonth()+1,0);return [iso(a),iso(e)>iso(t)?iso(t):iso(e)];}
+  if(typeof p==="string"&&p.startsWith("fy:")){const y=+p.slice(3),e=y+1+"-03-31",tt=iso(t);return [y+"-04-01",e>tt?tt:e];}
   if(p==="m0") return [iso(first(0)),iso(t)];
   if(p==="m1") {const e=first(0);e.setDate(0);return [iso(first(-1)),iso(e)];}
   if(p==="m3") return [iso(first(-2)),iso(t)];
@@ -950,9 +988,17 @@ function renderDash(){
     body.innerHTML=`<p class="note">${T("খরচ লিখলে বা উপরে স্টেটমেন্ট আনলে এখানে আপনার খরচের খাত-ভিত্তিক ছবি আসবে।","Once you add spending or import a statement, your spending by category appears here.")}</p>`;return;
   }
   if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"m0":"all";}
-  {const pc=$("dashPeriod");pc.querySelectorAll(".mchip").forEach(x=>x.remove());
-    const ms=[...new Set(S.exp.map(e=>e.d.slice(0,7)))].sort().slice(-8);
-    if(ms.length>1)ms.forEach(m=>{const b=document.createElement("button");b.className="chip mchip";b.dataset.p="ym:"+m;b.textContent=mName(m);pc.appendChild(b)});}
+  dashFY=/^ym:/.test(dashP)?fyOfMonth(dashP.slice(3)):/^fy:/.test(dashP)?+dashP.slice(3):null;
+  {let fb=$("fyBox");if(!fb){fb=document.createElement("div");fb.id="fyBox";$("dashPeriod").after(fb)}
+    const t0=new Date(),cy=t0.getMonth()>=3?t0.getFullYear():t0.getFullYear()-1,hasM=new Set(S.exp.map(e=>e.d.slice(0,7)));
+    const fyl=y=>y+"–"+String((y+1)%100).padStart(2,"0");
+    let h=`<p class="note fyhint">${T("আর্থিক বছর বেছে নিন (এপ্রিল থেকে মার্চ)","Pick a financial year (April to March)")}</p><div class="fyrow">`+
+      [cy-1,cy,cy+1].map(y=>`<button class="fyc" data-fy="${y}" aria-pressed="${y===dashFY}"><b>${y}</b><small>–${String((y+1)%100).padStart(2,"0")}</small></button>`).join("")+`</div>`;
+    if(dashFY!=null){h+=`<div class="chips fymonths"><button class="chip" data-p="fy:${dashFY}" aria-pressed="${dashP==="fy:"+dashFY}">${T("পুরো বছর","Whole year")} ${fyl(dashFY)}</button>`;
+      for(let i=0;i<12;i++){const d=new Date(dashFY,3+i,1),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+        h+=`<button class="chip${hasM.has(k)?"":" dim"}" data-p="ym:${k}" aria-pressed="${dashP==="ym:"+k}">${mName(k)}</button>`}
+      h+=`</div>`}
+    fb.innerHTML=h;}
   document.querySelectorAll("#dashPeriod .chip").forEach(c=>c.setAttribute("aria-pressed",String(c.dataset.p===dashP)));
   const [from,to]=periodRange(dashP);
   const rows=S.exp.filter(e=>e.d>=from&&e.d<=to).map(e=>({...e,cat:catOf(e),payee:payeeOf(e)}));
@@ -964,9 +1010,9 @@ function renderDash(){
   if(!rows.length){body.innerHTML=`<p class="note">${T("এই সময়ে কোনো খরচ নেই। অন্য সময় বেছে দেখুন।","No spending in this period. Try another period.")}</p>`;return;}
 
   let incP=(S.inc||[]).filter(e=>e.d>=from&&e.d<=toE).reduce((t_,e)=>t_+e.a,0);
-  if(!(incP>0)&&+S.income>0){const pd=Math.min(Math.max(+S.payday||1,1),28);let c=0;
+  if(+S.income>0){const pd=Math.min(Math.max(+S.payday||1,1),28);let c=0;
     for(let y=+from.slice(0,4),m=+from.slice(5,7)-1;y*12+m<=(+toE.slice(0,4))*12+(+toE.slice(5,7)-1);m++){const yy=y+Math.floor(m/12),mm=((m%12)+12)%12,d=iso(new Date(yy,mm,pd));if(d>=from&&d<=toE)c++;}
-    incP=c*(+S.income);}
+    incP=Math.max(incP,c*(+S.income));}
   const byCat={};spend.forEach(r=>{byCat[r.cat]=(byCat[r.cat]||0)+r.a});
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   const maxC=cats.length?cats[0][1]:1;
@@ -974,7 +1020,7 @@ function renderDash(){
   const byP={};spend.forEach(r=>{const k=r.payee.toUpperCase();byP[k]=byP[k]||{name:r.payee,a:0,n:0,cat:r.cat,imp:r.src==="imp"};byP[k].a+=r.a;byP[k].n++;});
   const payees=Object.entries(byP).sort((a,b)=>b[1].a-a[1].a).slice(0,10);
 
-  const months=[];for(let i=-5;i<=0;i++)months.push(mKey(i));
+  const months=[];if(dashFY!=null){for(let i=0;i<12;i++){const d=new Date(dashFY,3+i,1);months.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"))}}else for(let i=-5;i<=0;i++)months.push(mKey(i));
   const mt=months.map(m=>S.exp.filter(e=>e.d.slice(0,7)===m&&catOf(e)!=="সঞ্চয়").reduce((s,e)=>s+e.a,0));
 
   const ins=[];
@@ -1015,6 +1061,13 @@ function renderDash(){
     ins.unshift(["warn",T(`সপ্তাহের মধ্যে ${WD_BN_FULL[hi]} সবচেয়ে বেশি খরচ হয়: গড়ে ${rs(wkAvg[hi])}।`,`You spend the most on ${WD_EN_FULL[hi]}s: about ${rs(wkAvg[hi])} on average.`)+(lo&&lo[1]!==hi?T(` সবচেয়ে কম ${WD_BN_FULL[lo[1]]}: ${rs(lo[0])}।`,` Least on ${WD_EN_FULL[lo[1]]}s: ${rs(lo[0])}.`):"")]);}
   const spanD=days,gUse=trendG!=="auto"?trendG:spanD<=14?"day":spanD<=90?"week":spanD<=400?"month":"quarter";
   const trend=bucketStats(spend,from,toE,gUse);
+  const svMonths=dashFY!=null?months:(()=>{const a=from.slice(0,7),b=toE.slice(0,7),o=[];let y=+a.slice(0,4),m=+a.slice(5,7);while((y+"-"+String(m).padStart(2,"0"))<=b&&o.length<120){o.push(y+"-"+String(m).padStart(2,"0"));m++;if(m>12){m=1;y++}}return o.slice(-12)})();
+  const svBy={};saved.forEach(r=>{(svBy[r.d.slice(0,7)]=svBy[r.d.slice(0,7)]||[]).push(r)});
+  const svV=svMonths.map(m=>sum(svBy[m]||[])),svMax=Math.max(1,...svV),svT=sum(saved);
+  const svCard=(saved.length||dashFY!=null)?`<h3>${T("সঞ্চয় (মাস অনুযায়ী)","Savings (month by month)")}</h3>
+    <p class="svsum">${saved.length?T(`মোট সঞ্চয় ${rs(svT)}`+(incP>0?` · আয়ের ${bn(Math.round(svT/incP*100))}%`:""),`Total saved ${rs(svT)}`+(incP>0?` · ${bn(Math.round(svT/incP*100))}% of income`:"")):T("এই সময়ে কোনো সঞ্চয় নেই","No savings in this period")}</p>
+    <div class="svbars">${svMonths.map((m,i)=>`<div class="svb" title="${esc(mName(m)+": "+(svV[i]?rs(svV[i]):T("কোনো সঞ্চয় নেই","no savings")))}"><i style="height:${svV[i]?Math.max(6,svV[i]/svMax*100):0}%"></i><small>${mShort(m)}</small></div>`).join("")}</div>
+    <ul class="svlist">${svMonths.map((m,i)=>{const L=svBy[m]||[],nm=[...new Set(L.map(r=>r.payee))].slice(0,3).map(payeeLabel).join(", ");return `<li class="${svV[i]?"":"none"}"><b>${mName(m)}</b><span>${svV[i]?rs(svV[i]):T("কোনো সঞ্চয় নেই","No savings")}</span>${nm?`<small>${esc(nm)}</small>`:""}</li>`}).join("")}</ul>`:"";
   const opts=sel=>CATS.map(c=>`<option value="${c}"${c===sel?" selected":""}>${catLabel(c)}</option>`).join("");
   body.innerHTML=
     `<div class="hero"><small>${T(`মোট খরচ · ${bnDate(from)} থেকে ${bnDate(to)}`,`Total spent · ${bnDate(from)} to ${bnDate(to)}`)}</small><div class="big">${rs(total)}</div><div class="row"><span class="chip2">${T("রোজের গড়","Daily average")} ${rs(total/days)}</span><span class="chip2">${T("লেনদেন","Payments")} ${cnt(spend.length)}</span>${days>=7?`<span class="chip2">${T("এই হারে মাসে","At this pace, a month")} ≈ ${rs(total/days*30)}</span><span class="chip2">${T("বছরে","a year")} ≈ ${rs(total/days*365)}</span>`:""}${saved.length?`<span class="chip2">${T("সঞ্চয়","Savings")} ${rs(sum(saved))}</span>`:""}${incP>0&&total>0?`<span class="chip2">${T("আয়ের","Of income")} ${bn(total/incP*100)}% ${T("খরচ","spent")}</span><span class="chip2">${incP>=total?T("আয় থেকে বাকি","Left from income")+" "+rs(incP-total):T("আয়ের চেয়ে বেশি খরচ","Spent above income")+" "+rs(total-incP)}</span>`:""}</div>${sparkSvg(mt)}</div>
@@ -1023,6 +1076,7 @@ function renderDash(){
     <div class="tiles">${cats.map(([c,v],i)=>`<div class="tile" style="--k:${catStyle(c)[0]};animation-delay:${(i*0.05).toFixed(2)}s"><i>${bn(v/total*100)}%</i><div class="e" aria-hidden="true">${catStyle(c)[1]}</div><b>${rs(v)}</b><span>${esc(catLabel(c))}</span></div>`).join("")}</div>
     <h3>${T("মাস অনুযায়ী খরচ","Spending by month")}</h3>
     <div class="mchart"><svg viewBox="0 0 360 170" role="img" aria-label="${T("গত ছয় মাসের খরচ","Spending over the last six months")}">${svg}</svg></div>
+    ${svCard}
     <h3>${T("সময় অনুযায়ী খরচের ধারা","Spending over time")}</h3>
     <div class="chips" id="trendChips" role="group" aria-label="${esc(T("কোন হিসাবে দেখবেন","View by"))}">${GRAN.map(([k,bn_,en])=>`<button class="chip" data-g="${k}" aria-pressed="${k===gUse}">${T(bn_,en)}</button>`).join("")}</div>
     <div class="mchart wk"><svg viewBox="0 0 360 190" role="img" aria-label="${esc(T("সময় অনুযায়ী খরচ","Spending over time"))}">${weeklySvg(trend)}</svg></div>
@@ -1045,6 +1099,8 @@ function renderDash(){
 }
 $("dashBody").addEventListener("click",e=>{const b=e.target.closest("#trendChips button[data-g]");if(!b)return;trendG=b.dataset.g;renderDash();});
 $("dashPeriod").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(!b)return;dashP=b.dataset.p;renderDash();});
+document.addEventListener("click",e=>{const f=e.target.closest("#fyBox .fyc");if(f){const y=+f.dataset.fy;dashP=dashFY===y?"all":"fy:"+y;renderDash();return}
+  const c=e.target.closest("#fyBox button[data-p]");if(c){dashP=c.dataset.p;renderDash()}});
 
 /* ---------- backup ---------- */
 $("bkCopy").onclick=async()=>{
@@ -1118,7 +1174,7 @@ function pAmt(v){if(typeof v==="number")return v;if(v==null)return NaN;
   return parseFloat(String(v).replace(/INR|Rs\.?|₹|,|\s/gi,"").replace(/(Dr|Cr)\.?$/i,""))}
 let isPhonePe=false;
 function classify(desc){
-  if(/gold saved|digi ?gold|safe ?gold|\bsip\b|mutual fund|recurring deposit|fixed deposit|term deposit|\bfd\b|\brd\b|\bppf\b|\bnps\b|sukanya|\bnsc\b|kisan vikas|zerodha|groww|upstox|\bcdsl\b|\bnsdl\b/i.test(desc))return "SAVE";
+  if(/gold saved|digi ?gold|safe ?gold|\bsip\b|mutual fund|recurring deposit|fixed deposit|term deposit|\bfd\b|\brd\b|\bppf\b|\bnps\b|sukanya|\bnsc\b|kisan vikas|zerodha|groww|upstox|\bcdsl\b|\bnsdl\b|sbi ?cap ?sec|e-?s?tdr\b|\bs?tdr\b|sbimf|icici ?pru|prudential|nextbillion|mutual ?fu/i.test(desc))return "SAVE";
   if(/credit ?card|\bcc ?(payment|pymt|bill)|card ?(bill|payment|pymt)|\bcred\b|cred\.club/i.test(desc))return "CARD";
   if(!isPhonePe&&/\batm\b|cash ?wd|cash withdrawal|cwdr|\bnwd\b|\bawb\b|atw/i.test(desc))return "ATM";
   if(isPhonePe||/upi|phonepe|paid to|payment to|gpay|google ?pay|paytm|bhim/i.test(desc))return "UPI";
@@ -1507,8 +1563,8 @@ function showPreview(){
     ((skipN||chainBad)?`<div class="err" role="alert">${T("⚠️ এই ফাইলের সব লাইন নিশ্চিতভাবে পড়া যায়নি"+(skipN?`: ${bn(skipN)}টা লাইনে টাকা আছে কিন্তু জমা না খরচ বোঝা যায়নি`:"")+(chainBad?`: ${bn(chainBad)}টা লাইনে ব্যালেন্স মিলছে না`:"")+"। মূল স্টেটমেন্টের সঙ্গে মিলিয়ে দেখুন, নয়তো Excel/CSV দিয়ে চেষ্টা করুন। এই লাইনগুলো হিসাবে ধরা হয়নি।","⚠️ Not every line of this file could be read for certain"+(skipN?`: ${bn(skipN)} lines have an amount but credit or debit is unclear`:"")+(chainBad?`: ${bn(chainBad)} lines don't agree with the running balance`:"")+". Compare with the original statement, or try the Excel/CSV version. These lines were not counted.")}</div>`:`<p class="note ok">${T("✔ কোনো অস্পষ্ট বা পড়া-না-যাওয়া লাইন পাওয়া যায়নি।","✔ No unclear or unreadable lines were found.")}</p>`)+
     ((pl.dup||pl.replace.length)?`<p class="note">${T(`UPI খরচের মধ্যে ${bn(pl.add.length)}টা নতুন। `,`${bn(pl.add.length)} of the UPI payments are new. `)}${pl.dup?T(bn(pl.dup)+"টা আগেই অ্যাপে আছে, সেগুলো আবার যোগ হবে না। ",bn(pl.dup)+" are already in the app and won't be added again. "):""}${pl.fuzzy?T(bn(pl.fuzzy)+"টা PhonePe ও ব্যাংকের স্টেটমেন্টে একদিন এদিক-ওদিক তারিখে ছিল, একই টাকা, তাই একটাই গোনা হলো। ","For "+bn(pl.fuzzy)+" payments the PhonePe and bank dates differ by a day with the same amount, so they were counted once. "):""}${pl.replace.length?T(bn(pl.replace.length)+"টা আপনার হাতে লেখা খরচের সঙ্গে মিলেছে, সেগুলো দুবার গোনা হবে না।",bn(pl.replace.length)+" match payments you entered by hand and won't be counted twice."):""}</p>`:"")+
     (deb.length?`<h3>${T("খরচ","Spending")}</h3>`:"")+
-    TYPES.map(k=>row(k,typeLabel(k),k==="UPI"||k==="CARD"||k==="ATM")).join("")+
-    (sum.SAVE?`<p class="note">${T(`সঞ্চয় খরচ নয়। এটা টিক না দিয়ে মাসের সঞ্চয়ের অঙ্কটা "জমানোর লক্ষ্য"-তে বসান।`,`Savings are not spending. Leave this unticked and put your monthly savings amount in "Savings goal".`)}</p>`:"")+
+    TYPES.map(k=>row(k,typeLabel(k),k==="UPI"||k==="CARD"||k==="ATM"||k==="SAVE")).join("")+
+    (sum.SAVE?`<p class="note">${T(`সঞ্চয় খরচ নয়। টিক থাকলে এগুলো খরচে গোনা হবে না, আলাদা "সঞ্চয়" অংশে মাস অনুযায়ী দেখাবে।`,`Savings are not spending. When ticked they are not counted as spending; they show month by month in the "Savings" section.`)}</p>`:"")+
     (cr.length?`<h3>${T("জমা (আয়)","Credits (income)")}</h3>`+CTYPES.map(k=>row(k,ctypeLabel(k),k==="SAL"||k==="INT")).join("")+
       `<p class="note">${T("বেতন/পেনশন আর সুদ টিক দেওয়া আছে। অন্যের কাছ থেকে পাওয়া টাকা কোনো ধার ফেরত বা নিজের টাকা হতে পারে, তাই সেটা আপনি বুঝে টিক দিন।","Salary/pension and interest are ticked. Money from others may be a loan repayment or your own money, so tick it only if it is really income.")}</p>`:"")+
     (own.length?`<div class="pick"><label for="pk_OWN"><input type="checkbox" id="pk_OWN"> ${T(`নিজের এক অ্যাকাউন্ট থেকে অন্যটায় সরানো টাকা (${cnt(own.length)}) এগুলোও গুনুন`,`Money moved between your own accounts (${cnt(own.length)}) count these too`)}</label><span class="num">${rs(own.reduce((t,r)=>t+r.a,0)/2)}</span></div><p class="note">${T("একই টাকা একই দিনে বা পরের দিনে একবার বেরিয়েছে আর একবার ঢুকেছে, তাই এগুলোকে নিজের টাকা সরানো ধরে খরচ বা আয় থেকে বাদ রেখেছি। ভুল মনে হলে টিক দিন।","The same amount went out and came in on the same or next day, so I treated these as moving your own money and left them out of spending and income. Tick if that looks wrong.")}</p>`:"")+
