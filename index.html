@@ -176,6 +176,8 @@ li.payee select{flex:0 1 46%;font-size:.85rem;padding:6px 8px}
 .hero svg{width:100%;height:46px;display:block;margin-top:6px}
 .hero .sl{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;opacity:.92;stroke-dasharray:1;animation:draw 1.1s ease-out both}
 .hero .sd{fill:#fff;animation:fade .9s .6s both}
+.trust{margin:0 0 8px;padding:8px 12px;border-radius:10px;font-size:.88rem;font-weight:600}.trust.ok{background:var(--go-bg)}.trust.bad{background:var(--wait-bg)}
+.insmore{margin-top:6px}.insmore summary{cursor:pointer;font-weight:600;padding:6px 0}.fyc.fy-arch{--c1:#94a3b8;--c2:#475569}
 .hero .hsum{margin:4px 0 6px;font-size:.98rem;line-height:1.5;opacity:.95}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:2px 0 4px}
 .st{position:relative;border-radius:18px;padding:12px 12px 11px;min-width:0;overflow:hidden;background:color-mix(in srgb,var(--k) 16%,var(--card));border:1px solid color-mix(in srgb,var(--k) 38%,transparent)}
@@ -839,7 +841,7 @@ function catOf(e){
   return e.a<300?"বাজার ও মুদি":"অন্যান্য";
 }
 const rsShort=n=>n>=100000?"₹"+(n/100000).toLocaleString(LOC(),{maximumFractionDigits:1})+T("লা","L"):n>=1000?"₹"+(n/1000).toLocaleString(LOC(),{maximumFractionDigits:1})+T("হা","k"):rs(n);
-let dashP=null,dashFY=null;
+let dashP=null,dashFY=null,fyArch=false;
 const fyOfMonth=m=>(+m.slice(5,7)>=4)?+m.slice(0,4):+m.slice(0,4)-1;
 function periodRange(p){
   const t=new Date();t.setHours(0,0,0,0);
@@ -1004,8 +1006,12 @@ function renderDash(){
   {let fb=$("fyBox");if(!fb){fb=document.createElement("div");fb.id="fyBox";$("dashPeriod").after(fb)}
     const t0=new Date(),cy=t0.getMonth()>=3?t0.getFullYear():t0.getFullYear()-1,hasM=new Set(S.exp.map(e=>e.d.slice(0,7)));
     const fyl=y=>y+"–"+String((y+1)%100).padStart(2,"0");
-    let h=`<p class="note fyhint">${T("আর্থিক বছর বেছে নিন (এপ্রিল থেকে মার্চ)","Pick a financial year (April to March)")}</p><div class="fyrow">`+
-      [cy-1,cy,cy+1].map(y=>`<button class="fyc ${y<cy?"fy-past":y===cy?"fy-cur":"fy-next"}" data-fy="${y}" aria-pressed="${y===dashFY}"><b>${y}</b><small>–${String((y+1)%100).padStart(2,"0")}</small></button>`).join("")+`</div>`;
+    const old=[...new Set([...hasM].map(fyOfMonth).filter(y=>y<cy))].sort((a,b)=>b-a);
+    if(dashFY!=null&&dashFY<cy)fyArch=true;
+    const circ=(y,c)=>`<button class="fyc ${c}" data-fy="${y}" aria-pressed="${y===dashFY}"><b>${y}</b><small>–${String((y+1)%100).padStart(2,"0")}</small></button>`;
+    let h=`<p class="note fyhint">${T("আর্থিক বছর বেছে নিন (এপ্রিল থেকে মার্চ)","Pick a financial year (April to March)")}</p><div class="fyrow">`+circ(cy,"fy-cur")+
+      (old.length?`<button class="fyc fy-arch" data-arch="1" aria-pressed="${fyArch}"><b>🗂</b><small>${T("আর্কাইভ","Archive")}</small></button>`:"")+`</div>`;
+    if(old.length&&fyArch)h+=`<p class="note fyhint">${T("আগের বছরগুলো","Earlier years")}</p><div class="fyrow">`+old.map(y=>circ(y,"fy-past")).join("")+`</div>`;
     if(dashFY!=null){h+=`<div class="chips fymonths"><button class="chip" data-p="fy:${dashFY}" aria-pressed="${dashP==="fy:"+dashFY}">${T("পুরো বছর","Whole year")} ${fyl(dashFY)}</button>`;
       for(let i=0;i<12;i++){const d=new Date(dashFY,3+i,1),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
         h+=`<button class="chip${k>t0.getFullYear()+"-"+String(t0.getMonth()+1).padStart(2,"0")?" dim":""}" data-p="ym:${k}" aria-pressed="${dashP==="ym:"+k}">${mName(k)}</button>`}
@@ -1083,17 +1089,16 @@ function renderDash(){
   const bigSum=sum(bigP),dailySum=sum(spend.filter(r=>r.a<10000)),mAvg=total/Math.max(1,days/30.4);
   const stat=(k,ic,lab,val,note)=>`<div class="st" style="--k:${k}"><i class="ic" aria-hidden="true">${ic}</i><small>${lab}</small><b>${val}</b><em>${note}</em></div>`;
   const statTiles=`<div class="stats">`+[
-    stat("#2fb67a","💰",T("মোট খরচ","Total spent"),rs(total),T(`মাসে গড়ে ≈ ${rs(mAvg)}`,`≈ ${rs(mAvg)} a month`)),
-    stat("#3b82f6","🏠",T("দৈনন্দিন খরচ","Everyday spending"),rs(dailySum),T("বড় পেমেন্ট আর সঞ্চয় বাদে","Without big payments and savings")),
-    stat("#14b8a6","📅",T("রোজের গড়","Daily average"),rs(total/days),T(`${bn(days)} দিনের গড়`,`Average over ${bn(days)} days`)),
-    stat("#f5b301","🪙",T("সঞ্চয়","Savings"),rs(svT),incP>0&&svT>0?T(`আয়ের ${bn(Math.round(svT/incP*100))}%`,`${bn(Math.round(svT/incP*100))}% of income`):T("FD, SIP, সোনা ইত্যাদি","FD, SIP, gold etc.")),
+    stat("#3b82f6","🏠",T("দৈনন্দিন খরচ","Everyday spending"),rs(dailySum),T("বড় পেমেন্ট (₹10,000+) আর সঞ্চয় বাদে বাকি সব","Everything except big payments (₹10,000+) and savings")),
+    stat("#14b8a6","📅",T("রোজের গড়","Daily average"),rs(total/days),T(`মোট খরচ ÷ ${bn(days)} দিন`,`Total spent ÷ ${bn(days)} days`)),
+    stat("#f5b301","🪙",T("সঞ্চয়","Savings"),rs(svT),incP>0&&svT>0?T(`আয়ের ${bn(Math.round(svT/incP*100))}%`,`${bn(Math.round(svT/incP*100))}% of income`):T("FD, SIP, সোনা: খরচে ধরা হয়নি","FD, SIP, gold: not counted as spending")),
     stat("#f97316","🏢",T("বড় খরচ","Big payments"),rs(bigSum),T(`${bn(bigP.length)}টা পেমেন্ট, প্রতিটা ₹10,000 বা বেশি`,`${bn(bigP.length)} payments of ₹10,000 or more`)),
     incP>0?stat("#8b5cf6","📊",T("আয়ের কত অংশ খরচ","Share of income spent"),bn(Math.round(total/incP*100))+"%",incP>=total?T(`বাকি ${rs(incP-total)}`,`${rs(incP-total)} left`):T(`আয়ের চেয়ে ${rs(total-incP)} বেশি`,`${rs(total-incP)} above income`)):"",
-    stat("#ec4899","🧾",T("খরচের লেনদেন","Payments"),cnt(spend.length),incP>0?T(`আয় ${rs(incP)}`,`Income ${rs(incP)}`):T("টাকা বেরিয়েছে","Money out"))
+    stat("#ec4899","🧾",T("খরচের লেনদেন","Payments"),cnt(spend.length),incP>0?T(`আয় ${rs(incP)}`,`Income ${rs(incP)}`):T("মোট কতবার টাকা বেরিয়েছে","How many times money went out"))
   ].join("")+`</div>`;
   const opts=sel=>CATS.map(c=>`<option value="${c}"${c===sel?" selected":""}>${catLabel(c)}</option>`).join("");
   body.innerHTML=
-    `<div class="hero"><small>${T(`মোট খরচ · ${bnDate(from)} থেকে ${bnDate(to)}`,`Total spent · ${bnDate(from)} to ${bnDate(to)}`)}</small><div class="big">${rs(total)}</div><p class="hsum">${T(`${bnDate(from)} থেকে ${bnDate(to)}-এ খরচ ${rs(total)}`+(days>=28?`, মাসে গড়ে প্রায় ${rs(total/days*30.4)}`:"")+(topC?`। সবচেয়ে বড় খাত "${catLabel(topC[0])}" (${bn(topC[1]/total*100)}%)`:"")+"।",`Spent ${rs(total)} from ${bnDate(from)} to ${bnDate(to)}`+(days>=28?`, about ${rs(total/days*30.4)} a month`:"")+(topC?`. Biggest category: "${catLabel(topC[0])}" (${bn(topC[1]/total*100)}%).`:"."))}</p>${sparkSvg(mt)}</div>
+    `${S.audit&&S.audit.lines?`<p class="trust ${S.audit.bad?"bad":"ok"}">${S.audit.bad?T(`⚠️ আনা ${bn(S.audit.lines)}টা লাইনের মধ্যে ${bn(S.audit.bad)}টা মেলেনি। মূল স্টেটমেন্টের সঙ্গে মিলিয়ে দেখুন।`,`⚠️ ${bn(S.audit.bad)} of ${bn(S.audit.lines)} imported lines did not agree. Compare with the original statement.`):T(`✔ ব্যাংকের হিসাবের সঙ্গে মিলেছে: আনা ${bn(S.audit.lines)}টা লাইনে একটাও গরমিল নেই`,`✔ Agrees with the bank: none of the ${bn(S.audit.lines)} imported lines has a mismatch`)}</p>`:""}<div class="hero"><small>${T(`মোট খরচ · ${bnDate(from)} থেকে ${bnDate(to)}`,`Total spent · ${bnDate(from)} to ${bnDate(to)}`)}</small><div class="big">${rs(total)}</div><p class="hsum">${T(`${bnDate(from)} থেকে ${bnDate(to)}-এ খরচ ${rs(total)}`+(days>=28?`, মাসে গড়ে প্রায় ${rs(total/days*30.4)}`:"")+(topC?`। সবচেয়ে বড় খাত "${catLabel(topC[0])}" (${bn(topC[1]/total*100)}%)`:"")+"।",`Spent ${rs(total)} from ${bnDate(from)} to ${bnDate(to)}`+(days>=28?`, about ${rs(total/days*30.4)} a month`:"")+(topC?`. Biggest category: "${catLabel(topC[0])}" (${bn(topC[1]/total*100)}%).`:"."))}</p>${sparkSvg(mt)}</div>
     ${statTiles}
     <h3>${T("কোন খাতে কত","By category")}</h3>
     <div class="donutbox">${donutSvg(cats,total)}</div>
@@ -1109,7 +1114,7 @@ function renderDash(){
     ${svCard}
     <h3>${T("আপনার উপদেষ্টা","Your advisor")}</h3>
     <p class="note">${T("এগুলো আপনার খরচ দেখে পরামর্শ। সিদ্ধান্ত আপনার।","These are suggestions from your own spending. The decision is yours.")}</p>
-    <ul class="ins">${ins.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>
+    <ul class="ins">${ins.slice(0,4).map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>${ins.length>4?`<details class="insmore"><summary>${T(`আরও ${bn(ins.length-4)}টা পরামর্শ`,`${bn(ins.length-4)} more tips`)}</summary><ul class="ins">${ins.slice(4).map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul></details>`:""}
     <h3>${T("কাকে কত (সবচেয়ে বেশি 10)","Who got how much (top 10)")}</h3>
     <p class="note">${T("খাত ভুল মনে হলে পাশের ঘর থেকে বদলে দিন। ওই নামের সব খরচ নতুন খাতে চলে যাবে।","If a category looks wrong, change it in the box alongside. All payments to that name move to the new category.")}</p>
     <ul id="payeeList">${payees.map(([k,p],i)=>`<li class="payee"><span class="what">${esc(payeeLabel(p.name))}<small>${bn(p.n)} ${T("বার",p.n===1?"time":"times")} · ${rs(p.a)}</small></span><select data-i="${i}" aria-label="${esc(T(p.name+"-এর খাত","Category for "+payeeLabel(p.name)))}">${opts(p.cat)}</select></li>`).join("")}</ul>
@@ -1123,7 +1128,7 @@ function renderDash(){
 }
 $("dashBody").addEventListener("click",e=>{const b=e.target.closest("#trendChips button[data-g]");if(!b)return;trendG=b.dataset.g;renderDash();});
 $("dashPeriod").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(!b)return;dashP=b.dataset.p;renderDash();});
-document.addEventListener("click",e=>{const f=e.target.closest("#fyBox .fyc");if(f){const y=+f.dataset.fy;dashP=dashFY===y?"all":"fy:"+y;renderDash();return}
+document.addEventListener("click",e=>{const f=e.target.closest("#fyBox .fyc");if(f&&f.dataset.arch){fyArch=!fyArch;renderDash();return}if(f){const y=+f.dataset.fy;dashP=dashFY===y?"all":"fy:"+y;renderDash();return}
   const c=e.target.closest("#fyBox button[data-p]");if(c){dashP=c.dataset.p;renderDash()}});
 
 /* ---------- backup ---------- */
@@ -1654,6 +1659,7 @@ function doImport(){
   /* remember big amounts (date, amount, in/out only) so a transfer shown in another account's statement is recognised */
   const sc={};(S.seen||[]).forEach(q=>{const k=q.x+q.d+"|"+q.a;sc[k]=(sc[k]||0)+1});
   pending.filter(r=>r.a>=500).forEach(r=>{const x=r.dir==="C"?"C":"D",k=x+r.d+"|"+r.a;if(sc[k]>0){sc[k]--;return}(S.seen=S.seen||[]).push({x,d:r.d,a:r.a,ac:r.ac||""})});
+  {const a=S.audit||{lines:0,bad:0};S.audit={lines:a.lines+pending.length,bad:a.bad+(chainBad||0)+(skipN||0)}}
   if(ACCT){S.accts=S.accts||[];if(!S.accts.includes(ACCT))S.accts.push(ACCT)}
   if(S.seen&&S.seen.length>600)S.seen=S.seen.slice(-600);
   save();fillAccts();pending=null;$("preview").hidden=true;$("stmt").value="";
