@@ -208,7 +208,7 @@ ul.ins li.good{border-left-color:var(--go)}ul.ins li.good::before{content:"✅"}
 .fchain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
 .fchain li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:center;border:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--card);border-radius:12px;padding:9px 12px;font-size:.95rem;position:relative;margin-bottom:26px}
 .fchain li::before{counter-increment:fs;content:counter(fs);width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--card);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem}
-:root[lang="bn"] .fchain li::before{content:counter(fs,bengali)}
+:root[lang="bn"] .fchain li::before{content:counter(fs,decimal)}
 .fchain li::after{content:"↓";position:absolute;left:50%;bottom:-25px;transform:translateX(-50%);color:var(--accent);font-weight:700;font-size:1.2rem;line-height:24px}
 .fchain:last-of-type li:last-child{margin-bottom:0;background:var(--go-bg);border-color:var(--go)}
 .fchain:last-of-type li:last-child::after{display:none}
@@ -223,6 +223,7 @@ textarea{font:inherit;font-size:.85rem;color:var(--ink);background:var(--bg);bor
 @media (prefers-reduced-motion:reduce){.meter span{transition:none}}
 body.locked>*:not(#lockscr){visibility:hidden!important}
 #lockscr{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.atmcover{background:var(--bg);border:1px solid var(--accent);border-radius:12px;padding:10px 12px;margin:10px 0}.atmcover p{margin:6px 0 4px}
 #lockscr .lk{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;text-align:center}
 #lockscr h2{margin:0;font-size:1.3rem}
 .pinin{font-size:1.8rem;letter-spacing:.6em;text-align:center;width:100%;box-sizing:border-box}
@@ -257,6 +258,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
     <button class="helpbtn" id="obOpen"><span data-en="How to use">কীভাবে ব্যবহার করবেন?</span></button>
     <a class="helpbtn sharebtn" id="shareApp" href="https://wa.me/?text=%E0%A6%86%E0%A6%9C%E0%A6%95%E0%A7%87%E0%A6%B0%20%E0%A6%96%E0%A6%B0%E0%A6%9A%20%E0%A6%85%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%AA%3A%20%E0%A6%B0%E0%A7%8B%E0%A6%9C%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A7%81%E0%A6%A8%20%E0%A6%86%E0%A6%9C%20%E0%A6%95%E0%A6%A4%20%E0%A6%9F%E0%A6%BE%E0%A6%95%E0%A6%BE%20%E0%A6%A8%E0%A6%BF%E0%A6%B6%E0%A7%8D%E0%A6%9A%E0%A6%BF%E0%A6%A8%E0%A7%8D%E0%A6%A4%E0%A7%87%20%E0%A6%96%E0%A6%B0%E0%A6%9A%20%E0%A6%95%E0%A6%B0%E0%A6%BE%20%E0%A6%AF%E0%A6%BE%E0%A6%AF%E0%A6%BC%E0%A5%A4%20%E0%A6%B2%E0%A6%97%E0%A6%87%E0%A6%A8%20%E0%A6%A8%E0%A7%87%E0%A6%87%2C%20%E0%A6%B8%E0%A6%AC%20%E0%A6%A4%E0%A6%A5%E0%A7%8D%E0%A6%AF%20%E0%A6%B6%E0%A7%81%E0%A6%A7%E0%A7%81%20%E0%A6%86%E0%A6%AA%E0%A6%A8%E0%A6%BE%E0%A6%B0%20%E0%A6%AB%E0%A7%8B%E0%A6%A8%E0%A7%87%E0%A5%A4%20https%3A%2F%2Fpappa6.github.io%2Fajker-khoroch%2F" target="_blank" rel="noopener"><span data-en="Share with a friend">বন্ধুকে পাঠান</span></a>
     <button class="helpbtn installtop" id="installTop" hidden><span data-en="📲 Install on phone">📲 ফোনে বসান</span></button>
+    <button class="helpbtn" id="exitBtn" aria-label="Exit">🔒 Exit</button>
     <button class="helpbtn" id="langBtn" aria-label="ভাষা / Language">English</button>
   </header>
   <div class="datestrip" id="dateStrip" aria-live="polite"></div>
@@ -277,12 +279,16 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
       <button class="x" id="obClose" aria-label="বন্ধ করুন / Close">✕</button>
     </div>
     <p style="margin:0">এই অ্যাপ রোজ বলে দেয়, আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। কোনো লগইন নেই, আপনার সব তথ্য শুধু আপনার ফোনেই থাকে।<small class="en">This app tells you every day how much you can safely spend today. No login. All your data stays only on your phone.</small></p>
+    <div class="atmcover"><strong>ATM বা ব্যাঙ্ক কাউন্টার থেকে টাকা তুললে কী হয়, আগে জেনে নিন</strong>
+      <p>আপনি যে টাকা তুলবেন, পুরোটাই সেদিন খরচ ধরা হয়, কারণ ব্যাঙ্ক থেকে সেটা বেরিয়ে গেছে। ওই নগদ দিয়ে কাজের লোক, দুধ, বাজার, যা-ই দিন, আলাদা করে লিখতে হবে না। অ্যাপে সেটা "নগদ তোলা (সব নগদ খরচ)" নামে একটা খরচ হিসেবে দেখাবে।</p>
+      <small class="en"><strong>What happens when you withdraw cash:</strong> the full amount you take out at an ATM or bank counter is counted as spent that day, because it has left your bank. Whatever you pay with that cash (domestic help, milk, groceries, anything) you do not need to enter separately. The app shows it as one expense, "Cash withdrawal (all cash spending)".</small></div>
     <ol class="flow">
-      <li><b>১</b><span><strong>নিজের হিসেব বসান:</strong> নিচে "আমার মাসের হিসেব" খুলে মাসিক আয়, কত তারিখে আসে, আর নির্দিষ্ট খরচ (ভাড়া, বিল, EMI) লিখুন।<small class="en"><strong>Set up your budget:</strong> open "আমার মাসের হিসেব" (My monthly budget) below and enter your monthly income, the date it arrives, and fixed costs (rent, bills, EMI).</small></span></li>
-      <li><b>২</b><span><strong>স্টেটমেন্ট দিন:</strong> "স্টেটমেন্ট থেকে খরচ আনুন"-এ PhonePe বা ব্যাঙ্কের স্টেটমেন্ট (PDF বা Excel) দিন। সব UPI খরচ নিজে থেকেই ঢুকে যাবে।<small class="en"><strong>Add your statement:</strong> in "Import spending from a statement", choose your PhonePe or bank statement (PDF or Excel). All UPI payments are added automatically.</small></span></li>
-      <li><b>৩</b><span><strong>নগদ খরচ লিখুন:</strong> নগদে কিছু কিনলে "নগদ খরচ লিখুন"-এ অঙ্কটা লিখুন। রোজ ১০ সেকেন্ড।<small class="en"><strong>Note cash spending:</strong> when you pay in cash, type the amount in "নগদ খরচ লিখুন" (Add cash expense). About 10 seconds a day.</small></span></li>
-      <li><b>৪</b><span><strong>রোজ রঙ দেখুন:</strong> উপরের বড় ঘরে 🟢 সবুজ মানে নিরাপদ, 🟡 হলুদ মানে সাবধান, 🔴 লাল মানে আজ থামুন।<small class="en"><strong>Check the colour daily:</strong> in the big box at the top, 🟢 green means safe, 🟡 yellow means careful, 🔴 red means stop spending today.</small></span></li>
-      <li><b>৫</b><span><strong>ব্যাকআপ রাখুন:</strong> সপ্তাহে একবার নিচের "ব্যাকআপ" থেকে কপি করে নিজেকে WhatsApp-এ পাঠান।<small class="en"><strong>Keep a backup:</strong> once a week, copy it from "ব্যাকআপ" (Backup) below and send it to yourself on WhatsApp.</small></span></li>
+      <li><b>1</b><span><strong>নিজের হিসেব বসান:</strong> নিচে "আমার মাসের হিসেব" খুলে মাসিক আয়, কত তারিখে আসে, আর নির্দিষ্ট খরচ (ভাড়া, বিল, EMI) লিখুন।<small class="en"><strong>Set up your budget:</strong> open "আমার মাসের হিসেব" (My monthly budget) below and enter your monthly income, the date it arrives, and fixed costs (rent, bills, EMI).</small></span></li>
+      <li><b>2</b><span><strong>স্টেটমেন্ট দিন:</strong> "স্টেটমেন্ট থেকে খরচ আনুন"-এ PhonePe বা ব্যাঙ্কের স্টেটমেন্ট (PDF বা Excel) দিন। সব UPI খরচ নিজে থেকেই ঢুকে যাবে।<small class="en"><strong>Add your statement:</strong> in "Import spending from a statement", choose your PhonePe or bank statement (PDF or Excel). All UPI payments are added automatically.</small></span></li>
+      <li><b>3</b><span><strong>নগদ খরচ লিখুন:</strong> নগদে কিছু কিনলে "নগদ খরচ লিখুন"-এ অঙ্কটা লিখুন। রোজ 10 সেকেন্ড। তবে ATM থেকে তোলা টাকার খরচ এখানে লিখবেন না, ওটা আগেই গোনা হয়ে গেছে।<small class="en"><strong>Note cash spending:</strong> when you pay in cash, type the amount in "নগদ খরচ লিখুন" (Add cash expense). About 10 seconds a day. Do not enter spending from money you took out at an ATM here; it is already counted.</small></span></li>
+      <li><b>4</b><span><strong>রোজ রঙ দেখুন:</strong> উপরের বড় ঘরে 🟢 সবুজ মানে নিরাপদ, 🟡 হলুদ মানে সাবধান, 🔴 লাল মানে আজ থামুন।<small class="en"><strong>Check the colour daily:</strong> in the big box at the top, 🟢 green means safe, 🟡 yellow means careful, 🔴 red means stop spending today.</small></span></li>
+      <li><b>5</b><span><strong>ব্যাকআপ রাখুন:</strong> সপ্তাহে একবার নিচের "ব্যাকআপ" থেকে কপি করে নিজেকে WhatsApp-এ পাঠান।<small class="en"><strong>Keep a backup:</strong> once a week, copy it from "ব্যাকআপ" (Backup) below and send it to yourself on WhatsApp.</small></span></li>
+      <li><b>6</b><span><strong style="color:var(--stop)">নিজের পিন বসান:</strong> নিচে "পিন-লক (ঐচ্ছিক)" খুলে নিজের 4 অঙ্কের পিন বসান। তাহলে কেউ আপনার ফোন হাতে নিলেও আপনার হিসেব দেখতে পাবে না। পিন শুধু আপনার ফোনেই থাকে।<small class="en"><strong style="color:var(--stop)">Set your own PIN:</strong> open "PIN lock (optional)" below and choose your own 4-digit PIN. Then nobody who picks up your phone can see your budget. Your PIN stays only on your phone.</small></span></li>
     </ol>
     <div class="gets"><strong>যা পাবেন</strong> <span class="en-inline">/ What you get</span>
       <ul>
@@ -310,7 +316,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
   <div class="signal" id="signal" role="status">
     <div class="lamp"><span class="dot"></span><span id="lampText">নিরাপদ</span></div>
     <div class="sub"><span data-en="You can still safely spend today">আজ আপনি নিশ্চিন্তে আর খরচ করতে পারেন</span></div>
-    <div class="big" id="leftToday">₹০</div>
+    <div class="big" id="leftToday">₹0</div>
     <div class="meter"><span id="meterBar" style="width:0"></span></div>
     <div class="sub" id="limitLine"></div>
   </div>
@@ -412,9 +418,9 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
       <button class="chip" data-p="w0"><span data-en="This week">এই সপ্তাহ</span></button>
       <button class="chip" data-p="m0"><span data-en="This month">এই মাস</span></button>
       <button class="chip" data-p="m1"><span data-en="Last month">গত মাস</span></button>
-      <button class="chip" data-p="m3"><span data-en="3 months">৩ মাস</span></button>
-      <button class="chip" data-p="m6"><span data-en="6 months">৬ মাস</span></button>
-      <button class="chip" data-p="y1"><span data-en="1 year">১ বছর</span></button>
+      <button class="chip" data-p="m3"><span data-en="3 months">3 মাস</span></button>
+      <button class="chip" data-p="m6"><span data-en="6 months">6 মাস</span></button>
+      <button class="chip" data-p="y1"><span data-en="1 year">1 বছর</span></button>
       <button class="chip" data-p="all"><span data-en="All time">সব সময়</span></button>
     </div>
     <div id="unsBox"></div>
@@ -423,11 +429,11 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
   </section>
 
   <section id="future">
-    <h2><span data-en="The next 12 months">সামনের ১২ মাস</span></h2>
-    <p class="note"><span data-en="Robert Hall, a 2026 Nobel laureate in economics, showed that what you spend today should depend not only on this month&#x27;s income but on your expected future income and obligations. This section does that calculation.">২০২৬-এর অর্থনীতির নোবেলজয়ী রবার্ট হলের তত্ত্ব বলে, আজ কত খরচ করবেন তা ঠিক হওয়া উচিত শুধু এই মাসের আয় দেখে নয়, সামনের আয় আর দায় মিলিয়ে। এই অংশ সেই হিসেবটাই করে।</span></p>
+    <h2><span data-en="The next 12 months">সামনের 12 মাস</span></h2>
+    <p class="note"><span data-en="Robert Hall, a 2026 Nobel laureate in economics, showed that what you spend today should depend not only on this month&#x27;s income but on your expected future income and obligations. This section does that calculation.">2026-এর অর্থনীতির নোবেলজয়ী রবার্ট হলের তত্ত্ব বলে, আজ কত খরচ করবেন তা ঠিক হওয়া উচিত শুধু এই মাসের আয় দেখে নয়, সামনের আয় আর দায় মিলিয়ে। এই অংশ সেই হিসেবটাই করে।</span></p>
     <div class="perm">
       <span class="sub"><span data-en="Sustainable daily limit, counting the future">ভবিষ্যৎ মিলিয়ে রোজের টেকসই সীমা</span></span>
-      <span class="mid" id="permVal">₹০</span>
+      <span class="mid" id="permVal">₹0</span>
       <span class="sub" id="permLine"></span>
     </div>
     <div class="guide" id="guidance" hidden></div>
@@ -506,7 +512,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
   <section>
     <details id="lockSet">
       <summary><span data-en="PIN lock (optional)">পিন-লক (ঐচ্ছিক)</span></summary>
-      <p class="note"><span data-en="Ask for a 4-digit PIN whenever the app is opened. It keeps the app away from someone who picks up your phone. It is a lock on the screen, not a scrambler of your data.">অ্যাপ খুললেই ৪ অঙ্কের পিন চাইবে। কেউ আপনার ফোন হাতে নিলে অ্যাপটা দেখতে পাবে না। এটা পর্দার তালা, ডেটা গুলিয়ে রাখার ব্যবস্থা নয়।</span></p>
+      <p class="note"><span data-en="Ask for a 4-digit PIN when the app is opened, and again after it has been left alone or away for the time you choose. It keeps the app away from someone who picks up your phone. It is a lock on the screen, not a scrambler of your data.">অ্যাপ খুললে 4 অঙ্কের পিন চাইবে, আর আপনার বেছে নেওয়া সময় অ্যাপ ফেলে রাখলে বা অন্য অ্যাপে থাকলে আবার চাইবে। কেউ আপনার ফোন হাতে নিলে অ্যাপটা দেখতে পাবে না। এটা পর্দার তালা, ডেটা গুলিয়ে রাখার ব্যবস্থা নয়।</span></p>
       <div id="lockBody" class="lkset"></div>
     </details>
   </section>
@@ -531,17 +537,8 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
   <section>
     <details id="feedback">
       <summary><span data-en="Give feedback">মতামত দিন</span></summary>
-      <p class="note"><span data-en="After using the app for a while, write your answers and tap &quot;Copy feedback&quot;, then paste and send it on WhatsApp to whoever shared the app with you. None of your spending amounts are included.">কিছুদিন ব্যবহারের পরে উত্তরগুলো লিখে "মতামত কপি করুন" চাপুন, তারপর যিনি অ্যাপটা পাঠিয়েছেন তাঁকে WhatsApp-এ পেস্ট করে পাঠান। আপনার খরচের কোনো অঙ্ক এতে যায় না।</span></p>
-      <label class="fbq" for="fbName"><span data-en="Your name">আপনার নাম</span><input id="fbName"></label>
-      <label class="fbq" for="fb1"><span data-en="1. Did statement import work? Which app&#x27;s or bank&#x27;s statement did you use?">১. স্টেটমেন্ট আনা ঠিকঠাক কাজ করেছে? কোন অ্যাপ বা ব্যাঙ্কের স্টেটমেন্ট দিয়েছিলেন?</span><textarea id="fb1"></textarea></label>
-      <label class="fbq" for="fb2"><span data-en="2. Did the spending picture show you anything new?">২. খরচের ছবি দেখে নতুন কিছু জানলেন?</span><textarea id="fb2"></textarea></label>
-      <label class="fbq" for="fb3"><span data-en="3. What was difficult? Where did you get stuck?">৩. কী অসুবিধা হয়েছে, কোথায় আটকে গেছেন?</span><textarea id="fb3"></textarea></label>
-      <label class="fbq" for="fb4"><span data-en="4. What else would make it better?">৪. আর কী থাকলে ভালো হতো?</span><textarea id="fb4"></textarea></label>
-      <label class="fbq" for="fb5"><span data-en="5. Would you pay ₹99 once to buy it?">৫. একবারে ₹৯৯ দিয়ে কিনতে রাজি হতেন?</span>
-        <select id="fb5"><option data-en="Choose" value="">বেছে নিন</option><option value="হ্যাঁ" data-en="Yes">হ্যাঁ</option><option value="হয়তো" data-en="Maybe">হয়তো</option><option value="না" data-en="No">না</option></select></label>
-      <button class="primary" id="fbCopy"><span data-en="Copy feedback">মতামত কপি করুন</span></button>
-      <p class="note" id="fbMsg" aria-live="polite"></p>
-      <textarea id="fbOut" hidden readonly aria-label="মতামতের লেখা"></textarea>
+      <p class="note fbask"><span data-en="Your valuable feedback on how you felt after using the app would help me a great deal. Wherever improvement is needed, I will be able to work on it, and more people will be able to use this app well. So please WhatsApp me and let me know on this number: 8001195515">অ্যাপ ব্যবহার করার পরে আপনাদের কেমন লাগল, সেই মূল্যবান মতামত আপনারা যদি দয়া করে আমাকে জানান, তাহলে যেখানে যেখানে উন্নতির প্রয়োজন আছে সেটা করতে গিয়ে আমি উপকৃত হব, এবং এই অ্যাপটাও আরও বেশি মানুষ ভালোভাবে ব্যবহার করতে পারবেন। তাই দয়া করে এই নম্বরে WhatsApp করে আমাকে জানাতে পারেন: 8001195515</span></p>
+      <a class="primary" id="fbWA" href="https://wa.me/918001195515" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;padding:11px 18px;border-radius:12px"><span data-en="Message on WhatsApp">WhatsApp-এ জানান</span></a>
     </details>
   </section>
   <p class="credit">Prepared by তন্ময় মুখার্জী</p>
@@ -552,16 +549,17 @@ const KEY="ajkerKhoroch.v1";
 const LANG_KEY="ajkerKhoroch.lang";
 let LANG=(()=>{try{return localStorage.getItem(LANG_KEY)==="en"?"en":"bn"}catch(_){return "bn"}})();
 const T=(b,e)=>LANG==="en"?e:b;
-const LOC=()=>LANG==="en"?"en-IN":"bn-IN";
+const LOC=()=>LANG==="en"?"en-IN":"bn-IN-u-nu-latn";
 const TAG_EN={"নগদ":"Cash","বাজার":"Market","ওষুধ":"Medicine","যাতায়াত":"Travel","খাবার":"Food","অন্যান্য":"Other","সঞ্চয়":"Savings","নগদ তোলা":"Cash withdrawal","অন্য ডেবিট":"Other debit","কার্ড বিল":"Card bill","UPI":"UPI"};
-const tagLabel=t=>LANG==="en"?(TAG_EN[t]||t):t;
+const CASHW="নগদ তোলা";
+const tagLabel=t=>t===CASHW?(LANG==="en"?"Cash withdrawal (all cash spending)":"নগদ তোলা (সব নগদ খরচ)"):LANG==="en"?(TAG_EN[t]||t):t;
 const CAT_EN={"বাজার ও মুদি":"Groceries & market","স্বাস্থ্য ও ওষুধ":"Health & medicine","বিল ও রিচার্জ":"Bills & recharge","খাবার ও মিষ্টি":"Food & sweets","যাতায়াত ও জ্বালানি":"Travel & fuel","পোশাক ও কেনাকাটা":"Clothes & shopping","বাড়ি ও মেরামত":"Home & repairs","পুজো ও দান":"Puja & donations","ডিজিটাল ও বিনোদন":"Digital & entertainment","পরিবার ও ব্যক্তিগত":"Family & personal","নগদ তোলা":"Cash withdrawal","অন্যান্য":"Other","সঞ্চয়":"Savings"};
-const catLabel=c=>LANG==="en"?(CAT_EN[c]||c):c;
+const catLabel=c=>c===CASHW?(LANG==="en"?"Cash withdrawal (all cash spending)":"নগদ তোলা (সব নগদ খরচ)"):LANG==="en"?(CAT_EN[c]||c):c;
 const HAND="হাতে লেখা: ";
 const payeeLabel=p=>p.startsWith(HAND)?T(HAND,"Entered by hand: ")+tagLabel(p.slice(HAND.length)):p==="নাম নেই"?T(p,"No name"):p;
 const TAGS=["নগদ","বাজার","ওষুধ","যাতায়াত","খাবার","অন্যান্য"];
 const TYPES=["UPI","SAVE","CARD","ATM","OTHER"];
-const typeLabel=k=>({UPI:"UPI",SAVE:T("সঞ্চয় ও বিনিয়োগ (FD, RD, SIP, সোনা ইত্যাদি)","Savings & investments (FD, RD, SIP, gold etc.)"),CARD:T("ক্রেডিট কার্ডের বিল","Credit card bill"),ATM:T("ATM থেকে নগদ তোলা","ATM cash withdrawal"),OTHER:T("অন্য ডেবিট (কার্ড, অটো-ডেবিট ইত্যাদি)","Other debits (card, auto-debit etc.)")})[k];
+const typeLabel=k=>({UPI:"UPI",SAVE:T("সঞ্চয় ও বিনিয়োগ (FD, RD, SIP, সোনা ইত্যাদি)","Savings & investments (FD, RD, SIP, gold etc.)"),CARD:T("ক্রেডিট কার্ডের বিল","Credit card bill"),ATM:T("ATM বা কাউন্টার থেকে নগদ তোলা (কাজের লোক, দুধ ও অন্যান্য সব নগদ খরচ)","Cash withdrawn at an ATM or bank counter (domestic help, milk and all other cash spending)"),OTHER:T("অন্য ডেবিট (কার্ড, অটো-ডেবিট ইত্যাদি)","Other debits (card, auto-debit etc.)")})[k];
 const CTYPES=["SAL","INT","REF","RCV","OTH"];
 const ctypeLabel=k=>({SAL:T("বেতন / পেনশন","Salary / pension"),INT:T("সুদ","Interest"),REF:T("ফেরত বা রিফান্ড (এটা আয় নয়)","Refunds (not income)"),RCV:T("অন্যের কাছ থেকে পাওয়া টাকা","Money received from others"),OTH:T("অন্য জমা","Other credits")})[k];
 const kindLabel=k=>({SAL:T("বেতন / পেনশন","Salary / pension"),INT:T("সুদ","Interest"),REF:T("ফেরত","Refunds"),RCV:T("অন্যের কাছ থেকে","From others"),OTH:T("অন্য","Other")})[k]||k;
@@ -712,7 +710,7 @@ function future(){
 function renderFuture(F,monthLimit,useF){
   $("permVal").textContent=rs(F.perm);
   $("permLine").textContent=F.pace==null
-    ?T("আজকের দামে, সামনের ১২ মাসের আয়, নির্দিষ্ট খরচ, জমা আর দায় মিলিয়ে।","At today's prices, counting the next 12 months of income, fixed costs, savings and obligations.")
+    ?T("আজকের দামে, সামনের 12 মাসের আয়, নির্দিষ্ট খরচ, জমা আর দায় মিলিয়ে।","At today's prices, counting the next 12 months of income, fixed costs, savings and obligations.")
     :T(`আপনার এখনকার খরচের হার রোজ প্রায় ${rs(F.pace)}। `,`You are currently spending about ${rs(F.pace)} a day. `)+(F.pace>F.perm?T(`এটা টেকসই সীমার চেয়ে ${rs(F.pace-F.perm)} বেশি।`,`That is ${rs(F.pace-F.perm)} above the sustainable limit.`):T(`এটা টেকসই সীমার মধ্যেই আছে।`,`That is within the sustainable limit.`));
   const g=$("guidance");
   if(F.upcoming&&F.active){
@@ -737,12 +735,12 @@ function renderFuture(F,monthLimit,useF){
   });
   const lr=F.rows[F.rows.length-1];
   if(lr){const hh=Math.abs(lr.cum)*span,yy=lr.cum>=0?zero-hh-5:zero+hh+12;s+=`<text class="val" x="${(left+(F.rows.length-1)*bw+bw/2).toFixed(1)}" y="${yy.toFixed(1)}" text-anchor="middle">${rsShort(lr.cum)}</text>`;}
-  svg.innerHTML=F.pace==null?`<text x="${W/2}" y="${H/2}" text-anchor="middle">${T("অন্তত ৭ দিনের খরচ লেখা হলে এখানে ছবি আসবে","A chart appears here after 7 days of spending")}</text>`:s;
+  svg.innerHTML=F.pace==null?`<text x="${W/2}" y="${H/2}" text-anchor="middle">${T("অন্তত 7 দিনের খরচ লেখা হলে এখানে ছবি আসবে","A chart appears here after 7 days of spending")}</text>`:s;
   $("projNote").textContent=F.pace==null
-    ?T("অন্তত ৭ দিনের খরচ লেখা হলে বা স্টেটমেন্ট আনলে, এখনকার হারে চললে প্রতি মাসের শেষে হাতে কত থাকবে তা দেখাবে।","After 7 days of spending, or a statement import, this shows how much you would have left at the end of each month at your current pace.")
+    ?T("অন্তত 7 দিনের খরচ লেখা হলে বা স্টেটমেন্ট আনলে, এখনকার হারে চললে প্রতি মাসের শেষে হাতে কত থাকবে তা দেখাবে।","After 7 days of spending, or a statement import, this shows how much you would have left at the end of each month at your current pace.")
     :F.firstNeg
-      ?T(`এখনকার হারে চললে ${mName(F.firstNeg)} মাসে টাকায় টান পড়বে। রোজের খরচ ${rs(F.perm)}-এর মধ্যে রাখলে ১২ মাস নিশ্চিন্তে চলবে।`,`At your current pace, money runs short in ${mName(F.firstNeg)}. Keep daily spending within ${rs(F.perm)} and the next 12 months are covered.`)
-      :T(`এখনকার হারে চললে ১২ মাস শেষে প্রায় ${rs(F.end)} হাতে থাকবে। সবুজ দাগগুলো প্রতি মাসের শেষে হাতে থাকা টাকা।`,`At your current pace, about ${rs(F.end)} will be left after 12 months. The green bars show money in hand at the end of each month.`);
+      ?T(`এখনকার হারে চললে ${mName(F.firstNeg)} মাসে টাকায় টান পড়বে। রোজের খরচ ${rs(F.perm)}-এর মধ্যে রাখলে 12 মাস নিশ্চিন্তে চলবে।`,`At your current pace, money runs short in ${mName(F.firstNeg)}. Keep daily spending within ${rs(F.perm)} and the next 12 months are covered.`)
+      :T(`এখনকার হারে চললে 12 মাস শেষে প্রায় ${rs(F.end)} হাতে থাকবে। সবুজ দাগগুলো প্রতি মাসের শেষে হাতে থাকা টাকা।`,`At your current pace, about ${rs(F.end)} will be left after 12 months. The green bars show money in hand at the end of each month.`);
 
   $("buffer").value=S.future.buffer||""; $("infl").value=S.future.infl;
   const listItem=(text,amt,onDel)=>{const li=document.createElement("li");
@@ -990,7 +988,7 @@ function renderDash(){
   if(thisM>0&&lastM>0){const ch=(thisM-lastM)/lastM*100;
     ins.push([ch>10?"warn":ch<-10?"good":"",T(`এ মাসে রোজ গড়ে ${rs(thisM)} খরচ হচ্ছে, গত মাসে ছিল ${rs(lastM)}। `,`This month you spend about ${rs(thisM)} a day; last month it was ${rs(lastM)}. `)+(Math.abs(ch)<5?T("প্রায় একই রকম।","About the same."):ch>0?T(`${bn(ch)}% বেশি।`,`${bn(ch)}% more.`):T(`${bn(-ch)}% কম।`,`${bn(-ch)}% less.`))]);}
   const small=spend.filter(r=>r.a<100);
-  if(small.length>=10) ins.push(["warn",T(`₹১০০-র কম পেমেন্ট ${bn(small.length)} বার, মোট ${rs(sum(small))}। ছোট ছোট খরচ মিলে বড় অঙ্ক হয়।`,`${bn(small.length)} payments under ₹100, totalling ${rs(sum(small))}. Small payments add up.`)]);
+  if(small.length>=10) ins.push(["warn",T(`₹100-র কম পেমেন্ট ${bn(small.length)} বার, মোট ${rs(sum(small))}। ছোট ছোট খরচ মিলে বড় অঙ্ক হয়।`,`${bn(small.length)} payments under ₹100, totalling ${rs(sum(small))}. Small payments add up.`)]);
   if(saved.length) ins.push(["good",T(`এই সময়ে সঞ্চয়ে গেছে ${rs(sum(saved))}। এটা খরচ নয়, তাই উপরের হিসেবে ধরা হয়নি।`,`${rs(sum(saved))} went to savings in this period. That is not spending, so it is left out above.`)]);
   const other=byCat["অন্যান্য"]||0;
   if(other>0) ins.push(["warn",T(`${rs(other)} এখনও "অন্যান্য" খাতে। নিচের "কাকে কত" তালিকায় নামের পাশে ঠিক খাত বেছে দিন, ছবিটা আরও সঠিক হবে।`,`${rs(other)} is still under "Other". Pick the right category next to each name in "Who got how much" below to make the picture more accurate.`)]);
@@ -1002,15 +1000,15 @@ function renderDash(){
   if(fullWk.length>=8){
     const av=a=>a.reduce((t,x)=>t+x.a,0)/a.length,rec=av(fullWk.slice(-4)),prv=av(fullWk.slice(-8,-4));
     if(prv>0){const ch=(rec-prv)/prv*100;
-      if(ch>15)ins.push(["warn",T(`গত ৪ সপ্তাহে সপ্তাহে গড়ে ${rs(rec)} খরচ হয়েছে, আগের ৪ সপ্তাহে ছিল ${rs(prv)}। ${bn(ch)}% বেড়েছে। কোন খাতে বেড়েছে দেখে নিন।`,`Over the last 4 weeks you spent about ${rs(rec)} a week, up ${bn(ch)}% from ${rs(prv)} in the 4 weeks before. Check which category grew.`)]);
-      else if(ch<-15)ins.push(["good",T(`গত ৪ সপ্তাহে সপ্তাহে গড়ে ${rs(rec)} খরচ হয়েছে, আগের ৪ সপ্তাহের চেয়ে ${bn(-ch)}% কম। এই ধারা ধরে রাখুন।`,`Over the last 4 weeks you spent about ${rs(rec)} a week, ${bn(-ch)}% less than the 4 weeks before. Keep it up.`)]);}
+      if(ch>15)ins.push(["warn",T(`গত 4 সপ্তাহে সপ্তাহে গড়ে ${rs(rec)} খরচ হয়েছে, আগের 4 সপ্তাহে ছিল ${rs(prv)}। ${bn(ch)}% বেড়েছে। কোন খাতে বেড়েছে দেখে নিন।`,`Over the last 4 weeks you spent about ${rs(rec)} a week, up ${bn(ch)}% from ${rs(prv)} in the 4 weeks before. Check which category grew.`)]);
+      else if(ch<-15)ins.push(["good",T(`গত 4 সপ্তাহে সপ্তাহে গড়ে ${rs(rec)} খরচ হয়েছে, আগের 4 সপ্তাহের চেয়ে ${bn(-ch)}% কম। এই ধারা ধরে রাখুন।`,`Over the last 4 weeks you spent about ${rs(rec)} a week, ${bn(-ch)}% less than the 4 weeks before. Keep it up.`)]);}
   }
   if(saved.length&&total>0){const sv=sum(saved),pc=sv/(sv+total)*100;
-    ins.push([pc>=10?"good":"warn",T(`খরচ আর সঞ্চয় মিলিয়ে ${rs(sv+total)}-এর মধ্যে সঞ্চয় ${bn(pc)}%।`+(pc>=10?" ভালো অভ্যাস।":" সঞ্চয় ১০%-এর নিচে, সম্ভব হলে একটু বাড়ান।"),`Of ${rs(sv+total)} (spending plus savings), ${bn(pc)}% went to savings.`+(pc>=10?" A good habit.":" That is under 10%; raise it a little if you can."))]);
+    ins.push([pc>=10?"good":"warn",T(`খরচ আর সঞ্চয় মিলিয়ে ${rs(sv+total)}-এর মধ্যে সঞ্চয় ${bn(pc)}%।`+(pc>=10?" ভালো অভ্যাস।":" সঞ্চয় 10%-এর নিচে, সম্ভব হলে একটু বাড়ান।"),`Of ${rs(sv+total)} (spending plus savings), ${bn(pc)}% went to savings.`+(pc>=10?" A good habit.":" That is under 10%; raise it a little if you can."))]);
   }
   if(cats.length&&total>0&&cats[0][1]/total>=0.4&&cats[0][0]!=="অন্যান্য")ins.push(["warn",T(`একটা খাতেই (${cats[0][0]}) মোট খরচের ${bn(cats[0][1]/total*100)}% যাচ্ছে। কমানোর চেষ্টা করলে সবচেয়ে বেশি সাশ্রয় এখানেই হবে।`,`One category (${catLabel(cats[0][0])}) takes ${bn(cats[0][1]/total*100)}% of your spending. Any saving here makes the biggest difference.`)]);
   const bigP=spend.filter(r=>r.a>=10000);
-  if(bigP.length)ins.push(["",T(`₹১০,০০০ বা তার বেশি ${bn(bigP.length)}টা পেমেন্ট, মোট ${rs(sum(bigP))}, খরচের ${bn(sum(bigP)/total*100)}%। বড় খরচ আগে থেকে হিসাবে রাখলে মাসের হিসাব গোলমাল হয় না।`,`${bn(bigP.length)} payments of ₹10,000 or more, ${rs(sum(bigP))} in total, ${bn(sum(bigP)/total*100)}% of spending. Plan big payments ahead so they do not upset your month.`)]);
+  if(bigP.length)ins.push(["",T(`₹10,000 বা তার বেশি ${bn(bigP.length)}টা পেমেন্ট, মোট ${rs(sum(bigP))}, খরচের ${bn(sum(bigP)/total*100)}%। বড় খরচ আগে থেকে হিসাবে রাখলে মাসের হিসাব গোলমাল হয় না।`,`${bn(bigP.length)} payments of ₹10,000 or more, ${rs(sum(bigP))} in total, ${bn(sum(bigP)/total*100)}% of spending. Plan big payments ahead so they do not upset your month.`)]);
 
   const wkAvg=days>=7?weekdayStats(spend,from,to):null;
   if(wkAvg&&total>0){const hi=wkAvg.indexOf(Math.max(...wkAvg)),pos=wkAvg.map((v,i)=>[v,i]).filter(x=>x[0]>0),lo=pos.length>1?pos.reduce((m,x)=>x[0]<m[0]?x:m):null;
@@ -1030,11 +1028,11 @@ function renderDash(){
     <div class="mchart wk"><svg viewBox="0 0 360 190" role="img" aria-label="${esc(T("সময় অনুযায়ী খরচ","Spending over time"))}">${weeklySvg(trend)}</svg></div>
     <p class="note">${T("প্রতিটা দণ্ড একটা দিন, সপ্তাহ, মাস, ত্রৈমাসিক বা ষান্মাসিক। সবচেয়ে উঁচুটা সবচেয়ে বেশি খরচের সময়। সঞ্চয় ধরা নেই। শেষটা অসম্পূর্ণ হতে পারে।","Each bar is a day, week, month, quarter or half-year. The tallest bar is when you spent most. Savings are left out. The last bar may be incomplete.")}</p>
     <h3>${T("সপ্তাহের কোন দিন বেশি খরচ","Which day of the week you spend most")}</h3>
-    ${wkAvg?`<div class="mchart wk"><svg viewBox="0 0 360 180" role="img" aria-label="${esc(T("সপ্তাহের প্রতি দিনে গড় খরচ","Average spending on each day of the week"))}">${weekdaySvg(wkAvg)}</svg></div><p class="note">${T("প্রতিটা বারে ওই বারের রোজকার গড় খরচ। কমলা বারটা সবচেয়ে বেশি খরচের দিন।","Each bar is your average spending on that day of the week. The orange bar is your biggest day.")}</p>`:`<p class="note">${T("অন্তত ৭ দিনের খরচ থাকলে এখানে দেখা যাবে কোন বারে আপনার খরচ বেশি হয়।","With at least 7 days of spending, this shows which day of the week you spend most.")}</p>`}
+    ${wkAvg?`<div class="mchart wk"><svg viewBox="0 0 360 180" role="img" aria-label="${esc(T("সপ্তাহের প্রতি দিনে গড় খরচ","Average spending on each day of the week"))}">${weekdaySvg(wkAvg)}</svg></div><p class="note">${T("প্রতিটা বারে ওই বারের রোজকার গড় খরচ। কমলা বারটা সবচেয়ে বেশি খরচের দিন।","Each bar is your average spending on that day of the week. The orange bar is your biggest day.")}</p>`:`<p class="note">${T("অন্তত 7 দিনের খরচ থাকলে এখানে দেখা যাবে কোন বারে আপনার খরচ বেশি হয়।","With at least 7 days of spending, this shows which day of the week you spend most.")}</p>`}
     <h3>${T("আপনার উপদেষ্টা","Your advisor")}</h3>
     <p class="note">${T("এগুলো আপনার খরচ দেখে পরামর্শ। সিদ্ধান্ত আপনার।","These are suggestions from your own spending. The decision is yours.")}</p>
     <ul class="ins">${ins.map(([c,t])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>
-    <h3>${T("কাকে কত (সবচেয়ে বেশি ১০)","Who got how much (top 10)")}</h3>
+    <h3>${T("কাকে কত (সবচেয়ে বেশি 10)","Who got how much (top 10)")}</h3>
     <p class="note">${T("খাত ভুল মনে হলে পাশের ঘর থেকে বদলে দিন। ওই নামের সব খরচ নতুন খাতে চলে যাবে।","If a category looks wrong, change it in the box alongside. All payments to that name move to the new category.")}</p>
     <ul id="payeeList">${payees.map(([k,p],i)=>`<li class="payee"><span class="what">${esc(payeeLabel(p.name))}<small>${bn(p.n)} ${T("বার",p.n===1?"time":"times")} · ${rs(p.a)}</small></span><select data-i="${i}" aria-label="${esc(T(p.name+"-এর খাত","Category for "+payeeLabel(p.name)))}">${opts(p.cat)}</select></li>`).join("")}</ul>
     <h3>${T("সব লেনদেন","All payments")}</h3>
@@ -1098,22 +1096,6 @@ $("obStart").onclick=()=>{obMark();$("onboard").hidden=true;
   $("setup").open=true;$("setup").scrollIntoView({behavior:"smooth",block:"start"});};
 
 /* ---------- feedback ---------- */
-["fbName","fb1","fb2","fb3","fb4","fb5"].forEach(id=>{
-  try{const v=localStorage.getItem("ajkerKhoroch.fb."+id);if(v)$(id).value=v;}catch(_){}
-  $(id).addEventListener("input",()=>{try{localStorage.setItem("ajkerKhoroch.fb."+id,$(id).value)}catch(_){}});
-  $(id).addEventListener("change",()=>{try{localStorage.setItem("ajkerKhoroch.fb."+id,$(id).value)}catch(_){}});
-});
-$("fbCopy").onclick=async()=>{
-  const days=new Set(S.exp.map(e=>e.d)).size, imp=S.exp.filter(e=>e.src==="imp").length, man=S.exp.filter(e=>e.src!=="imp").length;
-  const q=LANG==="en"?["Statement import","What was new","Difficulties","What else is wanted","Buy for ₹99?"]:["স্টেটমেন্ট আনা","নতুন কী জানলেন","অসুবিধা","আর কী চাই","₹৯৯-এ কিনবেন?"];
-  const text=T(`আজকের খরচ: মতামত\nনাম: `,`Ajker Khoroch: feedback\nName: `)+`${$("fbName").value||"-"}\n`+
-    ["fb1","fb2","fb3","fb4","fb5"].map((id,i)=>`${bn(i+1)}. ${q[i]}: ${(id==="fb5"?($("fb5").selectedIndex>0?$("fb5").options[$("fb5").selectedIndex].text:""):$(id).value.trim())||"-"}`).join("\n")+
-    T(`\n(অ্যাপ থেকে: ${bn(days)} দিনের খরচ আছে, স্টেটমেন্ট থেকে ${bn(imp)}টা, হাতে লেখা ${bn(man)}টা)`,`\n(From the app: ${bn(days)} days of spending, ${bn(imp)} from statements, ${bn(man)} entered by hand)`);
-  const out=$("fbOut");out.value=text;
-  try{await navigator.clipboard.writeText(text);out.hidden=true;$("fbMsg").textContent=T("মতামত কপি হয়েছে। এবার WhatsApp খুলে পেস্ট করে পাঠিয়ে দিন। ধন্যবাদ!","Feedback copied. Now open WhatsApp, paste and send. Thank you!");}
-  catch(_){out.hidden=false;out.focus();out.select();$("fbMsg").textContent=T("নিজে থেকে কপি হলো না। নিচের লেখাটা চেপে ধরে সব বেছে কপি করুন।","Couldn't copy automatically. Press and hold the text below, select it all and copy.");}
-};
-
 /* ---------- statement import ---------- */
 const loaded={};
 function loadScript(src){return loaded[src]||(loaded[src]=new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=()=>{delete loaded[src];rej(new Error("load"))};document.head.appendChild(s)}))}
@@ -1395,13 +1377,14 @@ function showPreview(){
     ((skipN||chainBad)?`<div class="err" role="alert">${T("⚠️ এই ফাইলের সব লাইন নিশ্চিতভাবে পড়া যায়নি"+(skipN?`: ${bn(skipN)}টা লাইনে টাকা আছে কিন্তু জমা না খরচ বোঝা যায়নি`:"")+(chainBad?`: ${bn(chainBad)}টা লাইনে ব্যালেন্স মিলছে না`:"")+"। মূল স্টেটমেন্টের সঙ্গে মিলিয়ে দেখুন, নয়তো Excel/CSV দিয়ে চেষ্টা করুন। এই লাইনগুলো হিসাবে ধরা হয়নি।","⚠️ Not every line of this file could be read for certain"+(skipN?`: ${bn(skipN)} lines have an amount but credit or debit is unclear`:"")+(chainBad?`: ${bn(chainBad)} lines don't agree with the running balance`:"")+". Compare with the original statement, or try the Excel/CSV version. These lines were not counted.")}</div>`:`<p class="note ok">${T("✔ কোনো অস্পষ্ট বা পড়া-না-যাওয়া লাইন পাওয়া যায়নি।","✔ No unclear or unreadable lines were found.")}</p>`)+
     ((pl.dup||pl.replace.length)?`<p class="note">${T(`UPI খরচের মধ্যে ${bn(pl.add.length)}টা নতুন। `,`${bn(pl.add.length)} of the UPI payments are new. `)}${pl.dup?T(bn(pl.dup)+"টা আগেই অ্যাপে আছে, সেগুলো আবার যোগ হবে না। ",bn(pl.dup)+" are already in the app and won't be added again. "):""}${pl.fuzzy?T(bn(pl.fuzzy)+"টা PhonePe ও ব্যাংকের স্টেটমেন্টে একদিন এদিক-ওদিক তারিখে ছিল, একই টাকা, তাই একটাই গোনা হলো। ","For "+bn(pl.fuzzy)+" payments the PhonePe and bank dates differ by a day with the same amount, so they were counted once. "):""}${pl.replace.length?T(bn(pl.replace.length)+"টা আপনার হাতে লেখা খরচের সঙ্গে মিলেছে, সেগুলো দুবার গোনা হবে না।",bn(pl.replace.length)+" match payments you entered by hand and won't be counted twice."):""}</p>`:"")+
     (deb.length?`<h3>${T("খরচ","Spending")}</h3>`:"")+
-    TYPES.map(k=>row(k,typeLabel(k),k==="UPI"||k==="CARD")).join("")+
+    TYPES.map(k=>row(k,typeLabel(k),k==="UPI"||k==="CARD"||k==="ATM")).join("")+
     (sum.SAVE?`<p class="note">${T(`সঞ্চয় খরচ নয়। এটা টিক না দিয়ে মাসের সঞ্চয়ের অঙ্কটা "জমানোর লক্ষ্য"-তে বসান।`,`Savings are not spending. Leave this unticked and put your monthly savings amount in "Savings goal".`)}</p>`:"")+
     (cr.length?`<h3>${T("জমা (আয়)","Credits (income)")}</h3>`+CTYPES.map(k=>row(k,ctypeLabel(k),k==="SAL"||k==="INT")).join("")+
       `<p class="note">${T("বেতন/পেনশন আর সুদ টিক দেওয়া আছে। অন্যের কাছ থেকে পাওয়া টাকা কোনো ধার ফেরত বা নিজের টাকা হতে পারে, তাই সেটা আপনি বুঝে টিক দিন।","Salary/pension and interest are ticked. Money from others may be a loan repayment or your own money, so tick it only if it is really income.")}</p>`:"")+
     (own.length?`<div class="pick"><label for="pk_OWN"><input type="checkbox" id="pk_OWN"> ${T(`নিজের এক অ্যাকাউন্ট থেকে অন্যটায় সরানো টাকা (${cnt(own.length)}) এগুলোও গুনুন`,`Money moved between your own accounts (${cnt(own.length)}) count these too`)}</label><span class="num">${rs(own.reduce((t,r)=>t+r.a,0)/2)}</span></div><p class="note">${T("একই টাকা একই দিনে বা পরের দিনে একবার বেরিয়েছে আর একবার ঢুকেছে, তাই এগুলোকে নিজের টাকা সরানো ধরে খরচ বা আয় থেকে বাদ রেখেছি। ভুল মনে হলে টিক দিন।","The same amount went out and came in on the same or next day, so I treated these as moving your own money and left them out of spending and income. Tick if that looks wrong.")}</p>`:"")+
     (sum.CARD?`<p class="note">${T("ক্রেডিট কার্ডের বিল ব্যাংক থেকে একবারই বেরোয়, তাই ধরা আছে। কার্ডের কেনাকাটা আলাদা করে হাতে লিখবেন না, নইলে দু'বার গোনা হবে।","A credit card bill leaves the bank only once, so it is counted. Don't also enter the card purchases by hand, or they will be counted twice.")}</p>`:"")+
-    (sum.ATM||sum.OTHER?`<p class="note">${T(`ATM-এ তোলা টাকা টিক দেবেন না যদি সেই নগদ খরচ হাতে লেখেন, নইলে দু'বার গোনা হবে। অটো-ডেবিট (EMI, বিল) "নির্দিষ্ট খরচ"-এ থাকলে "অন্য ডেবিট"-ও টিক দেবেন না।`,`Don't tick ATM withdrawals if you note that cash spending by hand, or it will be counted twice. If auto-debits (EMI, bills) are in "Fixed costs", don't tick "Other debits" either.`)}</p>`:"")+
+    (sum.ATM?`<p class="note">${T("ATM বা কাউন্টার থেকে তোলা টাকা পুরোটাই খরচ ধরা হয়েছে, কারণ ব্যাঙ্ক থেকে সেটা বেরিয়ে গেছে। তাই ওই টাকায় নগদে যা কিনবেন বা দেবেন, আলাদা করে \"নগদ খরচ লিখুন\"-এ লিখবেন না, নইলে দু'বার গোনা হবে।","The full amount you withdrew is counted as spent, because it has left your bank. So do not also enter that cash spending in \"Add cash spending\", or it will be counted twice.")}</p>`:"")+
+    (sum.OTHER?`<p class="note">${T(`অটো-ডেবিট (EMI, বিল) "নির্দিষ্ট খরচ"-এ থাকলে "অন্য ডেবিট"-ও টিক দেবেন না।`,`If auto-debits (EMI, bills) are in "Fixed costs", don't tick "Other debits" either.`)}</p>`:"")+
     `<div class="row"><button class="primary" id="doImport">${T("হিসেবে যোগ করুন","Add to my budget")}</button><button id="cancelImport">${T("বাতিল","Cancel")}</button></div>`;
   p.hidden=false;
   $("doImport").onclick=doImport;
@@ -1483,7 +1466,7 @@ TAGS.forEach(t=>{const b=document.createElement("button");b.className="tag";b.te
   b.onclick=()=>{pickedTag=t;tagBox.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b))};tagBox.appendChild(b)});
 
 function addExp(){const inp=$("amt");const a=parseFloat(inp.value);
-  if(!(a>0)){$("addMsg").textContent=T("টাকার অঙ্কটা লিখুন, যেমন ১৫০।","Enter the amount, e.g. 150.");return}
+  if(!(a>0)){$("addMsg").textContent=T("টাকার অঙ্কটা লিখুন, যেমন 150।","Enter the amount, e.g. 150.");return}
   S.exp.push({d:iso(new Date()),a,tag:pickedTag,id:Math.random()});inp.value="";
   $("addMsg").textContent=`${tagLabel(pickedTag)}: ${rs(a)} ${T("যোগ হলো।","added.")}`;save();render()}
 $("addBtn").onclick=addExp;
@@ -1600,7 +1583,11 @@ async function lkCheck(text,rec){const x=await lkHash(text,rec.s);return lkSame(
 function lkWait(L){return Math.max(0,Math.ceil(((L.u||0)-Date.now())/1000))}
 function lkFail(L){L.f=(L.f||0)+1;if(L.f%5===0)L.u=Date.now()+Math.min(3600,30*Math.pow(2,L.f/5-1))*1000;lkWrite(L)}
 const lkClear=L=>{L.f=0;L.u=0;lkWrite(L)};
-let lkHiddenAt=0;
+/* auto-lock time (seconds), chosen by each person on their own phone; 5 minutes unless changed */
+const LTKEY="ajkerKhoroch.lockTime",LK_TIMES=[30,60,120,300,600,900,1800];
+const lkLimit=()=>{try{const v=+localStorage.getItem(LTKEY);return LK_TIMES.includes(v)?v:300}catch(_){return 300}};
+const lkTimeTxt=s=>s<60?T(`${bn(s)} সেকেন্ড`,`${s} seconds`):T(`${bn(s/60)} মিনিট`,s===60?"1 minute":`${s/60} minutes`);
+let lkLast=Date.now();
 
 function lkShow(mode){
   const L=lkRead(),box=$("lockscr");if(!L)return;
@@ -1625,7 +1612,7 @@ function lkShow(mode){
       const L2=lkRead(),w=lkWait(L2);if(w){msg(waitTxt(w),1);return}
       const a=$("lkAns").value,n=$("lkNew").value;
       if(!lkNorm(a)){msg(T("উত্তর লিখুন।","Type the answer."),1);return}
-      if(!/^\d{4}$/.test(n)){msg(T("পিন ঠিক ৪টা অঙ্কের হতে হবে।","The PIN must be exactly 4 digits."),1);return}
+      if(!/^\d{4}$/.test(n)){msg(T("পিন ঠিক 4টা অঙ্কের হতে হবে।","The PIN must be exactly 4 digits."),1);return}
       if(!(await lkCheck(lkNorm(a),L2.a))){lkFail(L2);const w2=lkWait(lkRead());msg(w2?waitTxt(w2):T("উত্তর মেলেনি।","That answer doesn't match."),1);return}
       const p=await lkHash(n);L2.p=p;lkClear(L2);lkWrite(L2);lkOpen();
     };
@@ -1650,23 +1637,23 @@ function lkShow(mode){
   };
   setTimeout(()=>{try{inp.focus()}catch(_){}} ,50);
 }
-function lkOpen(){document.body.classList.remove("locked");$("lockscr").hidden=true;$("lockscr").innerHTML=""}
+function lkOpen(){lkLast=Date.now();document.body.classList.remove("locked");$("lockscr").hidden=true;$("lockscr").innerHTML=""}
 
 /* settings panel */
 function lkPanel(){
-  const b=$("lockBody"),L=lkRead();
+  const b=$("lockBody"),L=lkRead();lkSyncExit();
   if(!lkOK()){b.innerHTML=`<p class="note">${T("এই ব্রাউজারে পিন-লক চালানো যাচ্ছে না।","PIN lock can't run in this browser.")}</p>`;return}
   const note=m=>`<p class="lkmsg" id="lsMsg">${m||""}</p>`;
   const say=(t,bad)=>{const m=$("lsMsg");m.textContent=t;m.className="lkmsg"+(bad?" bad":"")};
   if(!L){
-    b.innerHTML=`<label class="fbq">${T("৪ অঙ্কের পিন","4-digit PIN")}<input id="lsPin" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></label>
+    b.innerHTML=`<label class="fbq">${T("4 অঙ্কের পিন","4-digit PIN")}<input id="lsPin" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></label>
       <label class="fbq">${T("পিন আবার লিখুন","Type the PIN again")}<input id="lsPin2" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></label>
       <label class="fbq">${T("গোপন প্রশ্ন (পিন ভুললে এটাই চাবি)","Secret question (your key if you forget the PIN)")}<select id="lsQ">${LK_Q.map((q,i)=>`<option value="${i}">${esc(T(q[0],q[1]))}</option>`).join("")}</select></label>
       <label class="fbq">${T("এর উত্তর (শুধু আপনিই জানেন এমন)","Your answer (something only you know)")}<input id="lsA" autocomplete="off"></label>
       <button class="primary" id="lsOn">${T("পিন-লক চালু করুন","Turn PIN lock on")}</button>${note()}`;
     $("lsOn").onclick=async()=>{
       const p=$("lsPin").value,p2=$("lsPin2").value,a=lkNorm($("lsA").value),qi=+$("lsQ").value;
-      if(!/^\d{4}$/.test(p)){say(T("পিন ঠিক ৪টা অঙ্কের হতে হবে।","The PIN must be exactly 4 digits."),1);return}
+      if(!/^\d{4}$/.test(p)){say(T("পিন ঠিক 4টা অঙ্কের হতে হবে।","The PIN must be exactly 4 digits."),1);return}
       if(p!==p2){say(T("দুটো পিন মেলেনি।","The two PINs don't match."),1);return}
       if(a.length<2){say(T("গোপন প্রশ্নের উত্তর লিখুন।","Type the answer to the secret question."),1);return}
       const ph=await lkHash(p),ah=await lkHash(a);
@@ -1677,7 +1664,10 @@ function lkPanel(){
     b.innerHTML=`<p class="note ok">✔ ${T("পিন-লক চালু আছে।","PIN lock is on.")}</p>
       <label class="fbq">${T("বন্ধ করতে বা বদলাতে এখনকার পিন লিখুন","To turn off or change, type your current PIN")}<input id="lsCur" class="pinin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]*" autocomplete="off"></label>
       <button id="lsOff">${T("পিন-লক বন্ধ করুন","Turn PIN lock off")}</button>
-      <button id="lsChg">${T("পিন ও গোপন প্রশ্ন বদলান","Change PIN and secret question")}</button>${note()}`;
+      <button id="lsChg">${T("পিন ও গোপন প্রশ্ন বদলান","Change PIN and secret question")}</button>
+      <label class="fbq">${T("কতক্ষণ পর নিজে থেকে লক হবে","Lock by itself after")}<select id="lsT">${LK_TIMES.map(t=>`<option value="${t}"${t===lkLimit()?" selected":""}>${esc(lkTimeTxt(t))}</option>`).join("")}</select></label>
+      <p class="note">${T("অ্যাপ খুলে রেখে কিছু না ছুঁলে, বা অন্য অ্যাপে চলে গেলে, এই সময় পরে আবার পিন চাইবে।","If you leave the app untouched, or switch to another app, it asks for the PIN again after this time.")}</p>${note()}`;
+    $("lsT").onchange=()=>{try{localStorage.setItem(LTKEY,$("lsT").value);lkLast=Date.now();say(T("সময় ঠিক হয়ে গেল।","Time saved."))}catch(_){say(T("সংরক্ষণ করা গেল না।","Couldn't save."),1)}};
     const cur=async()=>{const L2=lkRead(),w=lkWait(L2);
       if(w){say(T(`অপেক্ষা করুন, ${bn(w)} সেকেন্ড।`,`Please wait ${w} seconds.`),1);return false}
       if(await lkCheck($("lsCur").value,L2.p)){lkClear(L2);return true}
@@ -1686,21 +1676,41 @@ function lkPanel(){
     $("lsChg").onclick=async()=>{if(await cur()){lkWrite(null);lkPanel()}};
   }
 }
+/* Exit button (top bar): locks the app right now, so the PIN is asked again next time. Shown only while PIN lock is on. */
+function lkSyncExit(){}
+$("exitBtn").onclick=()=>{
+  if(lkRead()&&lkOK()){lkShow();return}
+  /* PIN lock is not on yet: take the person to the place where it is switched on */
+  $("lockSet").open=true;
+  setTimeout(()=>{lkPanel();
+    const m=$("lsMsg");if(m){m.textContent=lkOK()?T("আগে পিন-লক চালু করুন, তারপর Exit চাপলে অ্যাপ লক হবে।","Turn on the PIN lock first. After that, Exit locks the app."):T("এই ব্রাউজারে পিন-লক চালানো যাচ্ছে না।","PIN lock can't run in this browser.");m.className="lkmsg bad"}
+  },60);
+  $("lockSet").scrollIntoView({behavior:"smooth",block:"start"});
+};
 $("lockSet").addEventListener("toggle",()=>{if($("lockSet").open)lkPanel()});
 
-/* lock at start, and again when the app was away for 2 minutes */
+/* lock at start. After that it locks again when the app has been left untouched, or was away
+   (another app, screen off), for the time the person chose. Away time is measured from the moment
+   they left, and a 5-second check covers phones that pause the page while it is in the background. */
 if(lkRead()&&lkOK())lkShow();
 else if(lkRead()&&!lkOK()){/* cannot verify, never trap the person out */}
+function lkIdleCheck(){
+  if(!lkRead()||!lkOK()||!$("lockscr").hidden)return;
+  if(Date.now()-lkLast>lkLimit()*1000)lkShow();
+}
+function lkTouch(){if($("lockscr").hidden)lkLast=Date.now()}
+["touchstart","pointerdown","keydown","click"].forEach(e=>document.addEventListener(e,lkTouch,{passive:true,capture:true}));
+document.addEventListener("scroll",lkTouch,{passive:true,capture:true});
 document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){lkHiddenAt=Date.now();return}
-  if(lkHiddenAt&&Date.now()-lkHiddenAt>120000&&lkRead()&&lkOK()&&$("lockscr").hidden)lkShow();
+  if(document.hidden){lkTouch();return}
+  lkIdleCheck();lkTouch();
 });
 
 /* ===== Bengali (West Bengal) date =====
    The month begins on the day after the Sun enters the next sidereal sign (sankranti, Lahiri ayanamsa),
    measured in Indian Standard Time. Checked against the printed date 2 Nov 2026 = 16 Kartik 1433. */
 const BN_M=[["বৈশাখ","Boishakh"],["জ্যৈষ্ঠ","Joishtho"],["আষাঢ়","Asharh"],["শ্রাবণ","Srabon"],["ভাদ্র","Bhadro"],["আশ্বিন","Ashwin"],["কার্তিক","Kartik"],["অগ্রহায়ণ","Agrahayan"],["পৌষ","Poush"],["মাঘ","Magh"],["ফাল্গুন","Falgun"],["চৈত্র","Choitro"]];
-const BN_D=["০","১","২","৩","৪","৫","৬","৭","৮","৯"];
+const BN_D=["0","1","2","3","4","5","6","7","8","9"];
 const bnN=n=>LANG==="en"?String(n):String(n).replace(/\d/g,d=>BN_D[+d]);
 const JD=ms=>ms/864e5+2440587.5;
 function sunTrop(jd){const T=(jd-2451545)/36525,r=Math.PI/180,
@@ -1731,14 +1741,14 @@ const OFFICIAL={
 const TASKS=[
  {id:"life",t:["জীবন প্রমাণপত্র জমা (পেনশনভোগী)","Life certificate (pensioners)"],m1:11,d1:1,m2:11,d2:30,lead:14,url:OFFICIAL.life,
   n:["পেনশন চালু রাখতে প্রতি বছর নভেম্বরে জমা দিতে হয়: ব্যাংকে গিয়ে, অথবা ডিজিটালি জীবন প্রমাণ পোর্টালে।","Pensioners submit this every November to keep the pension running: at the bank or digitally on the Jeevan Pramaan portal."]},
- {id:"ais",t:["বার্ষিক তথ্য বিবরণী (AIS/২৬এএস) মেলান","Check your AIS / Form 26AS"],m1:5,d1:15,m2:7,d2:15,lead:7,url:OFFICIAL.income,
+ {id:"ais",t:["বার্ষিক তথ্য বিবরণী (AIS/26এএস) মেলান","Check your AIS / Form 26AS"],m1:5,d1:15,m2:7,d2:15,lead:7,url:OFFICIAL.income,
   n:["রিটার্ন দেওয়ার আগে দেখে নিন ব্যাংক যে সুদ আর TDS দেখিয়েছে তা মিলছে কি না।","Before filing, check that the interest and TDS the bank reported match your records."]},
  {id:"itr",t:["আয়কর রিটার্ন জমা","File income tax return"],m1:6,d1:1,m2:7,d2:31,lead:14,url:OFFICIAL.income,
-  n:["ব্যক্তিগত রিটার্নের সাধারণ শেষ তারিখ ৩১ জুলাই। প্রতি বছরের তারিখ আয়কর বিভাগের সাইটে মিলিয়ে নিন।","The usual last date for individual returns is 31 July. Confirm each year's date on the income tax site."]},
- {id:"f15",t:["ফর্ম ১৫এইচ/১৫জি জমা (FD-র সুদে TDS এড়াতে)","Form 15H / 15G (to avoid TDS on FD interest)"],m1:4,d1:1,m2:4,d2:30,lead:7,url:"",
-  n:["আয় কর-সীমার নিচে হলে আর্থিক বছরের শুরুতে ব্যাংকে জমা দিন, নইলে FD-র সুদে TDS কাটতে পারে। ৬০ বছরের বেশি হলে ১৫এইচ। ব্যাংকের শাখা বা নেট ব্যাংকিংয়ে জমা হয়।","If your income is under the tax limit, give it to the bank at the start of the financial year, otherwise TDS may be cut from FD interest. 15H for age 60+. Submit at the branch or in net banking."]},
+  n:["ব্যক্তিগত রিটার্নের সাধারণ শেষ তারিখ 31 জুলাই। প্রতি বছরের তারিখ আয়কর বিভাগের সাইটে মিলিয়ে নিন।","The usual last date for individual returns is 31 July. Confirm each year's date on the income tax site."]},
+ {id:"f15",t:["ফর্ম 15এইচ/15জি জমা (FD-র সুদে TDS এড়াতে)","Form 15H / 15G (to avoid TDS on FD interest)"],m1:4,d1:1,m2:4,d2:30,lead:7,url:"",
+  n:["আয় কর-সীমার নিচে হলে আর্থিক বছরের শুরুতে ব্যাংকে জমা দিন, নইলে FD-র সুদে TDS কাটতে পারে। 60 বছরের বেশি হলে 15এইচ। ব্যাংকের শাখা বা নেট ব্যাংকিংয়ে জমা হয়।","If your income is under the tax limit, give it to the bank at the start of the financial year, otherwise TDS may be cut from FD interest. 15H for age 60+. Submit at the branch or in net banking."]},
  {id:"tax80",t:["কর-ছাড়ের বিনিয়োগ ও বিমা গুছিয়ে নিন (পুরনো কর-ব্যবস্থায়)","Tax-saving investments and insurance (old regime)"],m1:2,d1:1,m2:3,d2:31,lead:0,url:OFFICIAL.income,
-  n:["আর্থিক বছর শেষ হওয়ার আগে (৩১ মার্চ) যা জমা বা শোধ করার আছে সেরে ফেলুন।","Finish whatever is due before the financial year ends on 31 March."]},
+  n:["আর্থিক বছর শেষ হওয়ার আগে (31 মার্চ) যা জমা বা শোধ করার আছে সেরে ফেলুন।","Finish whatever is due before the financial year ends on 31 March."]},
  {id:"ppf",t:["PPF-তে বছরের ন্যূনতম টাকা জমা","PPF yearly minimum deposit"],m1:3,d1:1,m2:3,d2:31,lead:0,url:"",
   n:["অ্যাকাউন্ট চালু রাখতে প্রতি আর্থিক বছরে ন্যূনতম টাকা জমা দিতে হয়। অঙ্কটা আপনার ব্যাংক বা পোস্ট অফিস থেকে মিলিয়ে নিন।","To keep the account active a minimum amount is needed every financial year. Check the amount with your bank or post office."]}
 ];
@@ -1825,10 +1835,14 @@ $("dueSec").addEventListener("click",dueClick);$("calList").addEventListener("cl
 {const mo=BN_M.map((x,i)=>x).length&&Array.from({length:12},(_,i)=>`<option value="${i+1}">${new Date(2001,i,1).toLocaleDateString("bn-IN",{month:"long"})}</option>`).join("");$("ctM1").innerHTML=mo;$("ctM2").innerHTML=mo;$("ctM2").value="2"}
 $("ctAdd").onclick=()=>{ensureCal();const n=$("ctName").value.trim(),m1=+$("ctM1").value,d1=+$("ctD1").value,m2=+$("ctM2").value,d2=+$("ctD2").value,say=t=>$("ctMsg").textContent=t;
   if(!n)return say(T("কাজের নাম লিখুন।","Type the name of the job."));
-  if(!(d1>=1&&d1<=31&&d2>=1&&d2<=31))return say(T("দিনের ঘরে ১ থেকে ৩১-এর মধ্যে লিখুন।","Days must be between 1 and 31."));
+  if(!(d1>=1&&d1<=31&&d2>=1&&d2<=31))return say(T("দিনের ঘরে 1 থেকে 31-এর মধ্যে লিখুন।","Days must be between 1 and 31."));
   S.myTasks.push({id:"my"+Date.now(),name:n.slice(0,60),m1,d1,m2,d2});$("ctName").value="";say(T("যোগ হয়েছে।","Added."));save();renderDue()};
 {const _r=render;render=function(){_r();renderDue()}}
 renderDue();
+window.addEventListener("pagehide",lkTouch);
+window.addEventListener("pageshow",()=>{lkIdleCheck();lkTouch()});
+window.addEventListener("focus",()=>{lkIdleCheck()});
+setInterval(lkIdleCheck,5000);
 </script>
 
 </body>
