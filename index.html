@@ -231,6 +231,19 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
 .lklink{background:none;border:0;color:var(--accent);text-decoration:underline;padding:6px}
 .lkset{display:flex;flex-direction:column;gap:10px}
 .credit{text-align:center;color:var(--muted);font-size:.9rem;margin:6px 0 4px}
+.datestrip{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;color:var(--muted);font-size:.98rem;margin:-4px 0 0}
+.datestrip b{color:var(--ink);font-weight:600}
+#dueSec h2{margin:0;font-size:1.1rem}
+.due{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.due.soon{border-color:var(--accent)}
+.due h3{margin:0;font-size:1rem}
+.due .when{font-size:.92rem;color:var(--muted)}
+.due .acts{display:flex;flex-wrap:wrap;gap:8px}
+.due a.go{display:inline-block;padding:9px 14px;border-radius:10px;border:1px solid var(--accent);color:var(--accent);text-decoration:none;font-weight:600}
+.calrow{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:8px 0;font-size:.95rem}
+.calrow small{display:block;color:var(--muted)}
+.calform{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.calform input[type=number]{width:4.5em}
 </style>
 </head>
 <body>
@@ -246,6 +259,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
     <button class="helpbtn installtop" id="installTop" hidden><span data-en="📲 Install on phone">📲 ফোনে বসান</span></button>
     <button class="helpbtn" id="langBtn" aria-label="ভাষা / Language">English</button>
   </header>
+  <div class="datestrip" id="dateStrip" aria-live="polite"></div>
 
   <div class="installhelp" id="installHelp" hidden>
     <div class="top"><strong><span data-en="To install the app">অ্যাপটা ফোনে বসাতে</span></strong><button class="x" id="installHelpClose" aria-label="Close">✕</button></div>
@@ -300,6 +314,11 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
     <div class="meter"><span id="meterBar" style="width:0"></span></div>
     <div class="sub" id="limitLine"></div>
   </div>
+
+  <section id="dueSec" hidden>
+    <h2><span data-en="To do now">এখন যা করণীয়</span></h2>
+    <div id="dueList" style="display:flex;flex-direction:column;gap:10px"></div>
+  </section>
 
   <section class="import">
     <h2><span data-en="Import UPI spending from a statement">স্টেটমেন্ট থেকে UPI খরচ আনুন</span></h2>
@@ -465,6 +484,22 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
         <span id="resetAsk" hidden><span data-en="Sure?">নিশ্চিত?</span> <button id="resetYes"><span data-en="Yes, erase">হ্যাঁ, মুছুন</span></button> <button id="resetNo"><span data-en="No">না</span></button></span>
       </div>
       <p class="note"><span data-en="All data stays only on this phone. Nothing is sent anywhere.">সব তথ্য শুধু এই ফোনেই থাকে। কোথাও পাঠানো হয় না।</span></p>
+    </details>
+  </section>
+
+  <section>
+    <details id="calAll">
+      <summary><span data-en="Yearly money calendar">টাকার বছর-পঞ্জিকা (সারা বছরের করণীয়)</span></summary>
+      <p class="note"><span data-en="Each job sleeps until its season, wakes up on top of the app, and goes quiet for the year once you tap Done. Check the dates with the official site, rules can change.">প্রতিটা কাজ নিজের মৌসুম আসা পর্যন্ত ঘুমিয়ে থাকে, সময় এলে অ্যাপের ওপরে জেগে ওঠে, আর "হয়ে গেছে" চাপলে ওই বছরের মতো চুপ করে যায়। নিয়ম বদলাতে পারে, তাই তারিখ সরকারি সাইটে একবার মিলিয়ে নিন।</span></p>
+      <div id="calList"></div>
+      <h3><span data-en="Add your own yearly job">নিজের একটা বার্ষিক কাজ যোগ করুন</span></h3>
+      <div class="calform">
+        <input id="ctName" placeholder="কাজের নাম" data-en-ph="Name of the job" aria-label="কাজের নাম">
+        <label><span data-en="From">শুরু</span> <select id="ctM1"></select> <input id="ctD1" type="number" min="1" max="31" value="1" aria-label="শুরুর দিন"></label>
+        <label><span data-en="To">শেষ</span> <select id="ctM2"></select> <input id="ctD2" type="number" min="1" max="31" value="28" aria-label="শেষের দিন"></label>
+        <button id="ctAdd"><span data-en="Add">যোগ করুন</span></button>
+      </div>
+      <p class="note" id="ctMsg" aria-live="polite"></p>
     </details>
   </section>
 
@@ -1434,7 +1469,7 @@ $("pwGo").onclick=()=>{if(pendingFile)readFile(pendingFile,$("pw").value)};
 $("pw").addEventListener("keydown",e=>{if(e.key==="Enter"&&pendingFile)readFile(pendingFile,$("pw").value)});
 
 /* ---------- manual entry & setup ---------- */
-const showToday=()=>{$("today").textContent=new Date().toLocaleDateString(LOC(),{weekday:"long",day:"numeric",month:"long"});};showToday();
+const showToday=()=>{$("today").textContent=new Date().toLocaleDateString(LOC(),{weekday:"long",day:"numeric",month:"long"});if(window.__bnReady)paintDateStrip();};showToday();
 const tagBox=$("tags");
 TAGS.forEach(t=>{const b=document.createElement("button");b.className="tag";b.textContent=tagLabel(t);b.dataset.tag=t;b.setAttribute("aria-pressed",t===pickedTag);
   b.onclick=()=>{pickedTag=t;tagBox.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b))};tagBox.appendChild(b)});
@@ -1652,6 +1687,142 @@ document.addEventListener("visibilitychange",()=>{
   if(document.hidden){lkHiddenAt=Date.now();return}
   if(lkHiddenAt&&Date.now()-lkHiddenAt>120000&&lkRead()&&lkOK()&&$("lockscr").hidden)lkShow();
 });
+
+/* ===== Bengali (West Bengal) date =====
+   The month begins on the day after the Sun enters the next sidereal sign (sankranti, Lahiri ayanamsa),
+   measured in Indian Standard Time. Checked against the printed date 2 Nov 2026 = 16 Kartik 1433. */
+const BN_M=[["বৈশাখ","Boishakh"],["জ্যৈষ্ঠ","Joishtho"],["আষাঢ়","Asharh"],["শ্রাবণ","Srabon"],["ভাদ্র","Bhadro"],["আশ্বিন","Ashwin"],["কার্তিক","Kartik"],["অগ্রহায়ণ","Agrahayan"],["পৌষ","Poush"],["মাঘ","Magh"],["ফাল্গুন","Falgun"],["চৈত্র","Choitro"]];
+const BN_D=["০","১","২","৩","৪","৫","৬","৭","৮","৯"];
+const bnN=n=>LANG==="en"?String(n):String(n).replace(/\d/g,d=>BN_D[+d]);
+const JD=ms=>ms/864e5+2440587.5;
+function sunTrop(jd){const T=(jd-2451545)/36525,r=Math.PI/180,
+  L0=280.46646+36000.76983*T+0.0003032*T*T,M=(357.52911+35999.05029*T-0.0001537*T*T)*r,
+  C=(1.914602-0.004817*T-0.000014*T*T)*Math.sin(M)+(0.019993-0.000101*T)*Math.sin(2*M)+0.000289*Math.sin(3*M),
+  om=(125.04-1934.136*T)*r;return(((L0+C-0.00569-0.00478*Math.sin(om))%360)+360)%360}
+const sidLon=jd=>(((sunTrop(jd)-(23.85306+0.013969*(jd-2451545)/365.25))%360)+360)%360;
+function sankranti(m,approx){let lo=approx-5*864e5,hi=approx+5*864e5;const g=30*m;
+  const f=ms=>{let d=sidLon(JD(ms))-g;if(d>180)d-=360;if(d<-180)d+=360;return d};
+  for(let i=0;i<50;i++){const mid=(lo+hi)/2;if(f(mid)<0)lo=mid;else hi=mid}return(lo+hi)/2}
+const IST_MS=330*60000,dayNum=ms=>Math.floor((ms+IST_MS)/864e5);
+const bnStartCache={};
+function bnMonthStart(y,m){const k=y+"/"+m;if(bnStartCache[k]!=null)return bnStartCache[k];
+  const approx=Date.UTC(y,3,14)+m*30.44*864e5-IST_MS;return bnStartCache[k]=dayNum(sankranti(m,approx))+1}
+function bengaliOf(y,mo,d){ // mo 0-11 Gregorian
+  const dn=Math.floor(Date.UTC(y,mo,d)/864e5);let best=null;
+  for(const base of [y-1,y])for(let m=0;m<12;m++){const st=bnMonthStart(base,m);if(st<=dn&&(!best||st>best.st))best={st,m,base}}
+  const yr=dn>=bnMonthStart(y,0)?y-593:y-594;
+  return {day:dn-best.st+1,m:best.m,year:yr}}
+function paintDateStrip(){
+  const t=new Date(),b=bengaliOf(t.getFullYear(),t.getMonth(),t.getDate());
+  const en=t.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  const g=LANG==="en"?en:t.toLocaleDateString("bn-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+  $("dateStrip").innerHTML=`<b>${esc(g)}</b><span>${bnN(b.day)} ${BN_M[b.m][LANG==="en"?1:0]} ${bnN(b.year)}${LANG==="en"?" BS":" বঙ্গাব্দ"}</span>`}
+window.__bnReady=true;paintDateStrip();
+
+/* ===== yearly money calendar ===== */
+const OFFICIAL={
+  income:"https://www.incometax.gov.in/", life:"https://jeevanpramaan.gov.in/"};
+const TASKS=[
+ {id:"life",t:["জীবন প্রমাণপত্র জমা (পেনশনভোগী)","Life certificate (pensioners)"],m1:11,d1:1,m2:11,d2:30,lead:14,url:OFFICIAL.life,
+  n:["পেনশন চালু রাখতে প্রতি বছর নভেম্বরে জমা দিতে হয়: ব্যাংকে গিয়ে, অথবা ডিজিটালি জীবন প্রমাণ পোর্টালে।","Pensioners submit this every November to keep the pension running: at the bank or digitally on the Jeevan Pramaan portal."]},
+ {id:"ais",t:["বার্ষিক তথ্য বিবরণী (AIS/২৬এএস) মেলান","Check your AIS / Form 26AS"],m1:5,d1:15,m2:7,d2:15,lead:7,url:OFFICIAL.income,
+  n:["রিটার্ন দেওয়ার আগে দেখে নিন ব্যাংক যে সুদ আর TDS দেখিয়েছে তা মিলছে কি না।","Before filing, check that the interest and TDS the bank reported match your records."]},
+ {id:"itr",t:["আয়কর রিটার্ন জমা","File income tax return"],m1:6,d1:1,m2:7,d2:31,lead:14,url:OFFICIAL.income,
+  n:["ব্যক্তিগত রিটার্নের সাধারণ শেষ তারিখ ৩১ জুলাই। প্রতি বছরের তারিখ আয়কর বিভাগের সাইটে মিলিয়ে নিন।","The usual last date for individual returns is 31 July. Confirm each year's date on the income tax site."]},
+ {id:"f15",t:["ফর্ম ১৫এইচ/১৫জি জমা (FD-র সুদে TDS এড়াতে)","Form 15H / 15G (to avoid TDS on FD interest)"],m1:4,d1:1,m2:4,d2:30,lead:7,url:"",
+  n:["আয় কর-সীমার নিচে হলে আর্থিক বছরের শুরুতে ব্যাংকে জমা দিন, নইলে FD-র সুদে TDS কাটতে পারে। ৬০ বছরের বেশি হলে ১৫এইচ। ব্যাংকের শাখা বা নেট ব্যাংকিংয়ে জমা হয়।","If your income is under the tax limit, give it to the bank at the start of the financial year, otherwise TDS may be cut from FD interest. 15H for age 60+. Submit at the branch or in net banking."]},
+ {id:"tax80",t:["কর-ছাড়ের বিনিয়োগ ও বিমা গুছিয়ে নিন (পুরনো কর-ব্যবস্থায়)","Tax-saving investments and insurance (old regime)"],m1:2,d1:1,m2:3,d2:31,lead:0,url:OFFICIAL.income,
+  n:["আর্থিক বছর শেষ হওয়ার আগে (৩১ মার্চ) যা জমা বা শোধ করার আছে সেরে ফেলুন।","Finish whatever is due before the financial year ends on 31 March."]},
+ {id:"ppf",t:["PPF-তে বছরের ন্যূনতম টাকা জমা","PPF yearly minimum deposit"],m1:3,d1:1,m2:3,d2:31,lead:0,url:"",
+  n:["অ্যাকাউন্ট চালু রাখতে প্রতি আর্থিক বছরে ন্যূনতম টাকা জমা দিতে হয়। অঙ্কটা আপনার ব্যাংক বা পোস্ট অফিস থেকে মিলিয়ে নিন।","To keep the account active a minimum amount is needed every financial year. Check the amount with your bank or post office."]}
+];
+const INSURERS=[
+ ["lic",/\blic\b|life insurance corp/i,"LIC","https://licindia.in/"],
+ ["star",/star health/i,"Star Health","https://www.starhealth.in/"],
+ ["hdfcergo",/hdfc ?ergo/i,"HDFC Ergo","https://www.hdfcergo.com/"],
+ ["hdfclife",/hdfc ?life/i,"HDFC Life","https://www.hdfclife.com/"],
+ ["niva",/niva ?bupa|max ?bupa/i,"Niva Bupa","https://www.nivabupa.com/"],
+ ["care",/care health/i,"Care Health","https://www.careinsurance.com/"],
+ ["icicilomb",/icici ?lombard/i,"ICICI Lombard","https://www.icicilombard.com/"],
+ ["iciciprulife",/icici ?pru/i,"ICICI Prudential","https://www.iciciprulife.com/"],
+ ["bajaj",/bajaj ?allianz/i,"Bajaj Allianz","https://www.bajajallianz.com/"],
+ ["sbilife",/sbi ?life/i,"SBI Life","https://www.sbilife.co.in/"],
+ ["maxlife",/max ?life/i,"Max Life","https://www.maxlifeinsurance.com/"],
+ ["newindia",/new india assur/i,"New India Assurance","https://www.newindia.co.in/"],
+ ["tataaig",/tata ?aig/i,"Tata AIG","https://www.tataaig.com/"],
+ ["digit",/go ?digit|godigit/i,"Digit","https://www.godigit.com/"],
+ ["acko",/\backo\b/i,"Acko","https://www.acko.com/"],
+ ["other",/insurance|assurance|\bpremium\b/i,"বিমা / Insurance",""]
+];
+const insOf=desc=>INSURERS.find(x=>x[1].test(desc||""));
+function ensureCal(){if(!S.taskDone)S.taskDone={};if(!S.taskOff)S.taskOff={};if(!Array.isArray(S.myTasks))S.myTasks=[];if(!S.ins)S.ins={}}ensureCal();
+const mDay=(m,d)=>new Date(2001,m-1,d).toLocaleDateString(LOC(),{day:"numeric",month:"long"});
+function allTasks(){
+  ensureCal();
+  const arr=TASKS.map(x=>({...x,kind:"std"}));
+  S.myTasks.forEach(x=>arr.push({id:x.id,t:[x.name,x.name],m1:x.m1,d1:x.d1,m2:x.m2,d2:x.d2,lead:7,url:"",n:["আপনার নিজের যোগ করা কাজ।","A job you added."],kind:"mine"}));
+  Object.entries(S.ins).forEach(([k,v])=>{if(!v||v.no)return;const a=new Date(2001,v.m-1,v.d-10),b=new Date(2001,v.m-1,v.d+5);
+    arr.push({id:"ins-"+k,t:[`বিমার প্রিমিয়াম: ${v.name}`,`Insurance premium: ${v.name}`],m1:a.getMonth()+1,d1:a.getDate(),m2:b.getMonth()+1,d2:b.getDate(),lead:0,url:v.url||"",
+      n:[(v.mode==="auto"?"অটো কাটার কথা। অ্যাকাউন্টে টাকা আছে কি না দেখুন।":"নিজে দিতে হবে।")+(v.amt?` গতবার ছিল ${rs(v.amt)}।`:""),(v.mode==="auto"?"Set to auto-debit. Make sure the account has the money.":"You pay this yourself.")+(v.amt?` Last time: ${rs(v.amt)}.`:"")],kind:"ins"})});
+  return arr}
+function taskState(x,today){
+  for(const cy of [today.getFullYear()-1,today.getFullYear(),today.getFullYear()+1]){
+    const wrap=(x.m1*100+x.d1)>(x.m2*100+x.d2);
+    const st=new Date(cy,x.m1-1,x.d1),en=new Date(wrap?cy+1:cy,x.m2-1,x.d2),show=new Date(st.getTime()-x.lead*864e5),late=new Date(en.getTime()+60*864e5);
+    if(today>=show&&today<=late){const done=!!S.taskDone[x.id+":"+cy];
+      return {cy,st,en,done,state:done?"done":today<st?"soon":today<=en?"now":"late",left:Math.round((en-today)/864e5)}}}
+  return {state:"sleep"}}
+const fmtD=d=>d.toLocaleDateString(LOC(),{day:"numeric",month:"long"});
+function renderDue(){
+  ensureCal();
+  const today=new Date();today.setHours(0,0,0,0);
+  const html=[];
+  allTasks().forEach(x=>{if(S.taskOff[x.id])return;const st=taskState(x,today);if(st.state==="sleep"||st.done)return;
+    const when=st.state==="soon"?T(`আসছে: ${fmtD(st.st)} থেকে ${fmtD(st.en)}`,`Coming: ${fmtD(st.st)} to ${fmtD(st.en)}`)
+      :st.state==="now"?T(`এখন করুন, ${fmtD(st.en)} পর্যন্ত (আরও ${bnN(st.left)} দিন)`,`Do it now, until ${fmtD(st.en)} (${st.left} days left)`)
+      :T(`সময় পেরিয়ে গেছে (${fmtD(st.en)})। না হয়ে থাকলে এখনই সেরে ফেলুন।`,`The period has passed (${fmtD(st.en)}). If still pending, do it now.`);
+    html.push(`<div class="due${st.state==="now"&&st.left<=7?" soon":""}"><h3>${esc(T(x.t[0],x.t[1]))}</h3><div class="when">${esc(when)}</div><div class="note" style="margin:0">${esc(T(x.n[0],x.n[1]))}</div>
+      <div class="acts">${x.url?`<a class="go" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${T("সরকারি/অফিসিয়াল সাইট খুলুন ↗","Open official site ↗")}</a>`:""}
+      <button data-act="done" data-id="${esc(x.id)}" data-cy="${st.cy}">${T("হয়ে গেছে ✓","Done ✓")}</button>
+      <button data-act="off" data-id="${esc(x.id)}">${T("আমার জন্য নয়","Not for me")}</button></div></div>`)});
+  insQuestions().forEach(q=>{html.push(`<div class="due soon"><h3>${T("বিমা: প্রতি বছর কি দেন?","Insurance: do you pay yearly?")}</h3>
+    <div class="note" style="margin:0">${T(`${bnN(+q.e.d.slice(8))} ${BN_M[0][0]&&new Date(q.e.d+"T00:00:00").toLocaleDateString("bn-IN",{month:"long"})} ${bnN(q.e.d.slice(0,4))} তারিখে ${q.name}-কে ${rs(q.e.a)} দিয়েছেন। এটা কি প্রতি বছর এই সময়ে দেন?`,`On ${new Date(q.e.d+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})} you paid ${rs(q.e.a)} to ${q.name}. Do you pay this every year around this time?`)}</div>
+    <div class="acts" data-q="${esc(q.key)}"><button data-act="ins-self" data-key="${esc(q.key)}">${T("হ্যাঁ, নিজে দিই","Yes, I pay it myself")}</button>
+    <button data-act="ins-auto" data-key="${esc(q.key)}">${T("হ্যাঁ, অটো কাটে","Yes, auto-debit")}</button>
+    <button data-act="ins-no" data-key="${esc(q.key)}">${T("না, নিয়মিত নয়","No, not regular")}</button></div></div>`)});
+  $("dueSec").hidden=!html.length;$("dueList").innerHTML=html.join("");
+  renderCal()}
+function insQuestions(){
+  ensureCal();
+  const by={};S.exp.forEach(e=>{const x=insOf(e.desc);if(!x||S.ins[x[0]]!==undefined)return;(by[x[0]]=by[x[0]]||{x,list:[]}).list.push(e)});
+  return Object.values(by).map(b=>{const months=new Set(b.list.map(e=>e.d.slice(0,7)));if(months.size>=3)return null;
+    const e=b.list.reduce((m,e)=>e.d>m.d?e:m,b.list[0]);return {key:b.x[0],name:b.x[2],url:b.x[3],e}}).filter(Boolean)}
+function renderCal(){
+  const today=new Date();today.setHours(0,0,0,0);
+  $("calList").innerHTML=allTasks().map(x=>{const st=taskState(x,today);
+    const lab=S.taskOff[x.id]?T("লুকানো","Hidden"):st.done?T(`${bnN(st.cy)} সালের জন্য হয়ে গেছে`,`Done for ${st.cy}`):st.state==="sleep"?T("ঘুমন্ত","Sleeping"):st.state==="soon"?T("আসছে","Coming"):st.state==="now"?T("এখন করণীয়","Do now"):T("দেরি হয়েছে","Overdue");
+    return `<div class="calrow"><span>${esc(T(x.t[0],x.t[1]))}<small>${esc(mDay(x.m1,x.d1))} – ${esc(mDay(x.m2,x.d2))} · ${esc(lab)}</small></span>
+      <span>${S.taskOff[x.id]?`<button data-act="on" data-id="${esc(x.id)}">${T("আবার দেখান","Show again")}</button>`:""}${x.kind==="mine"?`<button data-act="del" data-id="${esc(x.id)}">${T("মুছুন","Delete")}</button>`:""}${x.kind==="ins"?`<button data-act="insdel" data-id="${esc(x.id.slice(4))}">${T("বন্ধ করুন","Stop")}</button>`:""}</span></div>`}).join("")||""}
+function dueClick(e){
+  ensureCal();
+  const b=e.target.closest("button[data-act]");if(!b)return;const a=b.dataset.act,id=b.dataset.id,key=b.dataset.key;
+  if(a==="done")S.taskDone[id+":"+b.dataset.cy]=true;
+  else if(a==="off")S.taskOff[id]=true;
+  else if(a==="on")delete S.taskOff[id];
+  else if(a==="del")S.myTasks=S.myTasks.filter(x=>x.id!==id);
+  else if(a==="insdel")S.ins[id]={no:true};
+  else if(a==="ins-no")S.ins[key]={no:true};
+  else if(a==="ins-self"||a==="ins-auto"){const q=insQuestions().find(x=>x.key===key);if(!q)return;const d=new Date(q.e.d+"T00:00:00");
+    S.ins[key]={name:q.name,url:q.url,m:d.getMonth()+1,d:d.getDate(),amt:q.e.a,mode:a==="ins-auto"?"auto":"self"}}
+  save();renderDue()}
+$("dueSec").addEventListener("click",dueClick);$("calList").addEventListener("click",dueClick);
+{const mo=BN_M.map((x,i)=>x).length&&Array.from({length:12},(_,i)=>`<option value="${i+1}">${new Date(2001,i,1).toLocaleDateString("bn-IN",{month:"long"})}</option>`).join("");$("ctM1").innerHTML=mo;$("ctM2").innerHTML=mo;$("ctM2").value="2"}
+$("ctAdd").onclick=()=>{ensureCal();const n=$("ctName").value.trim(),m1=+$("ctM1").value,d1=+$("ctD1").value,m2=+$("ctM2").value,d2=+$("ctD2").value,say=t=>$("ctMsg").textContent=t;
+  if(!n)return say(T("কাজের নাম লিখুন।","Type the name of the job."));
+  if(!(d1>=1&&d1<=31&&d2>=1&&d2<=31))return say(T("দিনের ঘরে ১ থেকে ৩১-এর মধ্যে লিখুন।","Days must be between 1 and 31."));
+  S.myTasks.push({id:"my"+Date.now(),name:n.slice(0,60),m1,d1,m2,d2});$("ctName").value="";say(T("যোগ হয়েছে।","Added."));save();renderDue()};
+{const _r=render;render=function(){_r();renderDue()}}
+renderDue();
 </script>
 
 </body>
