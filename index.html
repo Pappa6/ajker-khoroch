@@ -372,7 +372,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
       <input id="stmt" type="file" accept=".csv,.xls,.xlsx,.pdf,text/csv,application/pdf,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
     </label>
     <div class="row" id="pwRow" hidden>
-      <input id="pw" type="password" placeholder="PDF-এর পাসওয়ার্ড" data-en-ph="PDF password" style="flex:1 1 160px">
+      <input id="pw" type="password" placeholder="ফাইলের পাসওয়ার্ড" data-en-ph="File password" style="flex:1 1 160px">
       <button class="primary" id="pwGo"><span data-en="Open">খুলুন</span></button>
     </div>
     <div id="importMsg" aria-live="polite"></div>
@@ -1242,6 +1242,77 @@ async function pdfLines(buf,pw){
   return lines;
 }
 const DATERE=/\b\d{1,2}[\/\-.]\d{1,2}[\/\-.]\d{2,4}\b|\b\d{4}-\d{2}-\d{2}\b|\b\d{1,2}[ \-]?[A-Za-z]{3}[a-z]*[ \-,]*'?\d{2,4}\b/g;
+/* "standard" Office encryption (AES-128, SHA-1, 50000 rounds): what SBI's downloaded Excel files use */
+async function decryptStd(ib,pkgc,pw,needPw){
+  const cat=(...a)=>{const o=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let k=0;a.forEach(x=>{o.set(x,k);k+=x.length});return o};
+  const le32=n=>new Uint8Array([n&255,n>>8&255,n>>16&255,n>>>24&255]);
+  const sha=async d=>new Uint8Array(await crypto.subtle.digest("SHA-1",d));
+  const dv=new DataView(ib.buffer,ib.byteOffset),hs=dv.getUint32(8,true);
+  const keyBytes=dv.getUint32(12+16,true)/8||16, vo=12+hs;
+  const saltSize=dv.getUint32(vo,true),salt=ib.slice(vo+4,vo+4+saltSize),encVer=ib.slice(vo+4+saltSize,vo+20+saltSize),encHash=ib.slice(vo+24+saltSize,vo+56+saltSize);
+  const pb=new Uint8Array(pw.length*2);for(let i=0;i<pw.length;i++){pb[2*i]=pw.charCodeAt(i)&255;pb[2*i+1]=pw.charCodeAt(i)>>8}
+  let H=await sha(cat(salt,pb));
+  for(let i=0;i<50000;i++)H=await sha(cat(le32(i),H));
+  H=await sha(cat(H,le32(0)));
+  const mix=v=>{const b=new Uint8Array(64).fill(v);H.forEach((x,i)=>{b[i]^=x});return sha(b)};
+  const key=cat(await mix(0x36),await mix(0x5c)).slice(0,keyBytes);
+  const k=await crypto.subtle.importKey("raw",key,"AES-CBC",false,["encrypt","decrypt"]);
+  /* AES-ECB built from CBC: decrypt with zero IV, then undo the chaining by XOR-ing each block with the previous cipher block */
+  const ecb=async data=>{
+    const pad=new Uint8Array(await crypto.subtle.encrypt({name:"AES-CBC",iv:data.slice(-16)},k,new Uint8Array(0)));
+    const p=new Uint8Array(await crypto.subtle.decrypt({name:"AES-CBC",iv:new Uint8Array(16)},k,cat(data,pad)));
+    for(let i=p.length-1;i>=16;i--)p[i]^=data[i-16];
+    return p;
+  };
+  const ver=await ecb(encVer),vh=await ecb(encHash.slice(0,32)),chk=await sha(ver);
+  if(!chk.slice(0,20).every((x,i)=>x===vh[i])){const e=needPw();e.wrong=true;throw e}
+  const pk=Uint8Array.from(pkgc),size=new DataView(pk.buffer,pk.byteOffset).getUint32(0,true),data=pk.slice(8);
+  return (await ecb(data.slice(0,data.length-data.length%16))).slice(0,size).buffer;
+}
+/* password-protected Excel (Office "agile" encryption, as SBI net banking files): opened here on the device with the browser's own crypto; nothing is sent anywhere */
+async function decryptXlsx(buf,pw){
+  const u8=new Uint8Array(buf);
+  if(!(u8[0]===0xD0&&u8[1]===0xCF&&u8[2]===0x11&&u8[3]===0xE0))return null;
+  let cfb;try{cfb=XLSX.CFB.read(u8,{type:"array"})}catch(_){return null}
+  const info=XLSX.CFB.find(cfb,"/EncryptionInfo"),pkg=XLSX.CFB.find(cfb,"/EncryptedPackage");
+  if(!info||!pkg)return null;
+  const needPw=()=>{const e=new Error("password");e.name="PasswordException";return e};
+  if(!pw)throw needPw();
+  const ib=Uint8Array.from(info.content);
+  if(ib[0]===4&&ib[2]===3||ib[0]===3&&ib[2]===2||ib[0]===2&&ib[2]===2)return decryptStd(ib,pkg.content,pw,needPw);
+  if(!(ib[0]===4&&ib[2]===4))throw new Error("unsupported encryption");
+  const doc=new DOMParser().parseFromString(new TextDecoder().decode(ib.slice(8)),"text/xml");
+  const kd=doc.getElementsByTagNameNS("*","keyData")[0],ek=doc.getElementsByTagNameNS("*","encryptedKey")[0];
+  if(!kd||!ek)throw new Error("unsupported encryption");
+  const b64=x=>Uint8Array.from(atob(x),c=>c.charCodeAt(0));
+  const hn=a=>({SHA512:"SHA-512",SHA384:"SHA-384",SHA256:"SHA-256",SHA1:"SHA-1"})[a]||"SHA-512";
+  const cat=(...a)=>{const o=new Uint8Array(a.reduce((n,x)=>n+x.length,0));let k=0;a.forEach(x=>{o.set(x,k);k+=x.length});return o};
+  const le32=n=>new Uint8Array([n&255,n>>8&255,n>>16&255,n>>>24&255]);
+  const hash=async(h,d)=>new Uint8Array(await crypto.subtle.digest(h,d));
+  const eh=hn(ek.getAttribute("hashAlgorithm")),kh=hn(kd.getAttribute("hashAlgorithm"));
+  const eSalt=b64(ek.getAttribute("saltValue")),kSalt=b64(kd.getAttribute("saltValue"));
+  const spin=+ek.getAttribute("spinCount"),eBits=+ek.getAttribute("keyBits")/8,kBits=+kd.getAttribute("keyBits")/8,bs=+kd.getAttribute("blockSize")||16;
+  const pb=new Uint8Array(pw.length*2);for(let i=0;i<pw.length;i++){pb[2*i]=pw.charCodeAt(i)&255;pb[2*i+1]=pw.charCodeAt(i)>>8}
+  let H=await hash(eh,cat(eSalt,pb));
+  for(let i=0;i<spin;i++)H=await hash(eh,cat(le32(i),H));
+  let kk=await hash(eh,cat(H,new Uint8Array([0x14,0x6e,0x0b,0xe7,0xab,0xac,0xd0,0xd6])));
+  kk=kk.length>=eBits?kk.slice(0,eBits):cat(kk,new Uint8Array(eBits-kk.length).fill(0x36));
+  const nopad=async(key,iv,data)=>{
+    const k=await crypto.subtle.importKey("raw",key,"AES-CBC",false,["encrypt","decrypt"]);
+    const pad=new Uint8Array(await crypto.subtle.encrypt({name:"AES-CBC",iv:data.slice(-16)},k,new Uint8Array(0)));
+    return new Uint8Array(await crypto.subtle.decrypt({name:"AES-CBC",iv},k,cat(data,pad)));
+  };
+  let secret;
+  try{secret=(await nopad(kk,eSalt.slice(0,16),b64(ek.getAttribute("encryptedKeyValue")))).slice(0,kBits)}catch(_){throw needPw()}
+  const pk=Uint8Array.from(pkg.content),size=new DataView(pk.buffer,pk.byteOffset).getUint32(0,true),data=pk.slice(8),parts=[];
+  for(let i=0;i*4096<data.length;i++){
+    const iv=(await hash(kh,cat(kSalt,le32(i)))).slice(0,bs);
+    let seg;try{seg=await nopad(secret,iv,data.slice(i*4096,(i+1)*4096))}catch(_){throw needPw()}
+    if(i===0&&!(seg[0]===0x50&&seg[1]===0x4B)){const e=needPw();e.wrong=true;throw e}
+    parts.push(seg);
+  }
+  return cat(...parts).slice(0,size).buffer;
+}
 /* bank statement PDF with real Debit / Credit columns (SBI net banking etc.): read each amount from the column it sits in,
    and join the wrapped narration lines of a cell to its transaction */
 function parseColsPdf(pages){
@@ -1378,7 +1449,7 @@ async function readFile(file,pw){
       let wb;
       if(isCsv){let txt;try{txt=new TextDecoder("utf-8",{fatal:true}).decode(buf)}catch(_){txt=new TextDecoder("windows-1252").decode(buf)}
         wb=XLSX.read(txt,{type:"string",cellDates:true,raw:true});}
-      else wb=XLSX.read(buf,{type:"array",cellDates:true});
+      else{const dec=await decryptXlsx(buf,pw);wb=XLSX.read(dec||buf,{type:"array",cellDates:true});}
       const sheets=wb.SheetNames.map(sn=>XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,raw:true,defval:""}));
       for(const t of sheets){
         const f=dataStart(t); const m=detectMap(t)||(f>0&&S.maps[sigOf(t,f)]?{...S.maps[sigOf(t,f)],h:f-1}:null);
@@ -1389,7 +1460,10 @@ async function readFile(file,pw){
         for(const t of sheets){const f=dataStart(t); if(f>0){msg("");showMapper(t,f);return}}
       }
     }
-  }catch(e){msg(T("ফাইলটা খোলা গেল না। ইন্টারনেট চালু আছে কিনা দেখে আবার চেষ্টা করুন, অথবা Excel/CSV ফাইল দিন।","Couldn't open the file. Check your internet and try again, or use an Excel/CSV file."),"err");return}
+  }catch(e){
+    if(e&&e.name==="PasswordException"){$("pwRow").hidden=false;$("pw").focus();
+      msg(pw?T("পাসওয়ার্ড মেলেনি। আবার চেষ্টা করুন।","Wrong password. Please try again."):T("এই ফাইলে পাসওয়ার্ড আছে। পাসওয়ার্ড দিয়ে \"খুলুন\" চাপুন।","This file has a password. Type it and tap \"Open\"."),pw?"err":"warn");return}
+    msg(T("ফাইলটা খোলা গেল না। ইন্টারনেট চালু আছে কিনা দেখে আবার চেষ্টা করুন, অথবা Excel/CSV ফাইল দিন।","Couldn't open the file. Check your internet and try again, or use an Excel/CSV file."),"err");return}
   if(!rows||!rows.length){msg(T("এই ফাইলে কোনো খরচের লাইন চিনতে পারলাম না। ব্যাঙ্কের Excel বা CSV স্টেটমেন্ট দিয়ে দেখুন।","Couldn't find any payment lines in this file. Try your bank's Excel or CSV statement."),"err");return}
   finishRows(rows);
 }
