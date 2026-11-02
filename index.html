@@ -104,9 +104,11 @@ label{display:flex;flex-direction:column;gap:4px;font-size:.95rem;color:var(--mu
 .chip.dim{opacity:.45}
 .fyhint{margin:12px 0 6px}
 .fyrow{display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 10px}
-.fyc{width:84px;height:84px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;background:var(--accent-soft);border:2px solid transparent;line-height:1.1}
-.fyc b{font-size:1.15rem}.fyc small{font-size:.9rem;opacity:.85}
-.fyc[aria-pressed="true"]{background:var(--accent);color:var(--card);box-shadow:0 4px 14px #0003}
+.fyc{--c1:#ffb347;--c2:#ff7a45;width:88px;height:88px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0;line-height:1.1;color:#fff;border:3px solid #ffffff55;background:linear-gradient(145deg,var(--c1),var(--c2));box-shadow:0 3px 10px #0002;transition:transform .15s,box-shadow .15s;opacity:.78}
+.fyc.fy-cur{--c1:#2fd6a3;--c2:#0b8f78}
+.fyc.fy-next{--c1:#8d7bff;--c2:#5b3fd6}
+.fyc b{font-size:1.2rem;text-shadow:0 1px 2px #0004}.fyc small{font-size:.95rem;font-weight:600;text-shadow:0 1px 2px #0004}
+.fyc[aria-pressed="true"]{opacity:1;transform:scale(1.1);border-color:#fff;box-shadow:0 0 0 3px var(--c2),0 8px 20px #0004}
 .fymonths{margin-bottom:10px}
 .svsum{font-weight:600;margin:4px 0 8px}
 .svbars{display:flex;gap:4px;align-items:flex-end;height:110px;padding:6px 0;border-bottom:1px solid var(--line,#0002)}
@@ -993,7 +995,7 @@ function renderDash(){
     const t0=new Date(),cy=t0.getMonth()>=3?t0.getFullYear():t0.getFullYear()-1,hasM=new Set(S.exp.map(e=>e.d.slice(0,7)));
     const fyl=y=>y+"–"+String((y+1)%100).padStart(2,"0");
     let h=`<p class="note fyhint">${T("আর্থিক বছর বেছে নিন (এপ্রিল থেকে মার্চ)","Pick a financial year (April to March)")}</p><div class="fyrow">`+
-      [cy-1,cy,cy+1].map(y=>`<button class="fyc" data-fy="${y}" aria-pressed="${y===dashFY}"><b>${y}</b><small>–${String((y+1)%100).padStart(2,"0")}</small></button>`).join("")+`</div>`;
+      [cy-1,cy,cy+1].map(y=>`<button class="fyc ${y<cy?"fy-past":y===cy?"fy-cur":"fy-next"}" data-fy="${y}" aria-pressed="${y===dashFY}"><b>${y}</b><small>–${String((y+1)%100).padStart(2,"0")}</small></button>`).join("")+`</div>`;
     if(dashFY!=null){h+=`<div class="chips fymonths"><button class="chip" data-p="fy:${dashFY}" aria-pressed="${dashP==="fy:"+dashFY}">${T("পুরো বছর","Whole year")} ${fyl(dashFY)}</button>`;
       for(let i=0;i<12;i++){const d=new Date(dashFY,3+i,1),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
         h+=`<button class="chip${k>t0.getFullYear()+"-"+String(t0.getMonth()+1).padStart(2,"0")?" dim":""}" data-p="ym:${k}" aria-pressed="${dashP==="ym:"+k}">${mName(k)}</button>`}
