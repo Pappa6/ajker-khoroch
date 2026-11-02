@@ -798,6 +798,7 @@ let dashP=null;
 function periodRange(p){
   const t=new Date();t.setHours(0,0,0,0);
   const first=(add)=>new Date(t.getFullYear(),t.getMonth()+add,1);
+  if(typeof p==="string"&&p.startsWith("ym:")){const a=new Date(p.slice(3)+"-01T00:00:00"),e=new Date(a.getFullYear(),a.getMonth()+1,0);return [iso(a),iso(e)>iso(t)?iso(t):iso(e)];}
   if(p==="m0") return [iso(first(0)),iso(t)];
   if(p==="m1") {const e=first(0);e.setDate(0);return [iso(first(-1)),iso(e)];}
   if(p==="m3") return [iso(first(-2)),iso(t)];
@@ -951,6 +952,9 @@ function renderDash(){
     body.innerHTML=`<p class="note">${T("খরচ লিখলে বা উপরে স্টেটমেন্ট আনলে এখানে আপনার খরচের খাত-ভিত্তিক ছবি আসবে।","Once you add spending or import a statement, your spending by category appears here.")}</p>`;return;
   }
   if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"m0":"all";}
+  {const pc=$("dashPeriod");pc.querySelectorAll(".mchip").forEach(x=>x.remove());
+    const ms=[...new Set(S.exp.map(e=>e.d.slice(0,7)))].sort().slice(-8);
+    if(ms.length>1)ms.forEach(m=>{const b=document.createElement("button");b.className="chip mchip";b.dataset.p="ym:"+m;b.textContent=mName(m);pc.appendChild(b)});}
   document.querySelectorAll("#dashPeriod .chip").forEach(c=>c.setAttribute("aria-pressed",String(c.dataset.p===dashP)));
   const [from,to]=periodRange(dashP);
   const rows=S.exp.filter(e=>e.d>=from&&e.d<=to).map(e=>({...e,cat:catOf(e),payee:payeeOf(e)}));
@@ -961,6 +965,10 @@ function renderDash(){
   const total=sum(spend);
   if(!rows.length){body.innerHTML=`<p class="note">${T("এই সময়ে কোনো খরচ নেই। অন্য সময় বেছে দেখুন।","No spending in this period. Try another period.")}</p>`;return;}
 
+  let incP=(S.inc||[]).filter(e=>e.d>=from&&e.d<=toE).reduce((t_,e)=>t_+e.a,0);
+  if(!(incP>0)&&+S.income>0){const pd=Math.min(Math.max(+S.payday||1,1),28);let c=0;
+    for(let y=+from.slice(0,4),m=+from.slice(5,7)-1;y*12+m<=(+toE.slice(0,4))*12+(+toE.slice(5,7)-1);m++){const yy=y+Math.floor(m/12),mm=((m%12)+12)%12,d=iso(new Date(yy,mm,pd));if(d>=from&&d<=toE)c++;}
+    incP=c*(+S.income);}
   const byCat={};spend.forEach(r=>{byCat[r.cat]=(byCat[r.cat]||0)+r.a});
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   const maxC=cats.length?cats[0][1]:1;
@@ -1011,7 +1019,7 @@ function renderDash(){
   const trend=bucketStats(spend,from,toE,gUse);
   const opts=sel=>CATS.map(c=>`<option value="${c}"${c===sel?" selected":""}>${catLabel(c)}</option>`).join("");
   body.innerHTML=
-    `<div class="hero"><small>${T(`মোট খরচ · ${bnDate(from)} থেকে ${bnDate(to)}`,`Total spent · ${bnDate(from)} to ${bnDate(to)}`)}</small><div class="big">${rs(total)}</div><div class="row"><span class="chip2">${T("রোজের গড়","Daily average")} ${rs(total/days)}</span><span class="chip2">${T("লেনদেন","Payments")} ${cnt(spend.length)}</span>${days>=7?`<span class="chip2">${T("এই হারে মাসে","At this pace, a month")} ≈ ${rs(total/days*30)}</span><span class="chip2">${T("বছরে","a year")} ≈ ${rs(total/days*365)}</span>`:""}${saved.length?`<span class="chip2">${T("সঞ্চয়","Savings")} ${rs(sum(saved))}</span>`:""}</div>${sparkSvg(mt)}</div>
+    `<div class="hero"><small>${T(`মোট খরচ · ${bnDate(from)} থেকে ${bnDate(to)}`,`Total spent · ${bnDate(from)} to ${bnDate(to)}`)}</small><div class="big">${rs(total)}</div><div class="row"><span class="chip2">${T("রোজের গড়","Daily average")} ${rs(total/days)}</span><span class="chip2">${T("লেনদেন","Payments")} ${cnt(spend.length)}</span>${days>=7?`<span class="chip2">${T("এই হারে মাসে","At this pace, a month")} ≈ ${rs(total/days*30)}</span><span class="chip2">${T("বছরে","a year")} ≈ ${rs(total/days*365)}</span>`:""}${saved.length?`<span class="chip2">${T("সঞ্চয়","Savings")} ${rs(sum(saved))}</span>`:""}${incP>0&&total>0?`<span class="chip2">${T("আয়ের","Of income")} ${bn(total/incP*100)}% ${T("খরচ","spent")}</span><span class="chip2">${incP>=total?T("আয় থেকে বাকি","Left from income")+" "+rs(incP-total):T("আয়ের চেয়ে বেশি খরচ","Spent above income")+" "+rs(total-incP)}</span>`:""}</div>${sparkSvg(mt)}</div>
     <h3>${T("কোন খাতে কত","By category")}</h3>
     <div class="donutbox">${donutSvg(cats,total)}</div>
     <div class="tiles">${cats.map(([c,v],i)=>`<div class="tile" style="--k:${catStyle(c)[0]};animation-delay:${(i*0.05).toFixed(2)}s"><i>${bn(v/total*100)}%</i><div class="e" aria-hidden="true">${catStyle(c)[1]}</div><b>${rs(v)}</b><span>${esc(catLabel(c))}</span></div>`).join("")}</div>
