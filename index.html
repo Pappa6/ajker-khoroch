@@ -996,7 +996,7 @@ function renderDash(){
       [cy-1,cy,cy+1].map(y=>`<button class="fyc" data-fy="${y}" aria-pressed="${y===dashFY}"><b>${y}</b><small>–${String((y+1)%100).padStart(2,"0")}</small></button>`).join("")+`</div>`;
     if(dashFY!=null){h+=`<div class="chips fymonths"><button class="chip" data-p="fy:${dashFY}" aria-pressed="${dashP==="fy:"+dashFY}">${T("পুরো বছর","Whole year")} ${fyl(dashFY)}</button>`;
       for(let i=0;i<12;i++){const d=new Date(dashFY,3+i,1),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
-        h+=`<button class="chip${hasM.has(k)?"":" dim"}" data-p="ym:${k}" aria-pressed="${dashP==="ym:"+k}">${mName(k)}</button>`}
+        h+=`<button class="chip${k>t0.getFullYear()+"-"+String(t0.getMonth()+1).padStart(2,"0")?" dim":""}" data-p="ym:${k}" aria-pressed="${dashP==="ym:"+k}">${mName(k)}</button>`}
       h+=`</div>`}
     fb.innerHTML=h;}
   document.querySelectorAll("#dashPeriod .chip").forEach(c=>c.setAttribute("aria-pressed",String(c.dataset.p===dashP)));
