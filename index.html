@@ -148,7 +148,7 @@ li.payee select{flex:0 1 46%;font-size:.85rem;padding:6px 8px}
 /* donut */
 .donutbox{display:flex;justify-content:center;margin:2px 0 10px}
 .donutbox svg{width:min(88%,300px);height:auto;display:block}
-.donutbox .sec{animation:secIn .6s both}@keyframes secIn{from{opacity:0}to{opacity:1}}.mchart,.donutbox{position:relative}.ktip{position:absolute;z-index:6;background:#fff;color:#1d2a2a;border-radius:10px;padding:8px 12px;font-size:14px;line-height:1.45;box-shadow:0 6px 22px rgba(0,0,0,.35);pointer-events:none;max-width:78%;white-space:nowrap}.ktip .t{font-weight:600}.ktip div:last-child:not(:first-child){font-weight:600}.ksec{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--card);margin-top:14px;display:flex;flex-direction:column;gap:10px}.ksec>h3{margin:0}
+.donutbox .sec{animation:secIn .6s both}@keyframes secIn{from{opacity:0}to{opacity:1}}.mchart,.donutbox{position:relative}.mchart svg.scrub{touch-action:pan-y}.ktip{position:absolute;z-index:6;background:#fff;color:#1d2a2a;border-radius:10px;padding:8px 12px;font-size:14px;line-height:1.45;box-shadow:0 6px 22px rgba(0,0,0,.35);pointer-events:none;max-width:78%;white-space:nowrap}.ktip .t{font-weight:600}.ktip div:last-child:not(:first-child){font-weight:600}.ksec{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--card);margin-top:14px;display:flex;flex-direction:column;gap:10px}.ksec>h3{margin:0}
 .donutbox .c1{fill:var(--muted);font-size:10.5px;font-family:var(--f-body)}
 .donutbox .c2{fill:var(--ink);font-family:var(--f-display);font-weight:800;font-size:25px}
 .cbar .nm{display:flex;align-items:center;gap:8px}
@@ -981,7 +981,7 @@ function bucketStats(spend,from,to,g){
   const mon=d=>{const x=new Date(d+"T00:00:00");x.setDate(x.getDate()-((x.getDay()+6)%7));return iso(x)};
   const info=d=>{const y=+d.slice(0,4),m=+d.slice(5,7)-1;
     if(g==="day")return {k:d,lab:dl(d),tip:dl(d)};
-    if(g==="week"){const a=mon(d),e=new Date(a+"T00:00:00");e.setDate(e.getDate()+6);return {k:a,lab:dl(a),tip:dl(a)+" – "+dl(iso(e))}}
+    if(g==="week"){const a=mon(d),e=new Date(a+"T00:00:00");e.setDate(e.getDate()+6);return {k:a,lab:dl(a),tip:new Date(a+"T00:00:00").toLocaleDateString(LOC(),{day:"numeric",month:"long"})+T(" থেকে সপ্তাহ"," – week")}}
     if(g==="month"){const k=d.slice(0,7);return {k,lab:mShort(k),tip:mName(k)+" "+y}}
     const n=g==="quarter"?3:6,q=Math.floor(m/n),a=y+"-"+String(q*n+1).padStart(2,"0"),b=y+"-"+String(q*n+n).padStart(2,"0");
     return {k:y+"-"+q,lab:mShort(a)+"–"+mShort(b),tip:mShort(a)+"–"+mShort(b)+" "+y}};
@@ -1237,7 +1237,7 @@ function renderDash(){
     <div class="advg">${adv.slice(0,4).map(advCard).join("")}</div>${adv.length>4?`<details class="insmore"><summary>${T(`আরও ${bn(adv.length-4)}টা পরামর্শ`,`${bn(adv.length-4)} more tips`)}</summary><div class="advg">${adv.slice(4).map(advCard).join("")}</div></details>`:""}
     </div><div class="ksec"><h3>${T("সংসারের খরচের ধারা","Everyday spending over time")}</h3>
     <p class="note">${T("সংসারের খরচ, বড় পেমেন্ট আর সঞ্চয় বাদে। ডট-দাগ গড়। শেষ বিন্দুটা অসম্পূর্ণ হতে পারে।","Everyday spending, without big payments and savings. The dotted line is the average. The last point may be incomplete.")}</p>
-    <div class="mchart${trend.length<3?" wk":""}"><svg viewBox="0 0 360 200" role="img" aria-label="${esc(T("সময় অনুযায়ী সংসারের খরচ","Everyday spending over time"))}">${trend.length<3?weeklySvg(trend):trendSvg(trend)}</svg></div>
+    <div class="mchart${trend.length<3?" wk":""}"><svg class="${trend.length<3?"":"scrub"}" viewBox="0 0 360 200" role="img" aria-label="${esc(T("সময় অনুযায়ী সংসারের খরচ","Everyday spending over time"))}">${trend.length<3?weeklySvg(trend):trendSvg(trend)}</svg></div>
     </div><div class="ksec"><h3>${T("কোন বারে বেশি খরচ","Which day you spend most")}</h3>
     ${wkAvg?`<div class="mchart wk"><svg viewBox="0 0 360 180" role="img" aria-label="${esc(T("সপ্তাহের প্রতি দিনে গড় খরচ","Average spending on each day of the week"))}">${weekdaySvg(wkAvg)}</svg></div><p class="note">${T("সংসারের খরচ, প্রতিটি বারের গড়। কমলা বার আর 🔥 সবচেয়ে বেশি খরচের দিন।","Everyday spending, average for each weekday. The orange bar with 🔥 is your biggest day.")}</p>`:`<p class="note">${T("অন্তত 7 দিনের খরচ থাকলে এখানে দেখা যাবে কোন বারে বেশি খরচ হয়।","With at least 7 days of spending, this shows which day you spend most.")}</p>`}
     </div>${svCard}
@@ -1271,8 +1271,20 @@ function tipShow(){
   x=Math.min(Math.max(6,x),Math.max(6,br.width-tw-6));if(y<6)y=Math.min(tipKey.y-br.top+18,br.height-th-6);
   t.style.left=x+"px";t.style.top=Math.max(6,y)+"px";
 }
-$("dashBody").addEventListener("click",e=>{const te=e.target.closest("[data-tip]");tipKey=te?{k:te.dataset.tk,x:e.clientX,y:e.clientY}:null;setTimeout(tipShow,0)});
-$("dashBody").addEventListener("pointermove",e=>{if(e.pointerType!=="mouse")return;const te=e.target.closest&&e.target.closest("[data-tip]");const k=te?{k:te.dataset.tk,x:e.clientX,y:e.clientY}:null;if(!k&&!tipKey)return;tipKey=k;tipShow()});
+/* on the line chart the box follows the finger or mouse along the line, to the nearest point */
+function scrub(e){
+  const svg=e.target.closest&&e.target.closest("svg.scrub");if(!svg)return false;
+  const cs=[...svg.querySelectorAll("circle[data-tk]")];if(!cs.length)return true;
+  let best=null,bd=1e9;
+  cs.forEach(c=>{const r=c.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-e.clientX);if(d<bd){bd=d;best=c}});
+  cs.forEach(c=>{c.setAttribute("fill","transparent");c.removeAttribute("stroke")});
+  best.setAttribute("fill","#0f1f3d");best.setAttribute("stroke","#7cf5d3");best.setAttribute("stroke-width","2.5");
+  const r=best.getBoundingClientRect();tipKey={k:best.dataset.tk,x:r.left+r.width/2,y:r.top+r.height/2};tipShow();
+  return true;
+}
+$("dashBody").addEventListener("click",e=>{if(scrub(e))return;const te=e.target.closest("[data-tip]");tipKey=te?{k:te.dataset.tk,x:e.clientX,y:e.clientY}:null;setTimeout(tipShow,0)});
+$("dashBody").addEventListener("pointerdown",e=>{scrub(e)});
+$("dashBody").addEventListener("pointermove",e=>{if(scrub(e))return;if(e.pointerType!=="mouse")return;const te=e.target.closest&&e.target.closest("[data-tip]");const k=te?{k:te.dataset.tk,x:e.clientX,y:e.clientY}:null;if(!k&&!tipKey)return;tipKey=k;tipShow()});
 $("dashBody").addEventListener("click",e=>{if(e.target.closest("[data-allm]")){dashP=dashFY!=null?"fy:"+dashFY:"all";renderDash();return}const h=e.target.closest("[data-ym]");if(!h)return;const m=h.dataset.ym;dashP=dashP==="ym:"+m?(dashFY!=null?"fy:"+dashFY:"all"):"ym:"+m;renderDash();});
 $("dashPeriod").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(!b)return;dashP=b.dataset.p;renderDash();});
 document.addEventListener("click",e=>{const f=e.target.closest("#fyBox .fyc");if(f&&f.dataset.arch){fyArch=!fyArch;renderDash();return}if(f){const y=+f.dataset.fy;dashP=dashFY===y?"all":"fy:"+y;renderDash();return}
