@@ -2447,6 +2447,10 @@ $("vParse").onclick=runParse;
   if(!SR){mic.hidden=true;$("vPriv").textContent=T("এই ব্রাউজারে মাইক চলে না, তাই বাক্যটা লিখে ‘বুঝে নিন’ চাপুন।","This browser has no microphone input, so type the sentence and press ‘Understand’.")}
   else{
     const VKEY="ajkerKhoroch.vlang";
+    /* inside another site's page (such as a Claude artifact) the browser never lets a page use the microphone */
+    const inFrame=(()=>{try{return window.self!==window.top}catch(_){return true}})();
+    const FRAME_MSG=()=>T("এই পাতাটা Claude-এর ভেতরে খোলা, আর Claude এখানে মাইক বন্ধ রাখে, তাই মাইক চলবে না। বলে খরচ লিখতে Chrome-এ নতুন ট্যাবে pappa6.github.io/ajker-khoroch খুলুন (ফোনে ‘Add to Home screen’ দিন)। এখানে লিখে ‘বুঝে নিন’ চাপলে কাজ হবে।","This page is open inside Claude, and Claude keeps the microphone off here. To speak your spending, open pappa6.github.io/ajker-khoroch in a new Chrome tab (on a phone, use ‘Add to Home screen’). Typing and pressing ‘Understand’ works here.");
+    if(inFrame)$("vNote").textContent=FRAME_MSG();
     const tz=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(_){return ""}})();
     let vl=null;try{vl=localStorage.getItem(VKEY)}catch(_){}
     if(vl!=="bn-IN"&&vl!=="en-IN")vl=(LANG==="en"&&!/Asia\/(Kolkata|Calcutta|Dhaka)/.test(tz))?"en-IN":"bn-IN";
@@ -2467,7 +2471,7 @@ $("vParse").onclick=runParse;
       t2=setTimeout(()=>{if(on){try{rec.stop()}catch(_){}t3=setTimeout(idle,2500)}},25000);
       rec.onresult=ev=>{gotAny=true;let t="";for(let i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript+" ";fin=t.trim();$("vtxt").value=fin};
       rec.onerror=ev=>{idle();const e=ev.error;if(e==="aborted")return;
-        $("vNote").textContent=e==="not-allowed"||e==="service-not-allowed"?T("মাইকের অনুমতি দেওয়া নেই। ঠিকানার পাশের তালা বা ⓘ চিহ্নে চেপে মাইক ‘Allow’ করুন, অথবা লিখে দিন।","Microphone permission is off. Tap the lock or ⓘ next to the address, allow the microphone, or type."):
+        $("vNote").textContent=e==="not-allowed"||e==="service-not-allowed"?(inFrame?FRAME_MSG():T("মাইকের অনুমতি দেওয়া নেই। ঠিকানার পাশের তালা বা ⓘ চিহ্নে চেপে মাইক ‘Allow’ করুন, অথবা লিখে দিন।","Microphone permission is off. Tap the lock or ⓘ next to the address, allow the microphone, or type.")):
           e==="network"?T("বাংলা শোনার জন্য ইন্টারনেট লাগে। নেট না থাকলে লিখে দিন।","Listening needs internet. Without it, type."):
           e==="no-speech"?T("কিছু শোনা যায়নি। ফোন মুখের কাছে ধরে আবার ট্যাপ করুন।","Heard nothing. Hold the phone closer and tap again."):
           e==="audio-capture"?T("মাইক পাওয়া যাচ্ছে না। অন্য কোনো অ্যাপ বা ট্যাব মাইক ধরে থাকলে সেটা বন্ধ করে আবার ট্যাপ করুন।","No microphone found. If another app or tab is using it, close that and tap again."):
