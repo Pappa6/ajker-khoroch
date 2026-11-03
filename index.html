@@ -253,7 +253,7 @@ ul.ins li.good{border-left-color:var(--go)}ul.ins li.good::before{content:"✅"}
 .onb small.en,.gets small.en{display:block;color:var(--muted);font-size:.86rem;font-weight:400;line-height:1.45;margin-top:2px;font-family:var(--f-body)}
 .en-inline{color:var(--muted);font-weight:400;font-size:.9rem}
 .helpbtn.sharebtn{background:var(--go);color:var(--card);text-decoration:none;font-weight:600}
-#langBtn{font-weight:600;border:1px solid var(--accent);background:var(--card);color:var(--accent)}
+.langsw{display:inline-flex;border:1px solid var(--accent);border-radius:999px;overflow:hidden;background:var(--card)}.langsw button{border:0;border-radius:0;background:transparent;color:var(--accent);font-weight:600;padding:6px 14px;font-size:.9rem;min-height:40px}.langsw button+button{border-left:1px solid var(--accent)}.langsw button[aria-pressed="true"]{background:var(--accent);color:var(--card)}
 .helpbtn{font-size:.9rem;padding:6px 12px;border-radius:999px;background:var(--accent-soft);border-color:transparent}
 .fbq{display:flex;flex-direction:column;gap:4px;font-size:.95rem;color:var(--ink);flex:none}
 .flowbox{background:var(--bg);border-radius:14px;padding:12px 14px;counter-reset:fs}
@@ -299,6 +299,18 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
 .calrow small{display:block;color:var(--muted)}
 .calform{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .calform input[type=number]{width:4.5em}
+section#dash{background:transparent;border:0;padding:0;gap:14px}
+#dash>h2,#dashPeriod,#fyBox,#incCard{display:none!important}
+@media (min-width:900px){
+ .wrap{max-width:1180px}
+ .wrap>*:not(#dash){width:100%;max-width:520px;margin-inline:auto}
+ #dashBody{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+ #dashBody>*{grid-column:1/-1;margin-top:0}
+ #dashBody>.ksec{grid-column:auto}
+ #dashBody>.ksec:has(.advg){grid-column:1/-1}
+ .stats{grid-template-columns:repeat(auto-fit,minmax(11rem,1fr))}
+ .hero{padding:22px 26px}
+}
 </style>
 </head>
 <body>
@@ -314,7 +326,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
     <a class="helpbtn sharebtn" id="shareApp" href="https://wa.me/?text=%E0%A6%86%E0%A6%9C%E0%A6%95%E0%A7%87%E0%A6%B0%20%E0%A6%96%E0%A6%B0%E0%A6%9A%20%E0%A6%85%E0%A7%8D%E0%A6%AF%E0%A6%BE%E0%A6%AA%3A%20%E0%A6%B0%E0%A7%8B%E0%A6%9C%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A7%81%E0%A6%A8%20%E0%A6%86%E0%A6%9C%20%E0%A6%95%E0%A6%A4%20%E0%A6%9F%E0%A6%BE%E0%A6%95%E0%A6%BE%20%E0%A6%A8%E0%A6%BF%E0%A6%B6%E0%A7%8D%E0%A6%9A%E0%A6%BF%E0%A6%A8%E0%A7%8D%E0%A6%A4%E0%A7%87%20%E0%A6%96%E0%A6%B0%E0%A6%9A%20%E0%A6%95%E0%A6%B0%E0%A6%BE%20%E0%A6%AF%E0%A6%BE%E0%A6%AF%E0%A6%BC%E0%A5%A4%20%E0%A6%B2%E0%A6%97%E0%A6%87%E0%A6%A8%20%E0%A6%A8%E0%A7%87%E0%A6%87%2C%20%E0%A6%B8%E0%A6%AC%20%E0%A6%A4%E0%A6%A5%E0%A7%8D%E0%A6%AF%20%E0%A6%B6%E0%A7%81%E0%A6%A7%E0%A7%81%20%E0%A6%86%E0%A6%AA%E0%A6%A8%E0%A6%BE%E0%A6%B0%20%E0%A6%AB%E0%A7%8B%E0%A6%A8%E0%A7%87%E0%A5%A4%20https%3A%2F%2Fpappa6.github.io%2Fajker-khoroch%2F" target="_blank" rel="noopener"><span data-en="Share with a friend">বন্ধুকে পাঠান</span></a>
     <button class="helpbtn installtop" id="installTop" hidden><span data-en="📲 Install on phone">📲 ফোনে বসান</span></button>
     <button class="helpbtn" id="exitBtn" aria-label="Exit">🔒 Exit</button>
-    <button class="helpbtn" id="langBtn" aria-label="ভাষা / Language">English</button>
+    <div class="langsw" role="group" aria-label="ভাষা / Language"><button type="button" id="langBn" aria-pressed="true">বাংলা</button><button type="button" id="langEn" aria-pressed="false">English</button></div>
   </header>
   <div class="datestrip" id="dateStrip" aria-live="polite"></div>
   <div class="tabbar" id="tabbar" role="tablist"><button type="button" role="tab" id="tabDash" data-tab="dash" aria-selected="true"><span data-en="Dashboard">ড্যাশবোর্ড</span></button><button type="button" role="tab" id="tabToday" data-tab="today" aria-selected="false"><span data-en="Add spending &amp; statements">খরচ লিখুন ও স্টেটমেন্ট</span></button></div>
@@ -1118,7 +1130,7 @@ function trendSvg(rows){
   return s;
 }
 function renderDash(){
-  if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"m0":"all";}
+  if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"all":"all";}
   renderInc();renderUns();
   const body=$("dashBody");
   if(!S.exp.length){
@@ -1137,7 +1149,7 @@ function renderDash(){
     const sb=$("skSample");if(sb)sb.onclick=()=>loadSample();
     return;
   }
-  if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"m0":"all";}
+  if(!dashP){const [a,b]=periodRange("m0");dashP=S.exp.filter(e=>e.d>=a&&e.d<=b).length>=5?"all":"all";}
   dashFY=/^ym:/.test(dashP)?fyOfMonth(dashP.slice(3)):/^fy:/.test(dashP)?+dashP.slice(3):null;
   {let fb=$("fyBox");if(!fb){fb=document.createElement("div");fb.id="fyBox";$("dashPeriod").after(fb)}
     const t0=new Date(),cy=t0.getMonth()>=3?t0.getFullYear():t0.getFullYear()-1,hasM=new Set(S.exp.map(e=>e.d.slice(0,7)));
@@ -2552,18 +2564,21 @@ function applyLang(){
     if(el.dataset.bnPh===undefined) el.dataset.bnPh=el.placeholder;
     el.placeholder=LANG==="en"?el.dataset.enPh:el.dataset.bnPh;
   });
-  $("langBtn").textContent=LANG==="en"?"বাংলা":"English";
+  $("langBn").setAttribute("aria-pressed",String(LANG!=="en"));$("langEn").setAttribute("aria-pressed",String(LANG==="en"));
   $("shareApp").href="https://wa.me/?text="+encodeURIComponent(shareText()+" "+APP_URL);
   tagBox.querySelectorAll("button").forEach(b=>b.textContent=tagLabel(b.dataset.tag));
   showToday();
 }
-$("langBtn").onclick=()=>{
-  LANG=LANG==="en"?"bn":"en";
+function setLangTo(to){
+  if(LANG===to)return;
+  LANG=to;
   try{localStorage.setItem(LANG_KEY,LANG)}catch(_){}
   if(S.sample){S=sample();S.payeeCat={};save();}
   applyLang();render();
   if(pending&&!$("preview").hidden) showPreview();
-};
+}
+$("langBn").onclick=()=>setLangTo("bn");
+$("langEn").onclick=()=>setLangTo("en");
 /* two tabs: the dashboard, and the page for adding spending and statements */
 function setTab(t){
   document.body.setAttribute("data-tab",t);
