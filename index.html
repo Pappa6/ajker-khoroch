@@ -189,7 +189,7 @@ li.payee select{flex:0 1 46%;font-size:.85rem;padding:6px 8px}
 .stk .hit:hover{fill:#ffffff10}
 html:not(.mine) #future,html:not(.mine) #calSec,html:not(.mine) #dueSec{display:none!important}
 .mic{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;border-radius:16px;border:2px solid var(--accent);background:var(--accent-soft);color:var(--ink);font-size:1.15rem;font-weight:700;cursor:pointer}
-.mic.on{background:var(--accent);color:var(--card)}.micdot{font-size:1.5rem}
+.vlang{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 2px;color:var(--muted);font-size:.95rem}.vlang button{min-height:44px;padding:6px 16px;border-radius:999px;border:1.5px solid var(--accent);background:var(--card);color:var(--ink);font-size:1rem;font-weight:600}.vlang button[aria-pressed="true"]{background:var(--accent);color:var(--card)}.mic.on{background:var(--accent);color:var(--card)}.micdot{font-size:1.5rem}
 #vtxt{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;background:var(--card);color:var(--ink);resize:vertical}
 .vcard{display:flex;flex-direction:column;gap:10px;border:1px dashed var(--accent);border-radius:14px;padding:12px}
 .vrow{display:grid;grid-template-columns:84px 1fr;gap:6px}.vrow .vc{grid-column:1 / span 1}.vrow .vl{min-width:0}.vrow .vc{grid-column:1 / 3}.vrow .vdel{position:absolute}
@@ -440,6 +440,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
   <section id="addSec">
     <h2><span data-en="Add spending">খরচ লিখুন</span></h2>
     <button class="mic" id="micBtn" type="button"><span class="micdot">🎤</span> <span id="micTxt" data-en="Tap and speak">ট্যাপ করে বলুন</span></button>
+    <div class="vlang" role="group" aria-label="কোন ভাষায় বলবেন? · Language you will speak"><span data-en="I will speak in:">আমি বলব:</span><button type="button" data-vl="bn-IN">বাংলা</button><button type="button" data-vl="en-IN">English</button></div>
     <p class="note"><span data-en="Say or type: amount, what for, and cash or PhonePe/GPay/net banking. Example: “100 rupees milk cash” or “200 rupees medicine PhonePe”.">বলুন বা লিখুন: কত টাকা, কীসের জন্য, আর নগদ না PhonePe/GPay/নেট ব্যাংকিং। যেমন “১০০ টাকা দুধ নগদ” বা “২০০ টাকা ওষুধ PhonePe”।</span></p>
     <textarea id="vtxt" rows="2" placeholder="১০০ টাকা দুধ নগদ" data-en-ph="100 rupees milk cash"></textarea>
     <div class="row"><button class="primary" id="vParse"><span data-en="Understand">বুঝে নিন</span></button></div>
@@ -1899,11 +1900,11 @@ const VK=[
  ["স্বাস্থ্য ও ওষুধ","ওষুধ|ঔষধ|ওষধ|medicine|doctor|ডাক্তার|ক্লিনিক|হাসপাতাল|চশমা|টেস্ট|পরীক্ষা|ইনজেকশন|ফার্মেসি"],
  ["বিল ও রিচার্জ","বিদ্যুৎ|কারেন্ট|বিল(?![\\u0980-\\u09FF])|বিলের|বিলে|রিচার্জ|recharge|ইন্টারনেট|গ্যাস|ডিশ|ট্যাক্স|ব্রডব্যান্ড|wifi|ওয়াইফাই"],
  ["যাতায়াত ও জ্বালানি","পেট্রোল|ডিজেল|petrol|diesel|ভাড়া|টোটো|অটো|বাস(?![\\u0980-\\u09FF])|বাসে|বাসের|ট্রেন|ক্যাব|ওলা|উবার|পার্কিং|সিএনজি|টিকিট|যাতায়াত|ফুয়েল"],
- ["পোশাক ও কেনাকাটা","ড্রেস|জামা|শাড়ি|কাপড়|পোশাক|জুতো|জুতা|শার্ট|প্যান্ট|কেনাকাটা|shopping|dress|মেটেরিয়াল|ব্যাগ|ঘড়ি"],
+ ["পোশাক ও কেনাকাটা","ড্রেস|জামা|শাড়ি|কাপড়|পোশাক|জুতো|জুতা|শার্ট|প্যান্ট|কেনাকাটা|shopping|dress|মেটেরিয়াল|ব্যাগ|ঘড়ি|স্টেশনারি|স্টেশনারী|খাতা|কলম|stationery"],
  ["বাড়ি ও মেরামত","মেরামত|repair|মিস্ত্রি|রাজমিস্ত্রি|প্লাম্বার|ইলেকট্রিশিয়ান|রং(?![\\u0980-\\u09FF])|পেইন্ট|সিমেন্ট|হার্ডওয়্যার"],
  ["পুজো ও দান","পুজো|পূজা|puja|দান|মন্দির|প্রসাদ|চাঁদা|প্রণামী|ফুল(?![\\u0980-\\u09FF])|ফুলের"],
  ["ডিজিটাল ও বিনোদন","নেটফ্লিক্স|netflix|সিনেমা|মুভি|হটস্টার|সাবস্ক্রিপশন|subscription|গেম|বিনোদন|ইউটিউব"],
- ["বাজার ও মুদি","সবজি|সব্জি|আলু|পেঁয়াজ|পেয়াজ|টমেটো|মাছ|মাংস|ডিম|চাল|ডাল(?![\\u0980-\\u09FF])|ডালের|তেল|মুদি|গ্রোসারি|গ্রসারি|grocery|বাজার|আটা|ময়দা|চিনি|নুন|লবণ|মশলা|ফল|দুধ|milk|পনির|লেবু|কলা|আপেল|সাবান|সার্ফ"],
+ ["বাজার ও মুদি","সবজি|সব্জি|আলু|পেঁয়াজ|পেয়াজ|টমেটো|মাছ|মাংস|ডিম|চাল|ডাল(?![\\u0980-\\u09FF])|ডালের|তেল|মুদি|গ্রোসারি|গ্রসারি|গ্রোশারি|গ্রশারি|রোশারি|রসারি|রোসারি|grocery|বাজার|আটা|ময়দা|চিনি|নুন|লবণ|মশলা|ফল|দুধ|milk|পনির|লেবু|কলা|আপেল|সাবান|সার্ফ"],
  ["খাবার ও মিষ্টি","মিষ্টি|sweet|মিষ্টান্ন|রসগোল্লা|সন্দেশ|রেস্টুরেন্ট|হোটেল|চা(?![\\u0980-\\u09FF])|চায়ের|কফি|খাবার|বিরিয়ানি|রোল|চপ|সিঙ্গারা|আইসক্রিম|দই|কেক|পিৎজা|বার্গার|নাস্তা|টিফিন|ঝালমুড়ি"],
  ["পরিবার ও ব্যক্তিগত","কাজের|সেলুন|নাপিত|পার্লার|উপহার|গিফট|gift|স্কুল|টিউশন|বই|খেলনা"]
 ].map(([c,w])=>[c,new RegExp(BW+"(?:"+w+")","i")]);
@@ -1915,7 +1916,7 @@ function vCat(label){
   return "অন্যান্য";
 }
 const NWORD={"এগারো":11,"বারো":12,"তেরো":13,"চোদ্দ":14,"পনেরো":15,"ষোলো":16,"সতেরো":17,"আঠারো":18,"উনিশ":19,"কুড়ি":20,"বিশ":20,"পঁচিশ":25,"ত্রিশ":30,"চল্লিশ":40,"পঞ্চাশ":50,"ষাট":60,"সত্তর":70,"আশি":80,"নব্বই":90};
-const NSMALL={"এক":1,"দুই":2,"দুটি":2,"তিন":3,"চার":4,"পাঁচ":5,"ছয়":6,"সাত":7,"আট":8,"নয়":9,"দশ":10};
+const NSMALL={"এক":1,"দুই":2,"দুটি":2,"দু":2,"তিন":3,"চার":4,"পাঁচ":5,"ছয়":6,"সাত":7,"আট":8,"নয়":9,"দশ":10};
 function vNorm(t){
   let s=String(t||"").replace(/[০-৯]/g,c=>BNDIG.indexOf(c)).replace(/[‌‍]/g,"").toLowerCase();
   s=s.replace(/(\d),(?=\d{3}(?!\d))/g,"$1").replace(/[।|]/g,",").replace(/[“”"'‘’]/g," ").replace(/\s+/g," ");
@@ -1936,7 +1937,7 @@ function vNorm(t){
 }
 const AMT_WORD="(?:টাকার|টাকায়|টাকা|রুপি|rupees|rs\\.?|₹)";
 const QTY_AFTER=/^\s*(?:টা|টি|গুলো|খানা|কেজি|কিলো|kg|লিটার|লি\b|গ্রাম|gm|পিস|ডজন|জন|বার|দিন|মাস|তারিখ|ঘণ্টা|মিনিট|টুকরো|প্যাকেট)/;
-const FILL=/(^|\s)(?:খরচ|করলাম|করেছি|করেছিলাম|হয়েছে|হলো|হল|কিনলাম|কিনেছি|কিনতে|দিলাম|দিয়েছি|দিয়েছিলাম|টাকার|টাকায়|টাকা|রুপি|আজ|আমি|এখন|মধ্যে|যার|এর|তার|জন্য|কেনা|সব|মিলিয়ে|মোট|total|rs|rupees|রে|এ|spent|on|for|paid|bought|today|i|my|rupee|inr)(?=\s|$)|₹/gi;
+const FILL=/(^|\s)(?:খরচ|করলাম|করেছি|করেছিলাম|হয়েছে|হলো|হল|কিনলাম|কিনেছি|কিনতে|দিলাম|দিয়েছি|দিয়েছিলাম|টাকার|টাকায়|টাকা|রুপি|আজ|আমি|আমার|আমাদের|হ্যালো|হ্যাঁ|হ্যা|কিন্তু|কিন্ত|হোলো|গেছে|গেল|খরচটা|এখন|মধ্যে|যার|এর|তার|জন্য|কেনা|সব|মিলিয়ে|মোট|total|rs|rupees|রে|এ|spent|on|for|paid|bought|today|i|my|rupee|inr)(?=\s|$)|₹/gi;
 const MODE_VIA=[["PhonePe",/ফোন\s?পে|phone\s?pe|phonepe|ফোনপে/],["GPay",/গুগল\s?পে|জি\s?পে|g\s?pay|gpay|google\s?pay/],["নেট ব্যাংকিং",/নেট\s?ব্যা[ঙ্ং]?কিং|net\s?banking|netbanking|ইন্টারনেট\s?ব্যা[ঙ্ং]?কিং/],["ডিজিটাল",/অনলাইন|online|ইউপিআই|upi|কিউআর|qr|কার্ড|card|ডিজিটাল|ডেবিট/]];
 const CASH_RE=/নগদ|ক্যাশ|cash/;
 function vParse(text){
@@ -2195,7 +2196,7 @@ function runParse(){
   const t=$("vtxt").value.trim();if(!t){$("vNote").textContent=T("আগে মাইকে বলুন বা লিখুন।","Speak or type first.");return}
   {const C=corrParse(t);if(C){if(C.err){$("vNote").textContent=C.err;$("vcard").hidden=true}else runCorrection(C);return}}
   let P;try{P=vParse(t)}catch(_){P={ok:false,warns:[T("বুঝতে পারিনি। একটু অন্যভাবে লিখুন।","Could not understand. Try again.")]}}
-  if(!P.ok){$("vNote").textContent=P.warns[0];$("vcard").hidden=true;return}
+  if(!P.ok){$("vNote").textContent=P.warns[0]+" "+T("ভুল শুনে থাকলে ওপরের ঘরে ঠিক করে ‘বুঝে নিন’ চাপুন, অথবা ভাষার বোতাম দেখে আবার বলুন।","If it heard wrongly, fix the text above and press ‘Understand’, or check the language button and speak again.");$("vcard").hidden=true;return}
   $("vNote").textContent="";showCard(P);
 }
 /* ---------- one card to change, delete or set aside any line ---------- */
@@ -2427,16 +2428,38 @@ $("vParse").onclick=runParse;
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,on=false;
   const mic=$("micBtn");
   if(!SR){mic.hidden=true;$("vPriv").textContent=T("এই ব্রাউজারে মাইক চলে না, তাই বাক্যটা লিখে ‘বুঝে নিন’ চাপুন।","This browser has no microphone input, so type the sentence and press ‘Understand’.")}
-  else mic.onclick=()=>{
-    if(on&&rec){rec.stop();return}
-    try{rec=new SR();rec.lang=LANG==="en"?"en-IN":"bn-IN";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;}catch(_){return}
-    let fin="";on=true;mic.classList.add("on");$("micTxt").textContent=T("শুনছি… থামাতে ট্যাপ করুন","Listening… tap to stop");
-    rec.onresult=ev=>{let t="";for(let i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript+" ";fin=t.trim();$("vtxt").value=fin};
-    rec.onerror=ev=>{on=false;mic.classList.remove("on");$("micTxt").textContent=T("ট্যাপ করে বলুন","Tap and speak");
-      $("vNote").textContent=ev.error==="not-allowed"||ev.error==="service-not-allowed"?T("মাইকের অনুমতি দেওয়া নেই। অনুমতি দিন, অথবা লিখে দিন।","Microphone permission is off. Allow it, or type."):ev.error==="network"?T("বাংলা শোনার জন্য ইন্টারনেট লাগে। নেট না থাকলে লিখে দিন।","Listening needs internet. Without it, type."):ev.error==="no-speech"?T("কিছু শোনা যায়নি। আবার চেষ্টা করুন।","Heard nothing. Try again."):T("মাইক চলল না। লিখে দিন।","Microphone did not work. Please type.")};
-    rec.onend=()=>{on=false;mic.classList.remove("on");$("micTxt").textContent=T("ট্যাপ করে বলুন","Tap and speak");if($("vtxt").value.trim())runParse()};
-    try{rec.start()}catch(_){on=false;mic.classList.remove("on")}
-  };
+  else{
+    const VKEY="ajkerKhoroch.vlang";
+    const tz=(()=>{try{return Intl.DateTimeFormat().resolvedOptions().timeZone||""}catch(_){return ""}})();
+    let vl=null;try{vl=localStorage.getItem(VKEY)}catch(_){}
+    if(vl!=="bn-IN"&&vl!=="en-IN")vl=(LANG==="en"&&!/Asia\/(Kolkata|Calcutta|Dhaka)/.test(tz))?"en-IN":"bn-IN";
+    const paintVl=()=>document.querySelectorAll(".vlang button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.vl===vl)));
+    document.querySelectorAll(".vlang button").forEach(b=>b.onclick=()=>{vl=b.dataset.vl;try{localStorage.setItem(VKEY,vl)}catch(_){}paintVl();
+      $("vNote").textContent=vl==="bn-IN"?T("এবার বাংলায় বলুন, যেমন: ‘একশো টাকা দুধ নগদ’।","Now speak in Bengali, e.g. ‘একশো টাকা দুধ নগদ’."):T("Now speak in English, e.g. ‘100 rupees milk cash’.","Now speak in English, e.g. ‘100 rupees milk cash’.");
+      if(on&&rec){try{rec.abort()}catch(_){}}});
+    paintVl();
+    let t1=null,t2=null,t3=null,gotAny=false;
+    const idle=()=>{on=false;mic.classList.remove("on");$("micTxt").textContent=T("ট্যাপ করে বলুন","Tap and speak");[t1,t2,t3].forEach(clearTimeout);t1=t2=t3=null};
+    mic.onclick=()=>{
+      if(on&&rec){try{rec.stop()}catch(_){}t3=setTimeout(idle,2500);return}
+      try{rec=new SR();rec.lang=vl;rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;}catch(_){return}
+      let fin="";gotAny=false;on=true;mic.classList.add("on");$("vtxt").value="";$("vcard").hidden=true;$("vNote").textContent="";
+      $("micTxt").textContent=T("শুনছি… থামাতে ট্যাপ করুন","Listening… tap to stop");
+      /* never stay stuck: stop when nothing is heard, and in any case after 25 seconds */
+      t1=setTimeout(()=>{if(on&&!gotAny){try{rec.stop()}catch(_){}t3=setTimeout(idle,2500)}},9000);
+      t2=setTimeout(()=>{if(on){try{rec.stop()}catch(_){}t3=setTimeout(idle,2500)}},25000);
+      rec.onresult=ev=>{gotAny=true;let t="";for(let i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript+" ";fin=t.trim();$("vtxt").value=fin};
+      rec.onerror=ev=>{idle();const e=ev.error;if(e==="aborted")return;
+        $("vNote").textContent=e==="not-allowed"||e==="service-not-allowed"?T("মাইকের অনুমতি দেওয়া নেই। ঠিকানার পাশের তালা বা ⓘ চিহ্নে চেপে মাইক ‘Allow’ করুন, অথবা লিখে দিন।","Microphone permission is off. Tap the lock or ⓘ next to the address, allow the microphone, or type."):
+          e==="network"?T("বাংলা শোনার জন্য ইন্টারনেট লাগে। নেট না থাকলে লিখে দিন।","Listening needs internet. Without it, type."):
+          e==="no-speech"?T("কিছু শোনা যায়নি। ফোন মুখের কাছে ধরে আবার ট্যাপ করুন।","Heard nothing. Hold the phone closer and tap again."):
+          e==="audio-capture"?T("মাইক পাওয়া যাচ্ছে না। অন্য কোনো অ্যাপ বা ট্যাব মাইক ধরে থাকলে সেটা বন্ধ করে আবার ট্যাপ করুন।","No microphone found. If another app or tab is using it, close that and tap again."):
+          e==="language-not-supported"?T("এই ভাষায় শোনা যাচ্ছে না। অন্য ভাষার বোতাম চেপে দেখুন, অথবা লিখে দিন।","This language is not supported here. Try the other language button, or type."):
+          T("মাইক চলল না। আবার ট্যাপ করুন, নয়তো লিখে দিন।","Microphone did not work. Tap again, or type.")};
+      rec.onend=()=>{idle();if($("vtxt").value.trim())runParse();else if(!$("vNote").textContent)$("vNote").textContent=T("কিছু শোনা যায়নি। আবার ট্যাপ করে বলুন।","Heard nothing. Tap and speak again.")};
+      try{rec.start()}catch(_){idle();$("vNote").textContent=T("মাইক চালু করা গেল না। আবার ট্যাপ করুন।","Could not start the microphone. Tap again.")}
+    };
+  }
 }
 
 /* ---------- manual entry & setup ---------- */
