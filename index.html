@@ -2,7 +2,7 @@
 <html lang="bn">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdnjs.cloudflare.com; worker-src blob: https://cdnjs.cloudflare.com; manifest-src 'self'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src blob:; manifest-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1f5f5b">
 <meta name="description" content="আজকের খরচ: রোজ জানুন আজ কত টাকা নিশ্চিন্তে খরচ করা যায়। বাংলায়, লগইন ছাড়া, সব তথ্য শুধু আপনার ফোনে। Ajker Khoroch: know how much you can safely spend today. No login, data stays on your phone.">
@@ -187,6 +187,15 @@ li.payee select{flex:0 1 46%;font-size:.85rem;padding:6px 8px}
 .bigb{display:inline-block;margin-top:4px;font-size:.74rem;padding:2px 10px;border-radius:999px;background:var(--accent-soft);border:0;color:inherit;cursor:pointer}
 .stk .hit:hover{fill:#ffffff10}
 html:not(.mine) #future,html:not(.mine) #calSec,html:not(.mine) #dueSec{display:none!important}
+.mic{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;border-radius:16px;border:2px solid var(--accent);background:var(--accent-soft);color:var(--ink);font-size:1.15rem;font-weight:700;cursor:pointer}
+.mic.on{background:var(--accent);color:var(--card)}.micdot{font-size:1.5rem}
+#vtxt{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;background:var(--card);color:var(--ink);resize:vertical}
+.vcard{display:flex;flex-direction:column;gap:10px;border:1px dashed var(--accent);border-radius:14px;padding:12px}
+.vrow{display:grid;grid-template-columns:84px 1fr;gap:6px}.vrow .vc{grid-column:1 / span 1}.vrow .vl{min-width:0}.vrow .vc{grid-column:1 / 3}.vrow .vdel{position:absolute}
+.vrow{position:relative;border-bottom:1px solid var(--line);padding-bottom:8px}.vrow .vdel{right:0;top:0}.vrow input,.vrow select,.vmode select,.vmode input{font:inherit;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);min-width:0;box-sizing:border-box}
+.vmode{display:flex;flex-wrap:wrap;gap:8px}.vmode select{flex:1 1 180px}.vmode input{width:110px}.vwarn{color:var(--stop)}
+.ask,.pl{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px}.askrow{display:flex;gap:8px;align-items:center}
+.pl ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}.pl li{display:flex;justify-content:space-between;gap:8px;align-items:center}.mini{padding:6px 10px;font-size:.85rem}
 .trust{margin:0 0 8px;padding:8px 12px;border-radius:10px;font-size:.88rem;font-weight:600}.trust.ok{background:var(--go-bg)}.trust.bad{background:var(--wait-bg)}
 .insmore{margin-top:6px}.insmore summary{cursor:pointer;font-weight:600;padding:6px 0}.fyc.fy-arch{--c1:#94a3b8;--c2:#475569}
 .mchips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 8px}.mchips button{background:#ffffff26;color:#fff;border:1px solid #ffffff40;border-radius:999px;padding:6px 14px;font-size:.92rem;cursor:pointer}.mchips button[aria-pressed="true"]{background:#fff;color:#0b3f3b;border-color:#fff}
@@ -426,9 +435,16 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
     </details>
   </section>
 
-  <section>
-    <h2><span data-en="Add cash spending">নগদ খরচ লিখুন</span></h2>
-    <p class="note"><span data-en="Note here what a statement won&#x27;t show (cash), or today&#x27;s UPI payments.">যা স্টেটমেন্টে আসে না (নগদ), বা আজকের UPI খরচ, এখানে লিখুন।</span></p>
+  <section id="addSec">
+    <h2><span data-en="Add spending">খরচ লিখুন</span></h2>
+    <button class="mic" id="micBtn" type="button"><span class="micdot">🎤</span> <span id="micTxt" data-en="Tap and speak">ট্যাপ করে বলুন</span></button>
+    <p class="note"><span data-en="Say or type: amount, what for, and cash or PhonePe/GPay/net banking. Example: “100 rupees milk cash” or “200 rupees medicine PhonePe”.">বলুন বা লিখুন: কত টাকা, কীসের জন্য, আর নগদ না PhonePe/GPay/নেট ব্যাংকিং। যেমন “১০০ টাকা দুধ নগদ” বা “২০০ টাকা ওষুধ PhonePe”।</span></p>
+    <textarea id="vtxt" rows="2" placeholder="১০০ টাকা দুধ নগদ" data-en-ph="100 rupees milk cash"></textarea>
+    <div class="row"><button class="primary" id="vParse"><span data-en="Understand">বুঝে নিন</span></button></div>
+    <p class="note" id="vNote" aria-live="polite"></p>
+    <div id="vcard" hidden></div>
+    <p class="note" id="vPriv"><span data-en="Typing sends nothing anywhere. If you use the microphone, your phone&#x27;s browser (Chrome) sends the sound to Google to turn it into words; only the words come back to this app.">লিখলে কিছুই কোথাও যায় না। মাইক ব্যবহার করলে আপনার ফোনের ব্রাউজার (Chrome) কথাটা কথা-থেকে-লেখা করার জন্য Google-এর কাছে পাঠায়। শুধু লেখাটুকু অ্যাপে ফেরত আসে।</span></p>
+    <p class="note"><span data-en="Or add one amount under a single heading:">অথবা এক খাতে শুধু টাকা লিখুন:</span></p>
     <div class="row">
       <input id="amt" class="amt" type="number" inputmode="decimal" min="0" placeholder="টাকা ₹" data-en-ph="Amount ₹">
       <button class="primary" id="addBtn"><span data-en="Add">যোগ করুন</span></button>
@@ -436,6 +452,8 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
     <div class="row" id="tags"></div>
     <p class="note" id="addMsg" aria-live="polite"></p>
   </section>
+
+  <section id="pendSec" hidden></section>
 
   <section>
     <h2><span data-en="Today&#x27;s spending">আজকের খরচ</span></h2>
@@ -636,7 +654,7 @@ function sample(){
 }
 function mKey(add){const d=new Date();const x=new Date(d.getFullYear(),d.getMonth()+add,1);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")}
 const blankFuture=()=>({buffer:0,infl:5,changes:[],liab:[]});
-const blank=()=>({sample:false,income:0,payday:1,saving:0,fixed:[],exp:[],future:blankFuture(),payeeCat:{},payeeBig:{},inc:[],maps:{},seen:[]});
+const blank=()=>({sample:false,income:0,payday:1,saving:0,fixed:[],exp:[],future:blankFuture(),payeeCat:{},payeeBig:{},inc:[],maps:{},seen:[],grp:{},vm:[],hold:[],ask:[],wordCat:{},cover:""});
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY))}catch(_){}
 if(!S) S=sample();
@@ -645,6 +663,7 @@ if(!S.payeeCat) S.payeeCat={};
 if(!S.inc) S.inc=[];
 if(!S.maps) S.maps={};
 if(!S.seen) S.seen=[];
+if(!S.grp) S.grp={};if(!S.vm) S.vm=[];if(!S.hold) S.hold=[];if(!S.ask) S.ask=[];if(!S.wordCat) S.wordCat={};if(S.cover==null) S.cover="";
 let storeOK=true;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){storeOK=false}}
 
@@ -680,12 +699,13 @@ function render(){
   $("limitLine").textContent=T(`আজকের সীমা ${rs(limit)} · খরচ হয়েছে ${rs(spentToday)}`,`Today's limit ${rs(limit)} · spent ${rs(spentToday)}`)+(useF?T(` · সামনের দায়ের কথা ভেবে সীমা কমানো হয়েছে (এই মাসের হিসেবে হতো ${rs(monthLimit)})`,` · lowered for upcoming obligations (this month alone would allow ${rs(monthLimit)})`):"");
   renderFuture(F,monthLimit,useF);
   renderDash();
+  renderPend();
 
   const ul=$("todayList");
   ul.innerHTML=todayItems.length?"":'<li class="empty">'+T("আজ এখনও কিছু লেখা হয়নি।","Nothing entered today yet.")+'</li>';
   todayItems.forEach(e=>{const li=document.createElement("li");
-    li.innerHTML=`<span class="what">${esc(tagLabel(e.tag))}${e.desc?`<small>${esc(e.desc)}</small>`:""}</span><span><span class="num">${rs(e.a)}</span> <button class="x" aria-label="${T("মুছুন","Delete")}">✕</button></span>`;
-    li.querySelector("button").onclick=()=>{S.exp=S.exp.filter(x=>x.id!==e.id);save();render()};ul.appendChild(li)});
+    li.innerHTML=`<span class="what">${esc(tagLabel(e.tag))}${e.desc?`<small>${esc(e.desc)}</small>`:""}${e.v?`<small>${esc(grpLabel(e.g))}</small>`:""}</span><span><span class="num">${rs(e.a)}</span> <button class="x" aria-label="${T("মুছুন","Delete")}">✕</button></span>`;
+    li.querySelector("button").onclick=()=>{delEntry(e);save();render()};ul.appendChild(li)});
 
   const imp=inCycle.filter(e=>e.src==="imp").reduce((s,e)=>s+e.a,0);
   const man=inCycle.filter(e=>e.src!=="imp").reduce((s,e)=>s+e.a,0);
@@ -696,7 +716,7 @@ function render(){
      <span>${T("জমানোর লক্ষ্য","Savings goal")}</span><span class="num">${rs(-S.saving)}</span>
      <span>${T("এ পর্যন্ত রোজের খরচ","Daily spending so far")}</span><span class="num">${rs(-(imp+man))}</span>
      <span class="indent">${T("স্টেটমেন্ট থেকে (UPI ইত্যাদি)","From statements (UPI etc.)")}</span><span class="num indent">${rs(imp)}</span>
-     <span class="indent">${T("নিজে লেখা (নগদ)","Entered by hand (cash)")}</span><span class="num indent">${rs(man)}</span>
+     <span class="indent">${T("নিজে লেখা","Entered by you")}</span><span class="num indent">${rs(man)}</span>
      <span class="total">${T("হাতে বাকি","Left in hand")}</span><span class="num total">${rs(rest)}</span>`;
   const nd=c.next.toLocaleDateString(LOC(),{day:"numeric",month:"long"});
   $("cycleNote").textContent=T(`পরের আয় ${nd}। আজ সমেত আর ${bn(c.daysLeft)} দিন চালাতে হবে। আজ কম খরচ করলে কালকের সীমা নিজে থেকেই বাড়বে।`,`Next income on ${nd}. You need to manage ${bn(c.daysLeft)} more days, including today. Spend less today and tomorrow's limit goes up by itself.`);
@@ -844,6 +864,7 @@ function payeeOf(e){
 }
 function catOf(e){
   if(e.tag==="সঞ্চয়") return "সঞ্চয়";
+  if(e.v&&e.cat) return e.cat;
   const k=payeeOf(e).toUpperCase();
   if(!S.payeeCat[k]&&/gold|jewel|tanishq|senco|kalyan|malabar/i.test(e.desc||"")) return "সঞ্চয়";
   if(S.payeeCat[k]) return S.payeeCat[k];
@@ -1180,7 +1201,7 @@ function renderDash(){
   const hs=T(`${bnDate(from)} থেকে ${bnDate(to)}-এ মোট খরচ ${rs(total)}`+(days>=28?`, মাসে গড়ে প্রায় ${rs(total/days*30.4)}`:"")+(topC?`। সবচেয়ে বড় খাত "${catLabel(topC[0])}" (${bn(topC[1]/total*100)}%)`:"")+(incP>0?`। আয়ের ${bn(Math.round(total/incP*100))}% খরচ হয়েছে`:"")+`। সংসার চালাতে রোজ গড়ে লাগছে ${rs(houseSum/days)}।`,
     `Total spent ${rs(total)} from ${bnDate(from)} to ${bnDate(to)}`+(days>=28?`, about ${rs(total/days*30.4)} a month`:"")+(topC?`. Biggest category: "${catLabel(topC[0])}" (${bn(topC[1]/total*100)}%)`:"")+(incP>0?`. ${bn(Math.round(total/incP*100))}% of income spent`:"")+`. Everyday living costs about ${rs(houseSum/days)} a day.`);
   body.innerHTML=
-    `${trust}<div class="hero"><small>${T("আমার খরচের ড্যাশবোর্ড","My spending dashboard")}</small><p class="hsum">${hs}</p><div class="mchips" role="group" aria-label="${esc(T("মাস বেছে নিন","Pick a month"))}">${months.filter(m=>m<=curM).map(m=>`<button type="button" data-ym="${m}" aria-pressed="${selM===m}">${mName(m)}</button>`).join("")}<button type="button" data-allm="1" aria-pressed="${!selM}">${T("সব মাস","All months")}</button></div></div>
+    `${trust}${voiceTrust()}<div class="hero"><small>${T("আমার খরচের ড্যাশবোর্ড","My spending dashboard")}</small><p class="hsum">${hs}</p><div class="mchips" role="group" aria-label="${esc(T("মাস বেছে নিন","Pick a month"))}">${months.filter(m=>m<=curM).map(m=>`<button type="button" data-ym="${m}" aria-pressed="${selM===m}">${mName(m)}</button>`).join("")}<button type="button" data-allm="1" aria-pressed="${!selM}">${T("সব মাস","All months")}</button></div></div>
     ${statTiles}
     <p class="note recon">${T(`এই সময়ে: সংসার ${rs(houseSum)} + বড় খরচ ${rs(bigSum)} = মোট খরচ ${rs(total)}। সঞ্চয় ${rs(svT)} আলাদা।`,`This period: everyday ${rs(houseSum)} + big payments ${rs(bigSum)} = total spent ${rs(total)}. Savings ${rs(svT)} are separate.`)}</p>
     <h3>${T("মাস অনুযায়ী খরচ","Spending by month")}</h3>
@@ -1236,6 +1257,7 @@ $("bkYes").onclick=()=>{
     d.exp=d.exp.map(e=>({...e,id:Math.random(),k:e.src==="imp"?e.d+"|"+e.a+"|"+(e.desc||""):undefined}));
     S={...blank(),...d,sample:false};
     if(!S.future)S.future=blankFuture();if(!S.payeeCat)S.payeeCat={};if(!S.payeeBig)S.payeeBig={};if(!Array.isArray(S.inc))S.inc=[];if(!S.maps)S.maps={};if(!Array.isArray(S.seen))S.seen=[];
+    if(!S.grp)S.grp={};if(!Array.isArray(S.vm))S.vm=[];if(!Array.isArray(S.hold))S.hold=[];if(!Array.isArray(S.ask))S.ask=[];if(!S.wordCat)S.wordCat={};if(S.cover==null)S.cover="";
     save();render();$("bkIn").value="";$("bkMsg").textContent=T(`ফিরিয়ে আনা হলো: ${bn(S.exp.length)}টা খরচ।`,`Restored: ${bn(S.exp.length)} payments.`);
   }catch(_){$("bkMsg").textContent=T("এই লেখাটা ব্যাকআপ হিসেবে চেনা গেল না। পুরো লেখাটা কপি হয়েছে কিনা দেখুন।","This text was not recognised as a backup. Check that the whole text was copied.");}
 };
@@ -1269,6 +1291,16 @@ $("obStart").onclick=()=>{obMark();$("onboard").hidden=true;
 
 /* ---------- feedback ---------- */
 /* ---------- statement import ---------- */
+const LIBF={xlsx:["lib/xlsx.full.min.js",XLSX_SRC],pdf:["lib/pdf.min.js",PDF_SRC],pdfw:["lib/pdf.worker.min.js",PDFW_SRC]},LIBP={};
+function loadLib(k){
+  if(LIBP[k])return LIBP[k];
+  const tries=[];
+  const inl=window.__LIBS&&window.__LIBS[k];
+  if(inl)tries.push(()=>loadScript(URL.createObjectURL(new Blob([Uint8Array.from(atob(inl),c=>c.charCodeAt(0))],{type:"text/javascript"}))));
+  if(/^https?:/.test(location.protocol))tries.push(()=>loadScript(LIBF[k][0]));
+  tries.push(()=>loadScript(LIBF[k][1]));
+  return LIBP[k]=tries.reduce((p,f)=>p.catch(f),Promise.reject()).catch(e=>{delete LIBP[k];throw e});
+}
 const loaded={};
 function loadScript(src){return loaded[src]||(loaded[src]=new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=()=>{delete loaded[src];rej(new Error("load"))};document.head.appendChild(s)}))}
 
@@ -1403,7 +1435,7 @@ function showMapper(rows,f){
 }
 
 async function pdfLines(buf,pw){
-  await Promise.all([loadScript(PDF_SRC),loadScript(PDFW_SRC)]);
+  await Promise.all([loadLib("pdf"),loadLib("pdfw")]);
   const doc=await window.pdfjsLib.getDocument({data:buf,password:pw||undefined}).promise;
   const lines=[],pages=[];
   for(let p=1;p<=doc.numPages;p++){
@@ -1619,7 +1651,7 @@ async function readFile(file,pw){
       if(rows&&!isPhonePe)chainBad+=chainCheck(rows);
     }else{
       isPhonePe=false;
-      await loadScript(XLSX_SRC);
+      await loadLib("xlsx");
       const isCsv=name.endsWith(".csv");
       let wb;
       if(isCsv){let txt;try{txt=new TextDecoder("utf-8",{fatal:true}).decode(buf)}catch(_){txt=new TextDecoder("windows-1252").decode(buf)}
@@ -1700,11 +1732,11 @@ const tagOfType=t=>t==="UPI"?"UPI":t==="SAVE"?"সঞ্চয়":t==="CARD"?"�
 const dayN=d=>Math.round(new Date(d+"T00:00:00").getTime()/864e5);
 function planImport(rows){
   if(S.sample) return {add:rows.slice(),dup:0,replace:[],fuzzy:0};
-  const imp=S.exp.filter(e=>e.src==="imp");
+  const imp=S.exp.filter(e=>e.src==="imp").concat(S.vm||[],S.hold||[]);
   const byU={},byK={};
   imp.forEach(e=>{if(e.u)(byU[e.u]=byU[e.u]||[]).push(e);const k=e.d+"|"+e.a;(byK[k]=byK[k]||[]).push(e)});
   const used=new Set(),batchU=new Set();
-  const pool=S.exp.filter(e=>e.src!=="imp"&&e.tag!=="নগদ");
+  const pool=S.exp.filter(e=>e.src!=="imp"&&!e.v&&e.tag!=="নগদ");
   const out={add:[],dup:0,replace:[],fuzzy:0};
   /* never merge two lines that carry different reference numbers or belong to different named accounts */
   const clash=(e,r)=>(e.u&&r.u&&e.u!==r.u)||(e.ac&&r.ac&&e.ac!==r.ac);
@@ -1734,7 +1766,9 @@ function doImport(){
   if(S.sample){S.exp=[];S.inc=[];S.future=blankFuture();S.sample=false;extra=T(" নমুনা খরচ সরিয়ে দেওয়া হলো। এবার \"আমার মাসের হিসেব\"-এ নিজের আয় ও নির্দিষ্ট খরচ বসান।"," The sample was removed. Now enter your income and fixed costs in \"My monthly budget\".");}
   const plan=planImport(pending.filter(r=>r.dir!=="C"&&ok(r)));
   S.exp=S.exp.filter(e=>!plan.replace.includes(e));
-  plan.add.forEach(r=>S.exp.push({d:r.d,a:r.a,tag:tagOfType(r.type),desc:r.desc,src:"imp",k:r.d+"|"+r.a+"|"+r.desc,u:r.u||undefined,ac:r.ac||undefined,fr:r.fr,id:Math.random()}));
+  const vres=voiceMatch(plan.add);
+  plan.add.forEach(r=>S.exp.push(rowRec(r)));
+  {const mx=pending.reduce((m,r)=>r.d>m?r.d:m,"");if(mx&&mx>(S.cover||""))S.cover=mx}
   /* incomes, never added twice */
   const have={},usedI=new Set();(S.inc||[]).filter(e=>e.src==="imp").forEach(e=>{const k=e.d+"|"+e.a+"|"+e.kind;(have[k]=have[k]||[]).push(e)});
   const haveU={};(S.inc||[]).forEach(e=>{if(e.u)haveU[e.u]=(haveU[e.u]||0)+1});
@@ -1756,6 +1790,7 @@ function doImport(){
   msg(T(`✅ ${bn(plan.add.length)}টা নতুন খরচ`+(incAdd?` ও ${bn(incAdd)}টা আয়`:"")+" যোগ হলো।",`✅ ${bn(plan.add.length)} new payments`+(incAdd?` and ${bn(incAdd)} income entries`:"")+" added.")+
     ((plan.dup+incDup)?T(` ${bn(plan.dup+incDup)}টা আগেই ছিল, তাই আবার যোগ করা হয়নি।`,` ${bn(plan.dup+incDup)} were already there, so not added again.`):"")+
     (plan.replace.length?T(` ${bn(plan.replace.length)}টা হাতে লেখা খরচ স্টেটমেন্টের সঙ্গে মিলে গেছে (একই দিন, একই টাকা), সেগুলো দুবার গোনা হয়নি।`,` ${bn(plan.replace.length)} hand-entered payments matched the statement (same day, same amount) and were not counted twice.`):"")+extra+(unsorted().length?T(` ${bn(unsorted().length)}টা নাম চিনতে পারিনি, "আমার খরচের ছবি"-র ওপরের তালিকায় খাত বেছে দিন।`,` ${bn(unsorted().length)} names weren't recognised; pick their categories in the list at the top of "My spending picture".`):""),"warn");
+  {const dv=$("importMsg").firstChild;if(dv&&(vres.merged||vres.held))dv.innerHTML+=(vres.merged?T(` আপনার লেখা ${bn(vres.merged)}টা এন্ট্রি স্টেটমেন্টের লাইনের সঙ্গে জোড়া হয়েছে, দুবার গোনা হয়নি।`,` ${bn(vres.merged)} of your entries were joined with statement lines, not counted twice.`):"")+(vres.held?T(` ${bn(vres.held)}টা লাইন নিয়ে আপনাকে জিজ্ঞেস করার আছে। ‘অপেক্ষার তালিকা’ দেখুন।`,` ${bn(vres.held)} lines need your answer. See the waiting list.`):"")}
   render();
 }
 
@@ -1764,6 +1799,331 @@ fillAccts();
 $("stmt").addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;pendingFile=f;$("pw").value="";$("pwRow").hidden=true;readFile(f)});
 $("pwGo").onclick=()=>{if(pendingFile)readFile(pendingFile,$("pw").value)};
 $("pw").addEventListener("keydown",e=>{if(e.key==="Enter"&&pendingFile)readFile(pendingFile,$("pw").value)});
+
+/* ---------- quick entry: speak or type one sentence ---------- */
+/* One sentence like "১০০ টাকা দুধ নগদ" or "মোট ১৮০০: মিষ্টি ৩০০, গ্রোসারি ২০০, বাকিটা সবজি, ৫০০ নগদ বাকিটা PhonePe".
+   The words are turned into amounts, a category and a payment method. Nothing is saved until the person confirms the card. */
+const BNDIG="০১২৩৪৫৬৭৮৯";
+const BW="(?:^|[^\\u0980-\\u09FF])";
+const VK=[
+ ["সঞ্চয়","সঞ্চয়|fd(?![a-z])|rd(?![a-z])|sip(?![a-z])|এফডি|সোনা|gold|শেয়ার|mutual"],
+ ["স্বাস্থ্য ও ওষুধ","ওষুধ|ঔষধ|ওষধ|medicine|doctor|ডাক্তার|ক্লিনিক|হাসপাতাল|চশমা|টেস্ট|পরীক্ষা|ইনজেকশন|ফার্মেসি"],
+ ["বিল ও রিচার্জ","বিদ্যুৎ|কারেন্ট|বিল(?![\\u0980-\\u09FF])|বিলের|বিলে|রিচার্জ|recharge|ইন্টারনেট|গ্যাস|ডিশ|ট্যাক্স|ব্রডব্যান্ড|wifi|ওয়াইফাই"],
+ ["যাতায়াত ও জ্বালানি","পেট্রোল|ডিজেল|petrol|diesel|ভাড়া|টোটো|অটো|বাস(?![\\u0980-\\u09FF])|বাসে|বাসের|ট্রেন|ক্যাব|ওলা|উবার|পার্কিং|সিএনজি|টিকিট|যাতায়াত|ফুয়েল"],
+ ["পোশাক ও কেনাকাটা","ড্রেস|জামা|শাড়ি|কাপড়|পোশাক|জুতো|জুতা|শার্ট|প্যান্ট|কেনাকাটা|shopping|dress|মেটেরিয়াল|ব্যাগ|ঘড়ি"],
+ ["বাড়ি ও মেরামত","মেরামত|repair|মিস্ত্রি|রাজমিস্ত্রি|প্লাম্বার|ইলেকট্রিশিয়ান|রং(?![\\u0980-\\u09FF])|পেইন্ট|সিমেন্ট|হার্ডওয়্যার"],
+ ["পুজো ও দান","পুজো|পূজা|puja|দান|মন্দির|প্রসাদ|চাঁদা|প্রণামী|ফুল(?![\\u0980-\\u09FF])|ফুলের"],
+ ["ডিজিটাল ও বিনোদন","নেটফ্লিক্স|netflix|সিনেমা|মুভি|হটস্টার|সাবস্ক্রিপশন|subscription|গেম|বিনোদন|ইউটিউব"],
+ ["বাজার ও মুদি","সবজি|সব্জি|আলু|পেঁয়াজ|পেয়াজ|টমেটো|মাছ|মাংস|ডিম|চাল|ডাল(?![\\u0980-\\u09FF])|ডালের|তেল|মুদি|গ্রোসারি|গ্রসারি|grocery|বাজার|আটা|ময়দা|চিনি|নুন|লবণ|মশলা|ফল|দুধ|milk|পনির|লেবু|কলা|আপেল|সাবান|সার্ফ"],
+ ["খাবার ও মিষ্টি","মিষ্টি|sweet|মিষ্টান্ন|রসগোল্লা|সন্দেশ|রেস্টুরেন্ট|হোটেল|চা(?![\\u0980-\\u09FF])|চায়ের|কফি|খাবার|বিরিয়ানি|রোল|চপ|সিঙ্গারা|আইসক্রিম|দই|কেক|পিৎজা|বার্গার|নাস্তা|টিফিন|ঝালমুড়ি"],
+ ["পরিবার ও ব্যক্তিগত","কাজের|সেলুন|নাপিত|পার্লার|উপহার|গিফট|gift|স্কুল|টিউশন|বই|খেলনা"]
+].map(([c,w])=>[c,new RegExp(BW+"(?:"+w+")","i")]);
+function vCat(label){
+  const k=String(label||"").trim().toLowerCase();
+  if(S.wordCat&&S.wordCat[k])return S.wordCat[k];
+  // keep the order of the categories above, but let a food-or-grocery word win only if nothing earlier fits
+  for(const [c,re] of VK)if(re.test(k))return c;
+  return "অন্যান্য";
+}
+const NWORD={"এগারো":11,"বারো":12,"তেরো":13,"চোদ্দ":14,"পনেরো":15,"ষোলো":16,"সতেরো":17,"আঠারো":18,"উনিশ":19,"কুড়ি":20,"বিশ":20,"পঁচিশ":25,"ত্রিশ":30,"চল্লিশ":40,"পঞ্চাশ":50,"ষাট":60,"সত্তর":70,"আশি":80,"নব্বই":90};
+const NSMALL={"এক":1,"দুই":2,"দুটি":2,"তিন":3,"চার":4,"পাঁচ":5,"ছয়":6,"সাত":7,"আট":8,"নয়":9,"দশ":10};
+function vNorm(t){
+  let s=String(t||"").replace(/[০-৯]/g,c=>BNDIG.indexOf(c)).replace(/[‌‍]/g,"").toLowerCase();
+  s=s.replace(/(\d),(?=\d{3}(?!\d))/g,"$1").replace(/[।|]/g,",").replace(/[“”"'‘’]/g," ").replace(/\s+/g," ");
+  // number words: "দেড় হাজার", "দুই হাজার", "পাঁচশো", "পঞ্চাশ টাকা" (converted numbers are marked so only they can be glued)
+  const mk=n=>"\u0001"+n+"\u0001";
+  const small=Object.keys(NSMALL).join("|");
+  s=s.replace(/দেড়\s*হাজার/g," "+mk(1500)+" ").replace(/আড়াই\s*হাজার/g," "+mk(2500)+" ").replace(/দেড়\s*শো|দেড়শো/g," "+mk(150)+" ").replace(/আড়াই\s*শো|আড়াইশো/g," "+mk(250)+" ");
+  s=s.replace(new RegExp("(^|\\s)("+small+")\\s*হাজার","g"),(m,p,w)=>p+" "+mk(NSMALL[w]*1000)+" ");
+  s=s.replace(/(\d+)\s*হাজার/g,(m,n)=>" "+mk((+n)*1000)+" ");
+  s=s.replace(/(^|\s)হাজার(?=\s|$)/g,(m,p)=>p+" "+mk(1000)+" ");
+  s=s.replace(new RegExp("(^|\\s)("+small+")\\s*(?:শো|শ)(?![\\u0980-\\u09FF])","g"),(m,p,w)=>p+" "+mk(NSMALL[w]*100)+" ");
+  s=s.replace(/(\d+)\s*শো(?![ঀ-৿])/g,(m,n)=>" "+mk((+n)*100)+" ");
+  s=s.replace(/(^|\s)(?:একশো|একশ)(?![ঀ-৿])/g,(m,p)=>p+" "+mk(100)+" ");
+  s=s.replace(new RegExp("(^|\\s)("+Object.keys(NWORD).join("|")+")(?=\\s*(?:টাকা|রুপি|টাকার|টাকায়))","g"),(m,p,w)=>p+" "+mk(NWORD[w])+" ");
+  for(let k=0;k<4;k++)s=s.replace(/\u0001(\d+)\u0001\s*\u0001(\d+)\u0001/,(m,a,b)=>{a=+a;b=+b;return (a>=1000&&a%1000===0&&b<1000)||(a>=100&&a<1000&&a%100===0&&b<100)?mk(a+b):m.replace(/\s+/," ")});
+  s=s.replace(/\u0001/g,"");
+  return s.replace(/\s+/g," ").trim();
+}
+const AMT_WORD="(?:টাকার|টাকায়|টাকা|রুপি|rupees|rs\\.?|₹)";
+const QTY_AFTER=/^\s*(?:টা|টি|গুলো|খানা|কেজি|কিলো|kg|লিটার|লি\b|গ্রাম|gm|পিস|ডজন|জন|বার|দিন|মাস|তারিখ|ঘণ্টা|মিনিট|টুকরো|প্যাকেট)/;
+const FILL=/(^|\s)(?:খরচ|করলাম|করেছি|করেছিলাম|হয়েছে|হলো|হল|কিনলাম|কিনেছি|কিনতে|দিলাম|দিয়েছি|দিয়েছিলাম|টাকার|টাকায়|টাকা|রুপি|আজ|আমি|এখন|মধ্যে|যার|এর|তার|জন্য|কেনা|সব|মিলিয়ে|মোট|total|rs|rupees|রে|এ|spent|on|for|paid|bought|today|i|my|rupee|inr)(?=\s|$)|₹/gi;
+const MODE_VIA=[["PhonePe",/ফোন\s?পে|phone\s?pe|phonepe|ফোনপে/],["GPay",/গুগল\s?পে|জি\s?পে|g\s?pay|gpay|google\s?pay/],["নেট ব্যাংকিং",/নেট\s?ব্যা[ঙ্ং]?কিং|net\s?banking|netbanking|ইন্টারনেট\s?ব্যা[ঙ্ং]?কিং/],["ডিজিটাল",/অনলাইন|online|ইউপিআই|upi|কিউআর|qr|কার্ড|card|ডিজিটাল|ডেবিট/]];
+const CASH_RE=/নগদ|ক্যাশ|cash/;
+function vParse(text){
+  let s=vNorm(text);const warns=[];let d=iso(new Date());
+  if(/গত\s?কাল|yesterday/.test(s)){const y=new Date();y.setDate(y.getDate()-1);d=iso(y);s=s.replace(/গত\s?কাল|yesterday/g," ")}
+  /* payment method */
+  let via="",cashAmt=null,cashRest=false,digRest=false,stmtWord=false;
+  const hasCash=CASH_RE.test(s);
+  for(const [nm,re] of MODE_VIA){if(re.test(s)){via=via||nm}}
+  const A=AMT_WORD;
+  let m;
+  const digRestRe=/বাকি(?:টা|টুকু)?\s*(?:হলো|হল|ছিল)?\s*(?:ফোন\s?পে|phone\s?pe|phonepe|গুগল\s?পে|জি\s?পে|gpay|অনলাইন|online|ডিজিটাল|upi|ইউপিআই|নেট\s?ব্যা[ঙ্ং]?কিং|netbanking|net banking|কার্ড)/;
+  if(via||digRestRe.test(s)){
+    if(m=s.match(new RegExp("(\\d+(?:\\.\\d+)?)\\s*"+A+"?\\s*(?:"+CASH_RE.source+")"))){cashAmt=+m[1];s=s.replace(m[0]," ")}
+    else if(m=s.match(new RegExp("(?:"+CASH_RE.source+")\\s*(\\d+(?:\\.\\d+)?)(?!\\d)\\s*"+A+"?"))){cashAmt=+m[1];s=s.replace(m[0]," ")}
+  }
+  if(/বাকি(?:টা|টুকু)?\s*(?:হলো|হল|ছিল)?\s*(?:নগদ|ক্যাশ|cash)/.test(s)){cashRest=true;s=s.replace(/বাকি(?:টা|টুকু)?\s*(?:হলো|হল|ছিল)?\s*(?:নগদ|ক্যাশ|cash)/g," ")}
+  if(/বাকি(?:টা|টুকু)?\s*(?:হলো|হল|ছিল)?\s*(?:ফোন\s?পে|phone\s?pe|phonepe|গুগল\s?পে|জি\s?পে|gpay|অনলাইন|online|ডিজিটাল|upi|ইউপিআই|নেট\s?ব্যা[ঙ্ং]?কিং|netbanking|net banking|কার্ড)/.test(s)){digRest=true;s=s.replace(/বাকি(?:টা|টুকু)?\s*(?:হলো|হল|ছিল)?\s*(?:ফোন\s?পে|phone\s?pe|phonepe|গুগল\s?পে|জি\s?পে|gpay|অনলাইন|online|ডিজিটাল|upi|ইউপিআই|নেট\s?ব্যা[ঙ্ং]?কিং|netbanking|net banking|কার্ড)/g," ")}
+  if(/যা\s?(?:দেখো|দেখ|আছে)|স্টেটমেন্ট(?:ে)?\s*যা|statement/.test(s)){stmtWord=true;s=s.replace(/যা\s?(?:দেখো|দেখ|আছে)|স্টেটমেন্ট(?:ে)?\s*যা|statement/g," ")}
+  const dig=!!via;
+  let mode="unk";
+  if(cashRest&&dig)mode="stmt";
+  else if(stmtWord&&dig&&hasCash)mode="stmt";
+  else if(cashAmt!=null&&(digRest||dig))mode="split";
+  else if(hasCash&&!dig)mode="cash";
+  else if(dig&&!hasCash)mode="dig";
+  else if(dig&&hasCash&&cashAmt==null){mode="unk";warns.push(T("এক বাক্যে নগদ আর ডিজিটাল দুটোই এসেছে। আলাদা আলাদা করে বলুন, অথবা নিচে পদ্ধতি বেছে নিন।","Both cash and digital came up in one sentence. Say them separately, or choose the method below."))}
+  /* strip the method words so they do not become item names */
+  MODE_VIA.forEach(([nm,re])=>{s=s.replace(new RegExp(re.source+"(?:তে|র|দিয়ে|থেকে|এ)?","g")," ")});
+  s=s.replace(new RegExp("(?:"+CASH_RE.source+")(?:ে|ে)?","g")," ").replace(/\b(?:by|through|via|paid)\b|দিয়ে|করে|থেকে|বাই|থ্রু/g," ");
+  /* total */
+  let total=null;
+  if(m=s.match(/(?:মোট|total)\s*(?:খরচ)?\s*(?:হয়েছে|হলো|হল)?\s*(\d+(?:\.\d+)?)/)){total=+m[1];s=s.replace(m[0]," , ")}
+  const numRe=new RegExp("(?:₹\\s*)?(\\d+(?:\\.\\d+)?)(?:\\s*"+A+")?","g");
+  const amountsIn=str=>{const out=[];let mm;numRe.lastIndex=0;while((mm=numRe.exec(str))){const after=str.slice(numRe.lastIndex);const hasW=/টাকা|রুপি|rs|₹|rupees/i.test(mm[0]);if(!hasW&&QTY_AFTER.test(after))continue;out.push({n:+mm[1],i:mm.index,e:numRe.lastIndex})}return out};
+  if(total==null){
+    const k=s.search(/মধ্যে|[:：]/);
+    if(k>0){const pre=amountsIn(s.slice(0,k)),post=amountsIn(s.slice(k));if(pre.length===1&&post.length>=1){total=pre[0].n;s=s.slice(0,pre[0].i)+" , "+s.slice(k).replace(/মধ্যে|[:：]/g," ")}}
+  }
+  /* clauses */
+  const clauses=s.split(/[,;\n]|\s(?:আর|এবং|and|তারপর)\s/).map(x=>x.trim()).filter(Boolean);
+  const items=[];
+  const QTYX=/\d+(?:\.\d+)?\s*(?:টা|টি|গুলো|খানা|পিস|প্যাকেট|ডজন|কেজি|কিলো|kg|লিটার|গ্রাম|gm)(?![\u0980-\u09FF])/g;
+  const clean=x=>x.replace(QTYX," ").replace(numRe," ").replace(FILL,"$1 ").replace(FILL,"$1 ").replace(/[:：\-–()]/g," ").replace(/\s+/g," ").trim();
+  clauses.forEach(cl=>{
+    const am=amountsIn(cl);
+    const restW=/বাকি(?:টা|টুকু)?|remaining|rest/.test(cl);
+    if(restW&&!am.length){const lab=clean(cl.replace(/বাকি(?:টা|টুকু)?|remaining|rest/g," "));items.push({a:null,label:lab,rest:true});return}
+    if(!am.length){const lab=clean(cl);if(lab&&items.length)items[items.length-1].label=(items[items.length-1].label?items[items.length-1].label+", ":"")+lab;return}
+    if(am.length===1){const lab=clean(cl);items.push({a:am[0].n,label:lab});return}
+    const lastE=am[am.length-1].e,tail=cl.slice(lastE),pre=clean(cl.slice(0,am[0].i));
+    if(pre.length>0){ /* name first: "মিষ্টি ৩০০ গ্রোসারি ২০০ বাকিটা সবজি" */
+      let prev=0;am.forEach(a=>{items.push({a:a.n,label:clean(cl.slice(prev,a.i))});prev=a.e});
+      if(/বাকি(?:টা|টুকু)?/.test(tail))items.push({a:null,label:clean(tail.replace(/বাকি(?:টা|টুকু)?/g," ")),rest:true});
+      else if(clean(tail))items[items.length-1].label+=(items[items.length-1].label?", ":"")+clean(tail);
+    }else{ /* amount first: "৩০০ সবজি ১০০ ফল" */
+      am.forEach((a,k)=>{const end=k+1<am.length?am[k+1].i:cl.length;items.push({a:a.n,label:clean(cl.slice(a.e,end).replace(/বাকি(?:টা|টুকু)?/g," "))})});
+      if(/বাকি(?:টা|টুকু)?/.test(cl)&&!clean(cl.slice(lastE).replace(/বাকি(?:টা|টুকু)?/g," ")))items.push({a:null,label:"",rest:true});
+    }
+  });
+  /* "আজ ১৮০০ টাকা খরচ, মিষ্টি ৩০০ ..." : a first part with an amount and no words is the total */
+  if(total==null&&items.length>1&&items[0].a>0&&!items[0].label&&items.slice(1).some(x=>x.a>0)){total=items[0].a;items.shift()}
+  const rests=items.filter(x=>x.rest);
+  const known=items.filter(x=>!x.rest).reduce((t,x)=>t+x.a,0);
+  if(rests.length){
+    if(total==null)warns.push(T("‘বাকিটা’ বলেছেন, কিন্তু মোট কত তা বলেননি।","You said ‘the rest’ but not the total."));
+    else if(rests.length>1)warns.push(T("‘বাকিটা’ একাধিকবার এসেছে।","‘The rest’ appears more than once."));
+    else{const r=total-known;if(r>0)rests[0].a=r;else warns.push(T("মোটের চেয়ে বেশি অঙ্ক বলা হয়েছে।","The parts add up to more than the total."))}
+  }
+  const good=items.filter(x=>x.a>0);
+  const sum=good.reduce((t,x)=>t+x.a,0);
+  if(total!=null&&!rests.length&&Math.abs(sum-total)>0.5)warns.push(T(`আপনি মোট ${rs(total)} বলেছেন, কিন্তু আইটেম যোগ করলে ${rs(sum)}।`,`You said total ${rs(total)}, but the items add up to ${rs(sum)}.`));
+  if(!good.length)return {ok:false,items:[],warns:[T("টাকার অঙ্ক বোঝা যায়নি। যেমন বলুন: ‘১০০ টাকা দুধ নগদ’।","Could not find an amount. Try: ‘100 rupees milk cash’.")]};
+  good.forEach(x=>{x.label=x.label||"";x.cat=vCat(x.label)});
+  const T0=total!=null&&rests.length?total:sum;
+  if(mode==="split"&&cashAmt!=null&&cashAmt>=T0){warns.push(T("নগদের অঙ্ক মোটের সমান বা বেশি। পদ্ধতি ‘সবটাই নগদ’ ধরা হলো।","Cash is not less than the total, so ‘all cash’ is assumed."));mode="cash"}
+  return {ok:true,items:good,total:T0,mode,via:via||"",cash:cashAmt,date:d,warns};
+}
+/* ---------- groups: one spoken sentence = one group; the payment is matched to the statement later ---------- */
+function viaTxt(G){return G.via&&G.via!=="ডিজিটাল"?G.via:T("ডিজিটাল","digital")}
+function covered(){return S.cover||""}
+function slipState(G){
+  if(!G||G.mode==="cash")return "cash";
+  if(G.st==="done")return "done";
+  if(G.asked)return "asked";
+  const past=G.d<=covered();
+  if(G.mode==="unk")return past?"unknown":"waiting";
+  return past?"mismatch":"waiting";
+}
+function grpLabel(g){
+  const G=(S.grp||{})[g];if(!G)return "";
+  const st=slipState(G);
+  const base=G.mode==="cash"?T("নগদ","Cash"):G.mode==="unk"?T("পদ্ধতি অজানা","Method not told"):G.mode==="split"?T(`নগদ ${rs(G.cash)} + ${viaTxt(G)}`,`Cash ${rs(G.cash)} + ${viaTxt(G)}`):G.mode==="stmt"?T(`${viaTxt(G)} (স্টেটমেন্ট দেখে), বাকিটা নগদ`,`${viaTxt(G)} (by statement), rest cash`):viaTxt(G);
+  const tail=st==="done"?T(" · স্টেটমেন্টে মিলেছে ✓"," · matched ✓"):st==="asked"?T(" · আপনার উত্তরের অপেক্ষায়"," · waiting for your answer"):st==="mismatch"?T(" · স্টেটমেন্টে মেলেনি"," · not found in statement"):st==="waiting"?T(" · স্টেটমেন্ট আসার অপেক্ষায়"," · waiting for statement"):"";
+  return base+tail;
+}
+function saveVoice(P){
+  const g="g"+Date.now().toString(36)+Math.floor(Math.random()*1e4);
+  S.grp=S.grp||{};S.wordCat=S.wordCat||{};
+  P.items.forEach(x=>{
+    const lab=(x.label||"").trim();
+    if(lab){const k=lab.toLowerCase();if(vCat(lab)!==x.cat||S.wordCat[k])S.wordCat[k]=x.cat}
+    S.exp.push({d:P.date,a:x.a,tag:lab||x.cat,cat:x.cat,v:1,g,id:Math.random()});
+  });
+  S.grp[g]={d:P.date,total:P.items.reduce((t,x)=>t+x.a,0),mode:P.mode,via:P.via,cash:P.mode==="split"?P.cash:null,st:"open"};
+  save();render();
+}
+function delEntry(e){
+  if(e.g&&S.grp&&S.grp[e.g]){
+    const left=S.exp.filter(x=>x.g===e.g&&x!==e);
+    if(!left.length){
+      (S.vm||[]).filter(x=>x.g===e.g).map(x=>x.id).forEach(unmerge);
+      const hh=(S.hold||[]).filter(h=>S.ask&&S.ask.some(a=>a.id===h.ask&&a.gs.includes(e.g)));
+      hh.forEach(h=>{const a=S.ask.find(x=>x.id===h.ask);resolveAsk(a.id,[],true)});
+      delete S.grp[e.g];
+    }
+  }
+  S.exp=S.exp.filter(x=>x.id!==e.id);
+}
+/* ---------- matching a statement line with a spoken entry ---------- */
+function rowRec(r){return {d:r.d,a:r.a,tag:tagOfType(r.type),desc:r.desc,src:"imp",k:r.d+"|"+r.a+"|"+r.desc,u:r.u||undefined,ac:r.ac||undefined,fr:r.fr,id:Math.random()}}
+function slipsOpen(){
+  const o=[];Object.keys(S.grp||{}).forEach(g=>{const G=S.grp[g];if(!G||G.st==="done"||G.asked)return;
+    if(G.mode==="dig"||G.mode==="unk")o.push({g,d:G.d,a:G.total,k:"one"});
+    else if(G.mode==="split")o.push({g,d:G.d,a:Math.round((G.total-G.cash)*100)/100,k:"one"});
+    else if(G.mode==="stmt")o.push({g,d:G.d,a:0,k:"stmt"})});
+  return o;
+}
+function mergeRow(g,rec){rec.g=g;(S.vm=S.vm||[]).push(rec);const G=S.grp[g];G.st="done";(G.vm=G.vm||[]).push(rec.id)}
+function holdAsk(gs,rows,kind){
+  const id=Math.random();S.hold=S.hold||[];S.ask=S.ask||[];
+  rows.forEach(r=>{const rec=rowRec(r);rec.ask=id;S.hold.push(rec)});
+  gs.forEach(g=>{S.grp[g].asked=id});S.ask.push({id,gs,kind});
+}
+/* Sure match = exactly one spoken entry and exactly one statement line with the same amount (same day or next day).
+   Anything else is never decided silently: the lines are put aside (not counted yet) and the person is asked. */
+function voiceMatch(add){
+  const out={merged:0,held:0};
+  if(!S.grp||!Object.keys(S.grp).length)return out;
+  S.vm=S.vm||[];S.hold=S.hold||[];S.ask=S.ask||[];
+  const claim=new Set();
+  const byA={};slipsOpen().filter(s=>s.k==="one").forEach(s=>(byA[s.a]=byA[s.a]||[]).push(s));
+  Object.keys(byA).forEach(a=>{
+    const ss=byA[a];
+    const rows=add.filter(r=>!claim.has(r)&&r.a===+a&&ss.some(s=>Math.abs(dayN(r.d)-dayN(s.d))<=1));
+    if(!rows.length)return;
+    rows.forEach(r=>claim.add(r));
+    if(ss.length===1&&rows.length===1){mergeRow(ss[0].g,rowRec(rows[0]));out.merged++;return}
+    holdAsk(ss.map(s=>s.g),rows,"one");out.held+=rows.length;
+  });
+  slipsOpen().filter(s=>s.k==="stmt").forEach(s=>{
+    const rows=add.filter(r=>!claim.has(r)&&r.d===s.d);
+    if(!rows.length)return;
+    rows.forEach(r=>claim.add(r));holdAsk([s.g],rows,"pick");out.held+=rows.length;
+  });
+  for(let i=add.length-1;i>=0;i--)if(claim.has(add[i]))add.splice(i,1);
+  return out;
+}
+function resolveAsk(id,ticked,force){
+  const A=(S.ask||[]).find(x=>x.id===id);if(!A)return true;
+  const held=(S.hold||[]).filter(h=>h.ask===id),tk=held.filter(h=>ticked.includes(h.id));
+  if(!force&&A.kind==="one"&&tk.length>A.gs.length){return false}
+  S.hold=S.hold.filter(h=>h.ask!==id);
+  tk.forEach((h,i)=>{const g=A.kind==="one"?A.gs[i]:A.gs[0];delete h.ask;mergeRow(g,h)});
+  held.filter(h=>!tk.includes(h)).forEach(h=>{delete h.ask;S.exp.push(h)});
+  A.gs.forEach(g=>{if(S.grp[g])delete S.grp[g].asked});
+  S.ask=S.ask.filter(x=>x.id!==id);return true;
+}
+function unmerge(vmId){
+  const i=(S.vm||[]).findIndex(x=>x.id===vmId);if(i<0)return;
+  const rec=S.vm.splice(i,1)[0],G=(S.grp||{})[rec.g];delete rec.g;S.exp.push(rec);
+  if(G){G.vm=(G.vm||[]).filter(x=>x!==vmId);if(!G.vm.length){G.st="open";if(G.mode==="unk")G.mode="cash"}}
+}
+function voiceIssues(){
+  const o={asks:(S.ask||[]).length,mism:0,wait:0,unk:0,done:0};
+  Object.values(S.grp||{}).forEach(G=>{const st=slipState(G);if(st==="mismatch")o.mism++;else if(st==="waiting")o.wait++;else if(st==="unknown")o.unk++;else if(st==="done")o.done++});
+  return o;
+}
+function voiceTrust(){
+  const o=voiceIssues();if(!o.asks&&!o.mism&&!o.wait&&!o.unk&&!o.done)return "";
+  const open=o.asks+o.mism;
+  if(open)return `<p class="trust bad">${T(`⚠️ আপনার লেখা ${bn(open)}টা এন্ট্রি স্টেটমেন্টের সঙ্গে মেলানো বাকি। নিচে ‘অপেক্ষার তালিকা’ দেখুন।`,`⚠️ ${bn(open)} of your entries still need to be matched with the statement. See the waiting list below.`)}</p>`;
+  if(o.done&&!o.wait&&!o.unk)return `<p class="trust ok">${T(`✔ আপনার লেখা ${bn(o.done)}টা ডিজিটাল এন্ট্রি স্টেটমেন্টের সঙ্গে মিলেছে`,`✔ ${bn(o.done)} of your digital entries agree with the statement`)}</p>`;
+  return `<p class="trust ok">${T(`✔ কোনো এন্ট্রি অমিল নেই। ${bn(o.done)}টা মিলেছে, ${bn(o.wait+o.unk)}টার পদ্ধতি স্টেটমেন্ট এলে ঠিক হবে।`,`✔ Nothing disagrees. ${bn(o.done)} matched; ${bn(o.wait+o.unk)} will be settled when a statement comes.`)}</p>`;
+}
+function shortDesc(h){return String(h.desc||"").replace(/\s+/g," ").slice(0,48)}
+function renderPend(){
+  const box=$("pendSec");if(!box)return;
+  const asks=S.ask||[],gs=S.grp||{},vms=(S.vm||[]).filter(x=>x.d>=iso(new Date(Date.now()-45*864e5)));
+  const open=Object.keys(gs).filter(g=>["mismatch","waiting","unknown"].includes(slipState(gs[g])));
+  if(!asks.length&&!open.length&&!vms.length){box.hidden=true;box.innerHTML="";return}
+  const label=g=>{const es=S.exp.filter(e=>e.g===g);return es.map(e=>esc(e.tag)).join(", ")+" "+rs(gs[g].total)};
+  let h=`<h2>${T("অপেক্ষার তালিকা","Waiting list")}</h2>`;
+  asks.forEach(a=>{
+    const held=(S.hold||[]).filter(x=>x.ask===a.id);
+    const what=a.gs.map(label).join(" · ");
+    h+=`<div class="ask" data-ask="${a.id}"><p><b>${T("কোনগুলো আপনার লেখা?","Which of these is yours?")}</b> ${what}<br><small>${a.kind==="pick"?T("ওই দিনের স্টেটমেন্টের এই পেমেন্টগুলো পাওয়া গেছে। যেগুলো এই খরচের, টিক দিন। বাকিগুলো আলাদা খরচ হবে।","These payments were found for that day. Tick those that belong to this spending; the rest become separate spending."):T("একই টাকার একাধিক সম্ভাবনা আছে। যেটা আপনার লেখার পেমেন্ট, টিক দিন। বাকিগুলো আলাদা খরচ হবে।","More than one fits. Tick the payment that is yours; the rest become separate spending.")}</small></p>`+
+      held.map(x=>`<label class="askrow"><input type="checkbox" value="${x.id}"> ${bnDate(x.d)} · <b>${rs(x.a)}</b> · ${esc(shortDesc(x))}</label>`).join("")+
+      `<div class="row"><button class="primary askgo">${T("ঠিক আছে","Done")}</button></div><p class="note askmsg"></p><p class="note">${T(`উত্তর না দেওয়া পর্যন্ত এই ${bn(held.length)}টা লাইন (${rs(held.reduce((t,x)=>t+x.a,0))}) হিসাবে ধরা হয়নি।`,`Until you answer, these ${bn(held.length)} lines (${rs(held.reduce((t,x)=>t+x.a,0))}) are not counted.`)}</p></div>`;
+  });
+  if(open.length){
+    h+=`<div class="pl"><p><b>${T("মেলানো বাকি","Still to match")}</b></p><ul>`+open.map(g=>{
+      const st=slipState(gs[g]);
+      return `<li data-g="${g}"><span class="what">${bnDate(gs[g].d)} · ${label(g)}<small>${esc(grpLabel(g))}</small></span>${st==="waiting"?"":`<span><button class="mini tocash">${T("নগদ ছিল","It was cash")}</button></span>`}</li>`}).join("")+`</ul></div>`;
+  }
+  if(vms.length){
+    h+=`<details class="pl"><summary>${T(`স্টেটমেন্টের সঙ্গে জোড়া হয়েছে (${bn(vms.length)}টা)`,`Joined with statement lines (${bn(vms.length)})`)}</summary><ul>`+vms.slice(-30).reverse().map(x=>{
+      const es=S.exp.filter(e=>e.g===x.g);
+      return `<li data-vm="${x.id}"><span class="what">${bnDate(x.d)} · ${esc(es.map(e=>e.tag).join(", ")||"")} ⇄ <b>${rs(x.a)}</b><small>${esc(shortDesc(x))}</small></span><span><button class="mini unj">${T("আলাদা করুন","Separate")}</button></span></li>`}).join("")+`</ul><p class="note">${T("ভুল জোড়া লাগলে ‘আলাদা করুন’ চাপুন। স্টেটমেন্টের লাইনটা আলাদা খরচ হিসেবে ধরা হবে।","If a pair is wrong, press ‘Separate’; the statement line then counts as its own spending.")}</p></details>`;
+  }
+  box.innerHTML=h;box.hidden=false;
+  box.querySelectorAll(".ask").forEach(el=>el.querySelector(".askgo").onclick=()=>{
+    const id=+el.dataset.ask,ids=[...el.querySelectorAll("input:checked")].map(i=>+i.value);
+    if(!resolveAsk(id,ids)){el.querySelector(".askmsg").textContent=T("আপনার লেখা এন্ট্রির চেয়ে বেশি লাইনে টিক পড়েছে। কম করে টিক দিন।","More lines ticked than entries you wrote. Tick fewer.");return}
+    save();render()});
+  box.querySelectorAll(".tocash").forEach(b=>b.onclick=()=>{const g=b.closest("li").dataset.g;if(S.grp[g]){S.grp[g].mode="cash"}save();render()});
+  box.querySelectorAll(".unj").forEach(b=>b.onclick=()=>{unmerge(+b.closest("li").dataset.vm);save();render()});
+}
+/* ---------- the entry card ---------- */
+let VP=null;
+function cardHtml(P){
+  const opts=sel=>CATS.map(c=>`<option value="${esc(c)}"${c===sel?" selected":""}>${esc(catLabel(c))}</option>`).join("");
+  const rows=P.items.map((x,i)=>`<div class="vrow" data-i="${i}"><input class="va" type="number" inputmode="decimal" min="0" value="${x.a}" aria-label="${T("টাকা","Amount")}"><input class="vl" type="text" value="${esc(x.label)}" placeholder="${T("কীসের জন্য","What for")}"><select class="vc">${opts(x.cat)}</select><button class="x vdel" aria-label="${T("সরান","Remove")}">✕</button></div>`).join("");
+  const mo=[["unk",T("পদ্ধতি বলিনি","Not told")],["cash",T("সবটাই নগদ","All cash")],["dig",T("সবটাই ডিজিটাল","All digital")],["split",T("ভাগ: নগদ + ডিজিটাল","Split: cash + digital")],["stmt",T("ডিজিটাল স্টেটমেন্ট দেখে, বাকিটা নগদ","Digital by statement, rest cash")]]
+    .map(([k,t])=>`<option value="${k}"${k===P.mode?" selected":""}>${t}</option>`).join("");
+  const vias=["PhonePe","GPay","নেট ব্যাংকিং","ডিজিটাল"].map(v=>`<option value="${v}"${v===P.via?" selected":""}>${v==="ডিজিটাল"?T("অন্য ডিজিটাল","Other digital"):v}</option>`).join("");
+  const sum=P.items.reduce((t,x)=>t+(+x.a||0),0);
+  return `<div class="vcard"><p class="note"><b>${bnDate(P.date)}</b> · ${T("ঠিক আছে কি? দরকারে বদলে নিন।","Is this right? Change anything below.")}</p>${rows}
+   <div class="row vmode"><select id="vmode" aria-label="${T("পেমেন্টের পদ্ধতি","Payment method")}">${mo}</select><select id="vvia" aria-label="${T("কোন ডিজিটাল","Which digital")}">${vias}</select><input id="vcash" type="number" inputmode="decimal" min="0" placeholder="${T("নগদ ₹","Cash ₹")}" value="${P.cash==null?"":P.cash}"></div>
+   <p class="note" id="vsum">${T("মোট","Total")} <b>${rs(sum)}</b></p>${P.warns.map(w=>`<p class="note vwarn">⚠️ ${esc(w)}</p>`).join("")}
+   <div class="row"><button class="primary" id="vsave">${T("সেভ করুন","Save")}</button><button id="vcancel">${T("বাদ দিন","Discard")}</button></div></div>`;
+}
+function showCard(P){
+  VP=P;const box=$("vcard");box.hidden=false;box.innerHTML=cardHtml(P);
+  const sync=()=>{
+    const m=$("vmode").value;$("vvia").hidden=!(m==="dig"||m==="split"||m==="stmt");$("vcash").hidden=m!=="split";
+    P.mode=m;P.via=$("vvia").value;if(m==="split")P.cash=$("vcash").value===""?null:+$("vcash").value;
+    P.items.forEach((x,i)=>{const r=box.querySelector(`.vrow[data-i="${i}"]`);if(!r)return;x.a=+r.querySelector(".va").value||0;x.label=r.querySelector(".vl").value.trim();x.cat=r.querySelector(".vc").value});
+    $("vsum").innerHTML=`${T("মোট","Total")} <b>${rs(P.items.reduce((t,x)=>t+x.a,0))}</b>`;
+  };
+  if(P.mode!=="unk"&&P.mode!=="cash"&&!P.via)$("vvia").value="ডিজিটাল";
+  box.querySelectorAll("input,select").forEach(el=>el.addEventListener("input",sync));box.querySelectorAll("select").forEach(el=>el.addEventListener("change",sync));
+  box.querySelectorAll(".vl").forEach(el=>el.addEventListener("change",()=>{const r=el.closest(".vrow"),sel=r.querySelector(".vc"),c=vCat(el.value);if(c!=="অন্যান্য"||!sel.value)sel.value=c;sync()}));
+  box.querySelectorAll(".vdel").forEach(b=>b.onclick=()=>{sync();const i=+b.closest(".vrow").dataset.i;P.items.splice(i,1);if(!P.items.length){box.hidden=true;box.innerHTML="";VP=null;return}showCard(P)});
+  $("vcancel").onclick=()=>{box.hidden=true;box.innerHTML="";VP=null;$("vNote").textContent=""};
+  $("vsave").onclick=()=>{
+    sync();
+    if(!P.items.every(x=>x.a>0)){$("vNote").textContent=T("প্রতিটা আইটেমের টাকার অঙ্ক দিন।","Give an amount for every item.");return}
+    if(P.mode==="split"&&!(P.cash>=0&&P.cash<P.items.reduce((t,x)=>t+x.a,0))){$("vNote").textContent=T("ভাগের জন্য নগদের অঙ্ক মোটের চেয়ে কম হতে হবে।","For a split the cash amount must be less than the total.");return}
+    saveVoice(P);box.hidden=true;box.innerHTML="";VP=null;$("vtxt").value="";
+    $("vNote").textContent=T("✅ যোগ হলো।","✅ Added.");
+  };
+  sync();
+}
+function runParse(){
+  const t=$("vtxt").value.trim();if(!t){$("vNote").textContent=T("আগে মাইকে বলুন বা লিখুন।","Speak or type first.");return}
+  let P;try{P=vParse(t)}catch(_){P={ok:false,warns:[T("বুঝতে পারিনি। একটু অন্যভাবে লিখুন।","Could not understand. Try again.")]}}
+  if(!P.ok){$("vNote").textContent=P.warns[0];$("vcard").hidden=true;return}
+  $("vNote").textContent="";showCard(P);
+}
+$("vParse").onclick=runParse;
+{
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,on=false;
+  const mic=$("micBtn");
+  if(!SR){mic.hidden=true;$("vPriv").textContent=T("এই ব্রাউজারে মাইক চলে না, তাই বাক্যটা লিখে ‘বুঝে নিন’ চাপুন।","This browser has no microphone input, so type the sentence and press ‘Understand’.")}
+  else mic.onclick=()=>{
+    if(on&&rec){rec.stop();return}
+    try{rec=new SR();rec.lang=LANG==="en"?"en-IN":"bn-IN";rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;}catch(_){return}
+    let fin="";on=true;mic.classList.add("on");$("micTxt").textContent=T("শুনছি… থামাতে ট্যাপ করুন","Listening… tap to stop");
+    rec.onresult=ev=>{let t="";for(let i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript+" ";fin=t.trim();$("vtxt").value=fin};
+    rec.onerror=ev=>{on=false;mic.classList.remove("on");$("micTxt").textContent=T("ট্যাপ করে বলুন","Tap and speak");
+      $("vNote").textContent=ev.error==="not-allowed"||ev.error==="service-not-allowed"?T("মাইকের অনুমতি দেওয়া নেই। অনুমতি দিন, অথবা লিখে দিন।","Microphone permission is off. Allow it, or type."):ev.error==="network"?T("বাংলা শোনার জন্য ইন্টারনেট লাগে। নেট না থাকলে লিখে দিন।","Listening needs internet. Without it, type."):ev.error==="no-speech"?T("কিছু শোনা যায়নি। আবার চেষ্টা করুন।","Heard nothing. Try again."):T("মাইক চলল না। লিখে দিন।","Microphone did not work. Please type.")};
+    rec.onend=()=>{on=false;mic.classList.remove("on");$("micTxt").textContent=T("ট্যাপ করে বলুন","Tap and speak");if($("vtxt").value.trim())runParse()};
+    try{rec.start()}catch(_){on=false;mic.classList.remove("on")}
+  };
+}
 
 /* ---------- manual entry & setup ---------- */
 const showToday=()=>{$("today").textContent=new Date().toLocaleDateString(LOC(),{weekday:"long",day:"numeric",month:"long"});if(window.__bnReady)paintDateStrip();};showToday();
@@ -1792,7 +2152,7 @@ $("resetNo").onclick=()=>{$("resetAsk").hidden=true};
 $("resetYes").onclick=()=>{S=blank();save();$("resetAsk").hidden=true;msg("");render();$("setup").open=true};
 $("impDel").onclick=()=>{$("impDelAsk").hidden=false};
 $("impDelNo").onclick=()=>{$("impDelAsk").hidden=true};
-$("impDelYes").onclick=()=>{S.exp=S.exp.filter(e=>e.src!=="imp");S.inc=(S.inc||[]).filter(e=>e.src!=="imp");save();$("impDelAsk").hidden=true;
+$("impDelYes").onclick=()=>{S.exp=S.exp.filter(e=>e.src!=="imp");S.vm=[];S.hold=[];S.ask=[];Object.values(S.grp||{}).forEach(G=>{G.st="open";delete G.vm;delete G.asked});S.inc=(S.inc||[]).filter(e=>e.src!=="imp");save();$("impDelAsk").hidden=true;
   render()};
 /* ---------- statement how-to flowchart ---------- */
 document.querySelectorAll("#howFlow [data-src]").forEach(b=>b.onclick=()=>{
