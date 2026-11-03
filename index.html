@@ -148,7 +148,7 @@ li.payee select{flex:0 1 46%;font-size:.85rem;padding:6px 8px}
 /* donut */
 .donutbox{display:flex;justify-content:center;margin:2px 0 10px}
 .donutbox svg{width:min(88%,300px);height:auto;display:block}
-.donutbox .slice{fill:none;stroke-width:34}
+.donutbox .sec{animation:secIn .6s both}@keyframes secIn{from{opacity:0}to{opacity:1}}.mchart,.donutbox{position:relative}.ktip{position:absolute;z-index:6;background:#fff;color:#1d2a2a;border-radius:10px;padding:8px 12px;font-size:14px;line-height:1.45;box-shadow:0 6px 22px rgba(0,0,0,.35);pointer-events:none;max-width:78%;white-space:nowrap}.ktip .t{font-weight:600}.ktip div:last-child:not(:first-child){font-weight:600}.ksec{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--card);margin-top:14px;display:flex;flex-direction:column;gap:10px}.ksec>h3{margin:0}
 .donutbox .c1{fill:var(--muted);font-size:10.5px;font-family:var(--f-body)}
 .donutbox .c2{fill:var(--ink);font-family:var(--f-display);font-weight:800;font-size:25px}
 .cbar .nm{display:flex;align-items:center;gap:8px}
@@ -896,16 +896,23 @@ function periodRange(p){
 const CAT_STYLE={"বাজার ও মুদি":["#3ddc97","🛒"],"স্বাস্থ্য ও ওষুধ":["#ff5c5c","💊"],"বিল ও রিচার্জ":["#ffb020","💡"],"খাবার ও মিষ্টি":["#ff8a3d","🍲"],"যাতায়াত ও জ্বালানি":["#4d9bff","🚗"],"পোশাক ও কেনাকাটা":["#b36bff","👗"],"বাড়ি ও মেরামত":["#c08a5d","🏠"],"পুজো ও দান":["#ffd23f","🪔"],"ডিজিটাল ও বিনোদন":["#27d3e6","📱"],"পরিবার ও ব্যক্তিগত":["#ff5fa2","👨‍👩‍👧"],"নগদ তোলা":["#7f90b5","💵"],"অন্যান্য":["#9aa5a3","📦"],"সঞ্চয়":["#2ec4b6","🏦"]};
 const catStyle=c=>CAT_STYLE[c]||["#9aa5a3","📦"];
 function donutSvg(cats,total){
-  const R=76,C=2*Math.PI*R,minShare=0.03;
+  const IN=60,OUT=100,CR=7,GAP=0.025*Math.sqrt(IN*IN+OUT*OUT),minShare=0.025,cx=110,cy=110;
   const big=cats.filter(([,v])=>v/total>=minShare),rest=cats.filter(([,v])=>v/total<minShare);
   const sl=big.map(([c,v])=>({c,v,col:catStyle(c)[0]}));
   const rv=rest.reduce((a,[,v])=>a+v,0);if(rv>0)sl.push({c:null,v:rv,col:"#9aa5a3"});
-  const gap=sl.length>1?3:0;let at=0,out="";
-  sl.forEach((x,i)=>{const len=Math.max(0.5,x.v/total*C-gap);
-    out+=`<circle class="slice" cx="110" cy="110" r="${R}" stroke="${x.col}" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-at).toFixed(2)}" style="--l:${len.toFixed(2)};animation-delay:${(i*0.08).toFixed(2)}s;filter:drop-shadow(0 0 6px ${x.col}88)"><title>${esc(x.c?catLabel(x.c):T("বাকি ছোট খাতগুলো","Smaller categories"))}: ${rs(x.v)} (${bn(x.v/total*100)}%)</title></circle>`;
-    at+=x.v/total*C;});
+  const P=(r,a)=>[(cx+r*Math.sin(a)).toFixed(2),(cy-r*Math.cos(a)).toFixed(2)];
+  const r1=IN+CR,r2=OUT-CR;let at=0,out="";
+  sl.forEach((x,i)=>{
+    const a0=at/total*2*Math.PI,a1=(at+x.v)/total*2*Math.PI;at+=x.v;
+    let d1=(GAP/2+CR)/r1,d2=(GAP/2+CR)/r2;const mid=(a0+a1)/2;
+    if(a1-a0<2*d1){d1=d2=Math.max(0.0005,(a1-a0)/2-0.0005)}
+    const s2=a0+d2,e2=a1-d2,s1=a0+d1,e1=a1-d1,lg=(e2-s2)>Math.PI?1:0;
+    const dd=`M${P(r2,s2)}A${r2},${r2} 0 ${lg} 1 ${P(r2,e2)}L${P(r1,e1)}A${r1},${r1} 0 ${lg} 0 ${P(r1,s1)}Z`;
+    const nm=x.c?catLabel(x.c):T("বাকি ছোট খাতগুলো","Smaller categories");
+    out+=`<path class="sec" d="${dd}" fill="${x.col}" stroke="${x.col}" stroke-width="${2*CR}" stroke-linejoin="round" data-tk="d:${i}" data-tip="${esc(nm)}&#10;${rs(x.v)} (${bn(x.v/total*100)}%)" style="animation-delay:${(i*0.06).toFixed(2)}s;filter:drop-shadow(0 0 6px ${x.col}88)"><title>${esc(nm)}: ${rs(x.v)} (${bn(x.v/total*100)}%)</title></path>`;
+  });
   const tc=cats[0][0],tp=cats[0][1]/total*100;
-  return `<svg viewBox="0 0 220 220" role="img" aria-label="${esc(T("খাত অনুযায়ী খরচের ডোনাট ছবি","Donut chart of spending by category"))}"><g transform="rotate(-90 110 110)">${out}</g><text x="110" y="100" text-anchor="middle" font-size="30">${catStyle(tc)[1]}</text><text class="c2" x="110" y="128" text-anchor="middle">${bn(tp)}%</text><text class="c1" x="110" y="145" text-anchor="middle">${esc(catLabel(tc))}</text></svg>`;
+  return `<svg viewBox="0 0 220 220" role="img" aria-label="${esc(T("খাত অনুযায়ী খরচের ডোনাট ছবি","Donut chart of spending by category"))}"><g>${out}</g><text x="110" y="100" text-anchor="middle" font-size="30">${catStyle(tc)[1]}</text><text class="c2" x="110" y="128" text-anchor="middle">${bn(tp)}%</text><text class="c1" x="110" y="145" text-anchor="middle">${esc(catLabel(tc))}</text></svg>`;
 }
 function sparkSvg(vals){
   const w=330,h=46,mx=Math.max(1,...vals),n=vals.length,pts=vals.map((v,i)=>[6+(w-12)*(n===1?0.5:i/(n-1)),h-6-(h-12)*v/mx]);
@@ -942,7 +949,7 @@ function weekdaySvg(avg){
   let s=`<defs><linearGradient id="wkN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cf5d3"/><stop offset=".55" stop-color="#4d9bff"/><stop offset="1" stop-color="#7a4dff" stop-opacity=".3"/></linearGradient><linearGradient id="wkT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset=".55" stop-color="#ff8a3d"/><stop offset="1" stop-color="#ff5fa2" stop-opacity=".4"/></linearGradient></defs>`;
   [1].forEach(f=>{const y=(H-bot-(H-top-bot)*f).toFixed(1);s+=`<line class="grid" x1="${l-4}" x2="${W-r+4}" y1="${y}" y2="${y}"/>`;});
   avg.forEach((v,i)=>{const h=(H-top-bot)*v/mx,w=bw*0.62,x=l+i*bw+(bw-w)/2,y=H-bot-h,t=i===hi;
-    s+=`<rect class="bar${t?" top":""}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(h,v?3:0).toFixed(1)}" rx="8" style="animation-delay:${(i*0.05).toFixed(2)}s${t?";filter:drop-shadow(0 0 8px #ff8a3daa)":""}"><title>${T(WD_BN_FULL[i],WD_EN_FULL[i])}: ${rs(v)}</title></rect>`;
+    s+=`<rect class="bar${t?" top":""}" data-tk="w:${i}" data-tip="${esc(T(WD_BN_FULL[i],WD_EN_FULL[i]))}&#10;${rs(v)}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(h,v?3:0).toFixed(1)}" rx="8" style="animation-delay:${(i*0.05).toFixed(2)}s${t?";filter:drop-shadow(0 0 8px #ff8a3daa)":""}"><title>${T(WD_BN_FULL[i],WD_EN_FULL[i])}: ${rs(v)}</title></rect>`;
     if(v)s+=`<text class="v${t?" top":""}" x="${(x+w/2).toFixed(1)}" y="${(y-7).toFixed(1)}" text-anchor="middle">${t?"🔥 ":""}${rsShort(v)}</text>`;
     s+=`<text class="nm${t?" top":""}" x="${(x+w/2).toFixed(1)}" y="${H-7}" text-anchor="middle">${T(WD_BN[i],WD_EN[i])}</text>`;});
   return s;
@@ -961,7 +968,7 @@ function weeklySvg(wk){
   [0.5,1].forEach(f=>{const y=(H-bot-(H-top-bot)*f).toFixed(1);s+=`<line class="grid" x1="${l-4}" x2="${W-r+4}" y1="${y}" y2="${y}"/>`});
   wk.forEach((x,i)=>{const h=(H-top-bot)*x.a/mx,w=bw*0.66,bx=l+i*bw+(bw-w)/2,y=H-bot-h,t=i===hi&&x.a>0,e=new Date(x.k+"T00:00:00");e.setDate(e.getDate()+6);
     const lab=new Date(x.k+"T00:00:00").toLocaleDateString(LOC(),{day:"numeric",month:"short"});
-    s+=`<rect class="bar${t?" top":""}" x="${bx.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(h,x.a?3:0).toFixed(1)}" rx="6" style="animation-delay:${(i*0.04).toFixed(2)}s${t?";filter:drop-shadow(0 0 8px #ff8a3daa)":""}"><title>${esc(x.tip||lab)}: ${rs(x.a)}</title></rect>`;
+    s+=`<rect class="bar${t?" top":""}" data-tk="k:${i}" data-tip="${esc(x.tip||lab)}&#10;${rs(x.a)}" x="${bx.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(h,x.a?3:0).toFixed(1)}" rx="6" style="animation-delay:${(i*0.04).toFixed(2)}s${t?";filter:drop-shadow(0 0 8px #ff8a3daa)":""}"><title>${esc(x.tip||lab)}: ${rs(x.a)}</title></rect>`;
     if(x.a&&(n<=7||t||i===n-1))s+=`<text class="v${t?" top":""}" x="${(bx+w/2).toFixed(1)}" y="${(y-6).toFixed(1)}" text-anchor="middle">${rsShort(x.a)}</text>`;
     if(n<=7||i%2===(n-1)%2)s+=`<text class="nm" x="${(bx+w/2).toFixed(1)}" y="${H-10}" text-anchor="middle">${esc(x.lab||lab)}</text>`});
   return s;
@@ -1057,7 +1064,7 @@ function stackSvg(months,mm,selM,inc,curM){
       s+=`<rect x="${x.toFixed(1)}" y="${y1.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(2,y0-y1).toFixed(1)}" rx="6" fill="url(#${g})" stroke="#0a1226" stroke-width="1.5" opacity="${op}"/>`;acc+=o[k]});
     if(acc>0)s+=`<text class="val" x="${(x+w/2).toFixed(1)}" y="${(Y(acc)-6).toFixed(1)}" text-anchor="middle" opacity="${op}">${rsShort(acc)}</text>`;
     s+=`<text x="${(x+w/2).toFixed(1)}" y="${H-8}" text-anchor="middle" opacity="${fut?.4:op}"${selM===m?' style="fill:#fff;font-weight:700"':""}>${esc(mName(m).slice(0,3))}</text>`;
-    s+=`<rect class="hit" data-ym="${m}" x="${(l+i*bw).toFixed(1)}" y="${top-14}" width="${bw.toFixed(1)}" height="${H-top-bot+14}" fill="transparent" style="cursor:pointer"><title>${esc(mName(m)+" · "+T("সংসার ","Everyday ")+rs(o.h)+" · "+T("বড় ","Big ")+rs(o.b)+" · "+T("সঞ্চয় ","Savings ")+rs(o.s)+" · "+T("মোট ","Total ")+rs(acc))}</title></rect>`;});
+    s+=`<rect class="hit" data-ym="${m}" data-tk="s:${m}" data-tip="${esc(mName(m)+" "+bn(+m.slice(0,4))+"&#10;"+T("সংসার: ","Everyday: ")+rs(o.h)+"&#10;"+T("বড় খরচ: ","Big: ")+rs(o.b)+"&#10;"+T("সঞ্চয়: ","Savings: ")+rs(o.s)+"&#10;"+T("মোট: ","Total: ")+rs(acc)).replace(/&amp;#10;/g,"&#10;")}" x="${(l+i*bw).toFixed(1)}" y="${top-14}" width="${bw.toFixed(1)}" height="${H-top-bot+14}" fill="transparent" style="cursor:pointer"><title>${esc(mName(m)+" · "+T("সংসার ","Everyday ")+rs(o.h)+" · "+T("বড় ","Big ")+rs(o.b)+" · "+T("সঞ্চয় ","Savings ")+rs(o.s)+" · "+T("মোট ","Total ")+rs(acc))}</title></rect>`;});
   return s;
 }
 function trendSvg(rows){
@@ -1075,7 +1082,7 @@ function trendSvg(rows){
   const step=Math.ceil(n/6),hi=rows.map(x=>x.a).indexOf(Math.max(...rows.map(x=>x.a)));
   pts.forEach(([x,y],i)=>{const now=i===n-1;
     if(now)s+=`<circle class="ring" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="10"/><circle class="dot now" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5"/>`;
-    s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="transparent"><title>${esc(rows[i].tip||rows[i].lab)}: ${rs(rows[i].a)}</title></circle>`;
+    s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${Math.max(4,Math.min(9,(W-l-r)/n/2)).toFixed(1)}" fill="transparent" data-tk="t:${i}" data-tip="${esc(rows[i].tip||rows[i].lab)}&#10;${rs(rows[i].a)}"><title>${esc(rows[i].tip||rows[i].lab)}: ${rs(rows[i].a)}</title></circle>`;
     if(i===hi&&rows[i].a>0)s+=`<text class="val" x="${x.toFixed(1)}" y="${(y-9).toFixed(1)}" text-anchor="middle">${rsShort(rows[i].a)}</text>`;
     if(i%step===0||now&&(n-1)%step>=step-1)s+=`<text x="${x.toFixed(1)}" y="${H-7}" text-anchor="middle">${esc(rows[i].lab)}</text>`});
   return s;
@@ -1218,22 +1225,22 @@ function renderDash(){
     `${trust}${voiceTrust()}<div class="hero"><small>${T("আমার খরচের ড্যাশবোর্ড","My spending dashboard")}</small><p class="hsum">${hs}</p><div class="mchips" role="group" aria-label="${esc(T("মাস বেছে নিন","Pick a month"))}">${months.filter(m=>m<=curM).map(m=>`<button type="button" data-ym="${m}" aria-pressed="${selM===m}">${mName(m)}</button>`).join("")}<button type="button" data-allm="1" aria-pressed="${!selM}">${T("সব মাস","All months")}</button></div></div>
     ${statTiles}
     <p class="note recon">${T(`এই সময়ে: সংসার ${rs(houseSum)} + বড় খরচ ${rs(bigSum)} = মোট খরচ ${rs(total)}। সঞ্চয় ${rs(svT)} আলাদা।`,`This period: everyday ${rs(houseSum)} + big payments ${rs(bigSum)} = total spent ${rs(total)}. Savings ${rs(svT)} are separate.`)}</p>
-    <h3>${T("মাস অনুযায়ী খরচ","Spending by month")}</h3>
+    <div class="ksec"><h3>${T("মাস অনুযায়ী খরচ","Spending by month")}</h3>
     <p class="note">${T("মাসের বারে চাপ দিলে সেই মাসের হিসেব দেখাবে। আবার চাপলে ফিরে আসবে। ডট-দাগ আপনার মাসের আয়।","Tap a month's bar to see that month. Tap again to go back. The dotted line is your monthly income.")}</p>
     <div class="kleg">${kl("#7cf5d3","#2ec4b6",T("সংসার","Everyday"))}${kl("#ffb36b","#ff5fa2",T("বড় খরচ","Big payments"))}${kl("#ffe27a","#ffb020",T("সঞ্চয়","Savings"))}</div>
     <div class="mchart stk"><svg viewBox="0 0 360 260" role="img" aria-label="${esc(T("মাস অনুযায়ী খরচ, তিন ভাগে","Monthly spending in three parts"))}">${stackSvg(months,mm,selM,+S.income>0?+S.income:0,curM)}</svg></div>
-    <h3>${T("কোন খাতে কত","By category")}</h3>
+    </div><div class="ksec"><h3>${T("কোন খাতে কত","By category")}</h3>
     <div class="donutbox">${donutSvg(cats,total)}</div>
     <div class="tiles">${cats.map(([c,v],i)=>`<div class="tile" style="--k:${catStyle(c)[0]};animation-delay:${(i*0.05).toFixed(2)}s"><i>${bn(v/total*100)}%</i><div class="e" aria-hidden="true">${catStyle(c)[1]}</div><b>${rs(v)}</b><span>${esc(catLabel(c))}${T(` · ${bn(cntC[c]||0)} বার`,` · ${cntC[c]||0} times`)}</span></div>`).join("")}</div>
-    <h3>${T("আপনার উপদেষ্টা","Your advisor")}</h3>
+    </div><div class="ksec"><h3>${T("আপনার উপদেষ্টা","Your advisor")}</h3>
     <p class="note">${T("এগুলো আপনার নিজের খরচ দেখে পরামর্শ। সিদ্ধান্ত আপনার। পেশাদার আর্থিক পরামর্শ নয়।","Suggestions from your own spending. The decision is yours. Not professional financial advice.")}</p>
     <div class="advg">${adv.slice(0,4).map(advCard).join("")}</div>${adv.length>4?`<details class="insmore"><summary>${T(`আরও ${bn(adv.length-4)}টা পরামর্শ`,`${bn(adv.length-4)} more tips`)}</summary><div class="advg">${adv.slice(4).map(advCard).join("")}</div></details>`:""}
-    <h3>${T("সংসারের খরচের ধারা","Everyday spending over time")}</h3>
+    </div><div class="ksec"><h3>${T("সংসারের খরচের ধারা","Everyday spending over time")}</h3>
     <p class="note">${T("সংসারের খরচ, বড় পেমেন্ট আর সঞ্চয় বাদে। ডট-দাগ গড়। শেষ বিন্দুটা অসম্পূর্ণ হতে পারে।","Everyday spending, without big payments and savings. The dotted line is the average. The last point may be incomplete.")}</p>
     <div class="mchart${trend.length<3?" wk":""}"><svg viewBox="0 0 360 200" role="img" aria-label="${esc(T("সময় অনুযায়ী সংসারের খরচ","Everyday spending over time"))}">${trend.length<3?weeklySvg(trend):trendSvg(trend)}</svg></div>
-    <h3>${T("কোন বারে বেশি খরচ","Which day you spend most")}</h3>
+    </div><div class="ksec"><h3>${T("কোন বারে বেশি খরচ","Which day you spend most")}</h3>
     ${wkAvg?`<div class="mchart wk"><svg viewBox="0 0 360 180" role="img" aria-label="${esc(T("সপ্তাহের প্রতি দিনে গড় খরচ","Average spending on each day of the week"))}">${weekdaySvg(wkAvg)}</svg></div><p class="note">${T("সংসারের খরচ, প্রতিটি বারের গড়। কমলা বার আর 🔥 সবচেয়ে বেশি খরচের দিন।","Everyday spending, average for each weekday. The orange bar with 🔥 is your biggest day.")}</p>`:`<p class="note">${T("অন্তত 7 দিনের খরচ থাকলে এখানে দেখা যাবে কোন বারে বেশি খরচ হয়।","With at least 7 days of spending, this shows which day you spend most.")}</p>`}
-    ${svCard}
+    </div>${svCard}
     <h3>${T("কাকে কত (সবচেয়ে বেশি 10)","Who got how much (top 10)")}</h3>
     <p class="note">${T('খাত ভুল মনে হলে পাশের ঘর থেকে বদলে দিন। "বড় / সংসার" বোতামে চেপে ঠিক করতে পারেন ওই নামের খরচ বড় খরচে যাবে না সংসারে।','If a category looks wrong, change it in the box alongside. The "Big / Everyday" button decides whether payments to that name count as big payments or everyday spending.')}</p>
     <ul id="payeeList">${payees.map(([k,p],i)=>`<li class="payee"><span class="what">${esc(payeeLabel(p.name))}<small>${bn(p.n)} ${T("বার",p.n===1?"time":"times")} · ${rs(p.a)}</small><button class="bigb" data-i="${i}" type="button">${bigLab(p)}</button></span><select data-i="${i}" aria-label="${esc(T(p.name+"-এর খাত","Category for "+payeeLabel(p.name)))}">${opts(p.cat)}</select></li>`).join("")}</ul>
@@ -1249,6 +1256,23 @@ function renderDash(){
   $("payeeList").querySelectorAll("select").forEach(s=>s.addEventListener("change",()=>{
     const k=payees[+s.dataset.i][0];S.payeeCat[k]=s.value;save();render();}));
 }
+/* a white box with the figures opens when a bar, slice or point is touched */
+let tipKey=null;
+function tipShow(){
+  const body=$("dashBody");body.querySelectorAll(".ktip").forEach(t=>t.remove());
+  if(!tipKey)return;
+  const el=body.querySelector('[data-tk="'+tipKey.k+'"]');if(!el)return;
+  const box=el.closest(".mchart,.donutbox");if(!box)return;
+  const t=document.createElement("div");t.className="ktip";
+  t.innerHTML=el.getAttribute("data-tip").split("\n").map(l=>`<div>${esc(l)}</div>`).join("");
+  t.firstChild.className="t";box.appendChild(t);
+  const br=box.getBoundingClientRect(),tw=t.offsetWidth,th=t.offsetHeight;
+  let x=tipKey.x-br.left+12,y=tipKey.y-br.top-th-14;
+  x=Math.min(Math.max(6,x),Math.max(6,br.width-tw-6));if(y<6)y=Math.min(tipKey.y-br.top+18,br.height-th-6);
+  t.style.left=x+"px";t.style.top=Math.max(6,y)+"px";
+}
+$("dashBody").addEventListener("click",e=>{const te=e.target.closest("[data-tip]");tipKey=te?{k:te.dataset.tk,x:e.clientX,y:e.clientY}:null;setTimeout(tipShow,0)});
+$("dashBody").addEventListener("pointermove",e=>{if(e.pointerType!=="mouse")return;const te=e.target.closest&&e.target.closest("[data-tip]");const k=te?{k:te.dataset.tk,x:e.clientX,y:e.clientY}:null;if(!k&&!tipKey)return;tipKey=k;tipShow()});
 $("dashBody").addEventListener("click",e=>{if(e.target.closest("[data-allm]")){dashP=dashFY!=null?"fy:"+dashFY:"all";renderDash();return}const h=e.target.closest("[data-ym]");if(!h)return;const m=h.dataset.ym;dashP=dashP==="ym:"+m?(dashFY!=null?"fy:"+dashFY:"all"):"ym:"+m;renderDash();});
 $("dashPeriod").addEventListener("click",e=>{const b=e.target.closest("button[data-p]");if(!b)return;dashP=b.dataset.p;renderDash();});
 document.addEventListener("click",e=>{const f=e.target.closest("#fyBox .fyc");if(f&&f.dataset.arch){fyArch=!fyArch;renderDash();return}if(f){const y=+f.dataset.fy;dashP=dashFY===y?"all":"fy:"+y;renderDash();return}
