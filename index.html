@@ -940,7 +940,7 @@ function weekdayStats(spend,from,to){
 function weekdaySvg(avg){
   const W=360,H=180,top=34,bot=26,l=14,r=14,bw=(W-l-r)/7,mx=Math.max(1,...avg),hi=avg.indexOf(Math.max(...avg));
   let s=`<defs><linearGradient id="wkN" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cf5d3"/><stop offset=".55" stop-color="#4d9bff"/><stop offset="1" stop-color="#7a4dff" stop-opacity=".3"/></linearGradient><linearGradient id="wkT" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd23f"/><stop offset=".55" stop-color="#ff8a3d"/><stop offset="1" stop-color="#ff5fa2" stop-opacity=".4"/></linearGradient></defs>`;
-  [0.5,1].forEach(f=>{const y=(H-bot-(H-top-bot)*f).toFixed(1);s+=`<line class="grid" x1="${l-4}" x2="${W-r+4}" y1="${y}" y2="${y}"/>`;});
+  [1].forEach(f=>{const y=(H-bot-(H-top-bot)*f).toFixed(1);s+=`<line class="grid" x1="${l-4}" x2="${W-r+4}" y1="${y}" y2="${y}"/>`;});
   avg.forEach((v,i)=>{const h=(H-top-bot)*v/mx,w=bw*0.62,x=l+i*bw+(bw-w)/2,y=H-bot-h,t=i===hi;
     s+=`<rect class="bar${t?" top":""}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(h,v?3:0).toFixed(1)}" rx="8" style="animation-delay:${(i*0.05).toFixed(2)}s${t?";filter:drop-shadow(0 0 8px #ff8a3daa)":""}"><title>${T(WD_BN_FULL[i],WD_EN_FULL[i])}: ${rs(v)}</title></rect>`;
     if(v)s+=`<text class="v${t?" top":""}" x="${(x+w/2).toFixed(1)}" y="${(y-7).toFixed(1)}" text-anchor="middle">${t?"🔥 ":""}${rsShort(v)}</text>`;
@@ -982,7 +982,7 @@ function bucketStats(spend,from,to,g){
   for(let d=new Date(from+"T00:00:00"),end=new Date(to+"T00:00:00");d<=end;d.setDate(d.getDate()+1)){
     const x=info(iso(d));if(idx[x.k]==null){idx[x.k]=out.length;out.push({...x,a:0})}}
   spend.forEach(r=>{if(r.d<from||r.d>to)return;const x=info(r.d);if(idx[x.k]!=null)out[idx[x.k]].a+=r.a});
-  return out.slice(-14);
+  return out.slice(g==="week"?-36:-14);
 }
 let txAll=false;
 function renderTx(rows){
@@ -1034,33 +1034,42 @@ function renderInc(){
 }
 /* big payments (₹10,000 or more, or marked "big" by the person) are shown apart from everyday spending */
 const isBig=r=>{const o=(S.payeeBig||{})[String(r.payee).toUpperCase()];return o==="B"?true:o==="H"?false:r.a>=10000};
+/* same axis rule as the pinned dashboard: round the top up, then about four evenly spaced marks */
+function axisOf(mx,count){
+  const st=(a,b,c)=>{const s0=(b-a)/c,pw=Math.pow(10,Math.floor(Math.log10(s0))),er=s0/pw;return (er>=Math.sqrt(50)?10:er>=Math.sqrt(10)?5:er>=Math.sqrt(2)?2:1)*pw};
+  mx=Math.max(1,mx);const s10=st(0,mx,10),top=Math.ceil(mx/s10-1e-9)*s10,s=st(0,top,count),t=[];
+  for(let v=0;v<=top+s/1e6;v+=s)t.push(Math.round(v*100)/100);
+  return {top,ticks:t};
+}
 function stackSvg(months,mm,selM,inc,curM){
-  const W=360,H=240,top=30,bot=26,l=40,r=8,n=months.length,bw=(W-l-r)/n;
+  const W=360,H=260,top=22,bot=26,r=10,n=months.length;
   const tot=m=>mm[m].h+mm[m].b+mm[m].s,mx=Math.max(1,inc,...months.map(tot));
-  let nice=mx;{const p=Math.pow(10,Math.floor(Math.log10(mx))),f=mx/p;nice=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;}
+  const ax=axisOf(mx,4),nice=ax.top;
+  const l=Math.max(...ax.ticks.map(t=>rsShort(t).length))*6.4+12;
+  const stp=(W-l-r)/(n+0.3),bw=stp;
   const Y=v=>H-bot-(H-top-bot)*v/nice;
   let s=`<defs><linearGradient id="gH" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cf5d3"/><stop offset="1" stop-color="#2ec4b6"/></linearGradient><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb36b"/><stop offset="1" stop-color="#ff5fa2"/></linearGradient><linearGradient id="gS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe27a"/><stop offset="1" stop-color="#ffb020"/></linearGradient></defs>`;
-  [0.25,0.5,0.75,1].forEach(f=>{const y=Y(nice*f).toFixed(1);s+=`<line class="grid" x1="${l}" x2="${W-r}" y1="${y}" y2="${y}"/><text x="${l-5}" y="${y}" dy="0.32em" text-anchor="end">${rsShort(nice*f)}</text>`});
-  if(inc>0)s+=`<line x1="${l}" x2="${W-r}" y1="${Y(inc).toFixed(1)}" y2="${Y(inc).toFixed(1)}" stroke="#ffffffaa" stroke-dasharray="4 4"/><text x="${W-r}" y="${(Y(inc)-5).toFixed(1)}" text-anchor="end">${T("আয়","Income")} ${rsShort(inc)}</text>`;
-  months.forEach((m,i)=>{const o=mm[m],x=l+i*bw+bw*0.18,w=bw*0.64,dim=selM&&selM!==m,fut=m>curM;
+  ax.ticks.forEach(t=>{const y=Y(t).toFixed(1);s+=`<line class="grid" x1="${l}" x2="${W-r}" y1="${y}" y2="${y}"/><text x="${l-6}" y="${y}" dy="0.32em" text-anchor="end">${rsShort(t)}</text>`});
+  if(inc>0)s+=`<line x1="${l}" x2="${W-r}" y1="${Y(inc).toFixed(1)}" y2="${Y(inc).toFixed(1)}" stroke="#ffffffaa" stroke-dasharray="4 4"/><text x="${W-r}" y="${(Y(inc)-5).toFixed(1)}" text-anchor="end">${T("পেনশন","Pension")} ${rsShort(inc)}</text>`;
+  months.forEach((m,i)=>{const o=mm[m],x=l+stp*0.3+i*stp,w=stp*0.7,dim=selM&&selM!==m,fut=m>curM;
     let acc=0;const op=dim?.35:1;
     [["h","gH"],["b","gB"],["s","gS"]].forEach(([k,g])=>{if(!o[k])return;const y1=Y(acc+o[k]),y0=Y(acc);
-      s+=`<rect x="${x.toFixed(1)}" y="${y1.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(2,y0-y1).toFixed(1)}" rx="5" fill="url(#${g})" stroke="#0a1226" stroke-width="1.5" opacity="${op}"/>`;acc+=o[k]});
+      s+=`<rect x="${x.toFixed(1)}" y="${y1.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(2,y0-y1).toFixed(1)}" rx="6" fill="url(#${g})" stroke="#0a1226" stroke-width="1.5" opacity="${op}"/>`;acc+=o[k]});
     if(acc>0)s+=`<text class="val" x="${(x+w/2).toFixed(1)}" y="${(Y(acc)-6).toFixed(1)}" text-anchor="middle" opacity="${op}">${rsShort(acc)}</text>`;
-    s+=`<text x="${(x+w/2).toFixed(1)}" y="${H-8}" text-anchor="middle" opacity="${fut?.4:op}"${selM===m?' style="fill:#fff;font-weight:700"':""}>${mShort(m)}</text>`;
+    s+=`<text x="${(x+w/2).toFixed(1)}" y="${H-8}" text-anchor="middle" opacity="${fut?.4:op}"${selM===m?' style="fill:#fff;font-weight:700"':""}>${esc(mName(m).slice(0,3))}</text>`;
     s+=`<rect class="hit" data-ym="${m}" x="${(l+i*bw).toFixed(1)}" y="${top-14}" width="${bw.toFixed(1)}" height="${H-top-bot+14}" fill="transparent" style="cursor:pointer"><title>${esc(mName(m)+" · "+T("সংসার ","Everyday ")+rs(o.h)+" · "+T("বড় ","Big ")+rs(o.b)+" · "+T("সঞ্চয় ","Savings ")+rs(o.s)+" · "+T("মোট ","Total ")+rs(acc))}</title></rect>`;});
   return s;
 }
 function trendSvg(rows){
   const W=360,H=200,top=22,bot=26,l=40,r=14,n=rows.length,mx=Math.max(1,...rows.map(x=>x.a)),avg=rows.reduce((t,x)=>t+x.a,0)/n;
-  let nice=mx;{const p=Math.pow(10,Math.floor(Math.log10(mx))),f=mx/p;nice=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p;}
+  const ax=axisOf(mx,4),nice=ax.top;
   const X=i=>l+(W-l-r)*(n===1?0.5:i/(n-1)),Y=v=>H-bot-(H-top-bot)*v/nice,base=H-bot;
   const pts=rows.map((x,i)=>[X(i),Y(x.a)]);
   let d=`M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
   for(let i=1;i<n;i++){const [x0,y0]=pts[i-1],[x1,y1]=pts[i],m_=(x0+x1)/2;d+=` C${m_.toFixed(1)},${y0.toFixed(1)} ${m_.toFixed(1)},${y1.toFixed(1)} ${x1.toFixed(1)},${y1.toFixed(1)}`}
   const area=d+` L${pts[n-1][0].toFixed(1)},${base} L${pts[0][0].toFixed(1)},${base} Z`;
   let s=`<defs><linearGradient id="gArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4d9bff" stop-opacity=".45"/><stop offset="1" stop-color="#4d9bff" stop-opacity="0"/></linearGradient><linearGradient id="gLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#35e0a1"/><stop offset="1" stop-color="#4d9bff"/></linearGradient></defs>`;
-  [0.5,1].forEach(f=>{const y=Y(nice*f).toFixed(1);s+=`<line class="grid" x1="${l}" x2="${W-r}" y1="${y}" y2="${y}"/><text x="${l-5}" y="${y}" dy="0.32em" text-anchor="end">${rsShort(nice*f)}</text>`});
+  ax.ticks.forEach(t=>{const y=Y(t).toFixed(1);s+=`<line class="grid" x1="${l}" x2="${W-r}" y1="${y}" y2="${y}"/><text x="${l-5}" y="${y}" dy="0.32em" text-anchor="end">${rsShort(t)}</text>`});
   s+=`<line x1="${l}" x2="${W-r}" y1="${Y(avg).toFixed(1)}" y2="${Y(avg).toFixed(1)}" stroke="#ffffff88" stroke-dasharray="4 4"/><text x="${W-r}" y="${(Y(avg)-5).toFixed(1)}" text-anchor="end">${T("গড়","Avg")} ${rsShort(avg)}</text>`;
   s+=`<path class="area" d="${area}" fill="url(#gArea)"/><path class="glow" pathLength="1" d="${d}"/><path class="ln" pathLength="1" d="${d}"/>`;
   const step=Math.ceil(n/6),hi=rows.map(x=>x.a).indexOf(Math.max(...rows.map(x=>x.a)));
@@ -1108,7 +1117,7 @@ function renderDash(){
   if(+S.income>0){const pd=Math.min(Math.max(+S.payday||1,1),28);let c=0;
     for(let y=+from.slice(0,4),m=+from.slice(5,7)-1;y*12+m<=(+toE.slice(0,4))*12+(+toE.slice(5,7)-1);m++){const yy=y+Math.floor(m/12),mm=((m%12)+12)%12,d=iso(new Date(yy,mm,pd));if(d>=from&&d<=toE)c++;}
     incP=Math.max(incP,c*(+S.income));}
-  const byCat={};spend.forEach(r=>{byCat[r.cat]=(byCat[r.cat]||0)+r.a});
+  const byCat={},cntC={};spend.forEach(r=>{byCat[r.cat]=(byCat[r.cat]||0)+r.a;cntC[r.cat]=(cntC[r.cat]||0)+1});
   const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
   const maxC=cats.length?cats[0][1]:1;
 
@@ -1181,7 +1190,7 @@ function renderDash(){
   const PL={warn:T("⚠️ সতর্কতা","⚠️ Watch out"),info:T("💡 জেনে রাখুন","💡 Good to know"),good:T("✅ ভালো অভ্যাস","✅ Good habit")};
   const advCard=([l,h,t])=>`<div class="advc ${l}"><span class="pill ${l}">${PL[l]}</span><h4>${esc(h)}</h4><p>${esc(t)}</p></div>`;
 
-  const spanD=days,gUse=spanD<=14?"day":spanD<=90?"week":spanD<=400?"month":"quarter";
+  const spanD=days,gUse=spanD<=14?"day":spanD<=250?"week":spanD<=400?"month":"quarter";
   const trend=bucketStats(houseR,from,toE,gUse);
   const svBy={};saved.forEach(r=>{(svBy[r.d.slice(0,7)]=svBy[r.d.slice(0,7)]||[]).push(r)});
   const svV=months.map(m=>sum(svBy[m]||[])),svMax=Math.max(1,...svV);
@@ -1212,10 +1221,10 @@ function renderDash(){
     <h3>${T("মাস অনুযায়ী খরচ","Spending by month")}</h3>
     <p class="note">${T("মাসের বারে চাপ দিলে সেই মাসের হিসেব দেখাবে। আবার চাপলে ফিরে আসবে। ডট-দাগ আপনার মাসের আয়।","Tap a month's bar to see that month. Tap again to go back. The dotted line is your monthly income.")}</p>
     <div class="kleg">${kl("#7cf5d3","#2ec4b6",T("সংসার","Everyday"))}${kl("#ffb36b","#ff5fa2",T("বড় খরচ","Big payments"))}${kl("#ffe27a","#ffb020",T("সঞ্চয়","Savings"))}</div>
-    <div class="mchart stk"><svg viewBox="0 0 360 240" role="img" aria-label="${esc(T("মাস অনুযায়ী খরচ, তিন ভাগে","Monthly spending in three parts"))}">${stackSvg(months,mm,selM,+S.income>0?+S.income:0,curM)}</svg></div>
+    <div class="mchart stk"><svg viewBox="0 0 360 260" role="img" aria-label="${esc(T("মাস অনুযায়ী খরচ, তিন ভাগে","Monthly spending in three parts"))}">${stackSvg(months,mm,selM,+S.income>0?+S.income:0,curM)}</svg></div>
     <h3>${T("কোন খাতে কত","By category")}</h3>
     <div class="donutbox">${donutSvg(cats,total)}</div>
-    <div class="tiles">${cats.map(([c,v],i)=>`<div class="tile" style="--k:${catStyle(c)[0]};animation-delay:${(i*0.05).toFixed(2)}s"><i>${bn(v/total*100)}%</i><div class="e" aria-hidden="true">${catStyle(c)[1]}</div><b>${rs(v)}</b><span>${esc(catLabel(c))}</span></div>`).join("")}</div>
+    <div class="tiles">${cats.map(([c,v],i)=>`<div class="tile" style="--k:${catStyle(c)[0]};animation-delay:${(i*0.05).toFixed(2)}s"><i>${bn(v/total*100)}%</i><div class="e" aria-hidden="true">${catStyle(c)[1]}</div><b>${rs(v)}</b><span>${esc(catLabel(c))}${T(` · ${bn(cntC[c]||0)} বার`,` · ${cntC[c]||0} times`)}</span></div>`).join("")}</div>
     <h3>${T("আপনার উপদেষ্টা","Your advisor")}</h3>
     <p class="note">${T("এগুলো আপনার নিজের খরচ দেখে পরামর্শ। সিদ্ধান্ত আপনার। পেশাদার আর্থিক পরামর্শ নয়।","Suggestions from your own spending. The decision is yours. Not professional financial advice.")}</p>
     <div class="advg">${adv.slice(0,4).map(advCard).join("")}</div>${adv.length>4?`<details class="insmore"><summary>${T(`আরও ${bn(adv.length-4)}টা পরামর্শ`,`${bn(adv.length-4)} more tips`)}</summary><div class="advg">${adv.slice(4).map(advCard).join("")}</div></details>`:""}
