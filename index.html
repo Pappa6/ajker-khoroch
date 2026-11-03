@@ -57,6 +57,7 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
 input[type=checkbox]{width:20px;height:20px;padding:0;accent-color:var(--accent)}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .amt{flex:1 1 140px;font-size:1.3rem;font-weight:600}
+#ebg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:flex;align-items:flex-end;justify-content:center;overflow:auto}#ebg[hidden]{display:none}#ecard{background:var(--card);color:var(--ink);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px;display:flex;flex-direction:column;gap:10px}#ecMsg:empty{display:none}#ecard .vcard{display:flex;flex-direction:column;gap:8px}#ecard label{display:flex;flex-direction:column;gap:4px}#ecard label.askrow{flex-direction:row;align-items:center}.tap{cursor:pointer}.tap:active{background:var(--bg)}
 button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 14px}
 .primary{background:var(--accent);color:var(--card);border-color:var(--accent);font-weight:600}
 .tag{background:var(--accent-soft);border-color:transparent}
@@ -298,6 +299,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
 </style>
 </head>
 <body>
+<div id="ebg" hidden><div id="ecard" role="dialog" aria-modal="true"></div></div>
 <div id="lockscr" hidden role="dialog" aria-modal="true"></div>
 
 
@@ -654,7 +656,7 @@ function sample(){
 }
 function mKey(add){const d=new Date();const x=new Date(d.getFullYear(),d.getMonth()+add,1);return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")}
 const blankFuture=()=>({buffer:0,infl:5,changes:[],liab:[]});
-const blank=()=>({sample:false,income:0,payday:1,saving:0,fixed:[],exp:[],future:blankFuture(),payeeCat:{},payeeBig:{},inc:[],maps:{},seen:[],grp:{},vm:[],hold:[],ask:[],wordCat:{},cover:""});
+const blank=()=>({sample:false,income:0,payday:1,saving:0,fixed:[],exp:[],future:blankFuture(),payeeCat:{},payeeBig:{},inc:[],maps:{},seen:[],grp:{},vm:[],hold:[],ask:[],wordCat:{},cover:"",skip:[]});
 let S;
 try{S=JSON.parse(localStorage.getItem(KEY))}catch(_){}
 if(!S) S=sample();
@@ -663,7 +665,7 @@ if(!S.payeeCat) S.payeeCat={};
 if(!S.inc) S.inc=[];
 if(!S.maps) S.maps={};
 if(!S.seen) S.seen=[];
-if(!S.grp) S.grp={};if(!S.vm) S.vm=[];if(!S.hold) S.hold=[];if(!S.ask) S.ask=[];if(!S.wordCat) S.wordCat={};if(S.cover==null) S.cover="";
+if(!S.grp) S.grp={};if(!S.vm) S.vm=[];if(!S.hold) S.hold=[];if(!S.ask) S.ask=[];if(!S.wordCat) S.wordCat={};if(S.cover==null) S.cover="";if(!S.skip) S.skip=[];
 let storeOK=true;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(_){storeOK=false}}
 
@@ -863,8 +865,8 @@ function payeeOf(e){
   return n||"নাম নেই";
 }
 function catOf(e){
+  if(e.cat) return e.cat;
   if(e.tag==="সঞ্চয়") return "সঞ্চয়";
-  if(e.v&&e.cat) return e.cat;
   const k=payeeOf(e).toUpperCase();
   if(!S.payeeCat[k]&&/gold|jewel|tanishq|senco|kalyan|malabar/i.test(e.desc||"")) return "সঞ্চয়";
   if(S.payeeCat[k]) return S.payeeCat[k];
@@ -988,14 +990,17 @@ function renderTx(rows){
   const list=rows.slice().sort((a,b)=>b.d<a.d?-1:b.d>a.d?1:0).filter(r=>!q||hx(payeeLabel(r.payee)).includes(q)||hx(r.payee).includes(q)||String(Math.round(r.a))===q.replace(/[₹,]/g,"")||hx(catLabel(r.cat)).includes(q));
   const shown=txAll?list:list.slice(0,25);
   ct.textContent=T(`${bn(list.length)}টা লেনদেন`+(q?` মিলেছে`:""),`${bn(list.length)} payments`+(q?` found`:""));
-  ul.innerHTML=shown.map(r=>`<li class="payee"><span class="what">${esc(payeeLabel(r.payee))}<small>${bnDate(r.d)} · ${esc(catLabel(r.cat))}</small></span><b class="num">${rs(r.a)}</b></li>`).join("")+(list.length>25?`<li style="display:block;border:0;padding:4px 0"><button id="txMore">${txAll?T("কম দেখান","Show fewer"):T(`আরও ${bn(list.length-25)}টা দেখান`,`Show ${bn(list.length-25)} more`)}</button></li>`:"");
+  ul.innerHTML=shown.map(r=>`<li class="payee tap" data-id="${esc(String(r.id))}" tabindex="0" role="button" aria-label="${esc(T("বদলান বা মুছুন","Change or delete"))}"><span class="what">${esc(payeeLabel(r.payee))}<small>${bnDate(r.d)} · ${esc(catLabel(r.cat))}</small></span><b class="num">${rs(r.a)}</b></li>`).join("")+(list.length>25?`<li style="display:block;border:0;padding:4px 0"><button id="txMore">${txAll?T("কম দেখান","Show fewer"):T(`আরও ${bn(list.length-25)}টা দেখান`,`Show ${bn(list.length-25)} more`)}</button></li>`:"");
   const mb=$("txMore");if(mb)mb.onclick=()=>{txAll=!txAll;renderTx(rows)};
+  ul.onclick=ev=>{const li=ev.target.closest("li[data-id]");if(li)openEdit(li.dataset.id)};
+  ul.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){const li=ev.target.closest("li[data-id]");if(li){ev.preventDefault();openEdit(li.dataset.id)}}};
+  renderSkip();
 }
 /* payments the app could not sort by name: the person sorts them once, the choice is remembered */
 let unsAll=false;let unsOpen=false;
 function unsorted(){
   const m={};
-  S.exp.filter(e=>e.src==="imp"&&e.tag!=="সঞ্চয়"&&e.tag!=="নগদ তোলা").forEach(e=>{
+  S.exp.filter(e=>e.src==="imp"&&!e.cat&&e.tag!=="সঞ্চয়"&&e.tag!=="নগদ তোলা").forEach(e=>{
     const name=payeeOf(e),k=name.toUpperCase(),d=e.desc||"";
     if(S.payeeCat[k]||/gold|jewel|tanishq|senco|kalyan|malabar/i.test(d)||RULES.some(([c,re])=>re.test(d)))return;
     const o=m[k]=m[k]||{k,name,n:0,a:0};o.n++;o.a+=e.a;
@@ -1226,7 +1231,8 @@ function renderDash(){
     <h3>${T("সব লেনদেন","All payments")}</h3>
     <input id="txQ" type="search" placeholder="${esc(T("নাম, খাত বা টাকা দিয়ে খুঁজুন","Search by name, category or amount"))}" style="width:100%">
     <p class="note" id="txCount"></p>
-    <ul id="txList"></ul>`;
+    <p class="note">${T("কোনো লাইনে ট্যাপ করলে সেটা বদলানো বা মোছার কার্ড খুলবে।","Tap any line to change or delete it.")}</p>
+    <ul id="txList"></ul><div id="skipBox"></div>`;
   if($("txQ")){txAll=false;$("txQ").addEventListener("input",()=>renderTx(spend));renderTx(spend)}
   $("payeeList").querySelectorAll(".bigb").forEach(b=>b.addEventListener("click",()=>{
     const k=payees[+b.dataset.i][0],o=(S.payeeBig=S.payeeBig||{})[k];
@@ -1257,7 +1263,7 @@ $("bkYes").onclick=()=>{
     d.exp=d.exp.map(e=>({...e,id:Math.random(),k:e.src==="imp"?e.d+"|"+e.a+"|"+(e.desc||""):undefined}));
     S={...blank(),...d,sample:false};
     if(!S.future)S.future=blankFuture();if(!S.payeeCat)S.payeeCat={};if(!S.payeeBig)S.payeeBig={};if(!Array.isArray(S.inc))S.inc=[];if(!S.maps)S.maps={};if(!Array.isArray(S.seen))S.seen=[];
-    if(!S.grp)S.grp={};if(!Array.isArray(S.vm))S.vm=[];if(!Array.isArray(S.hold))S.hold=[];if(!Array.isArray(S.ask))S.ask=[];if(!S.wordCat)S.wordCat={};if(S.cover==null)S.cover="";
+    if(!S.grp)S.grp={};if(!Array.isArray(S.vm))S.vm=[];if(!Array.isArray(S.hold))S.hold=[];if(!Array.isArray(S.ask))S.ask=[];if(!S.wordCat)S.wordCat={};if(S.cover==null)S.cover="";if(!Array.isArray(S.skip))S.skip=[];
     save();render();$("bkIn").value="";$("bkMsg").textContent=T(`ফিরিয়ে আনা হলো: ${bn(S.exp.length)}টা খরচ।`,`Restored: ${bn(S.exp.length)} payments.`);
   }catch(_){$("bkMsg").textContent=T("এই লেখাটা ব্যাকআপ হিসেবে চেনা গেল না। পুরো লেখাটা কপি হয়েছে কিনা দেখুন।","This text was not recognised as a backup. Check that the whole text was copied.");}
 };
@@ -1732,7 +1738,7 @@ const tagOfType=t=>t==="UPI"?"UPI":t==="SAVE"?"সঞ্চয়":t==="CARD"?"�
 const dayN=d=>Math.round(new Date(d+"T00:00:00").getTime()/864e5);
 function planImport(rows){
   if(S.sample) return {add:rows.slice(),dup:0,replace:[],fuzzy:0};
-  const imp=S.exp.filter(e=>e.src==="imp").concat(S.vm||[],S.hold||[]);
+  const imp=S.exp.filter(e=>e.src==="imp").concat(S.vm||[],S.hold||[],S.skip||[]);
   const byU={},byK={};
   imp.forEach(e=>{if(e.u)(byU[e.u]=byU[e.u]||[]).push(e);const k=e.d+"|"+e.a;(byK[k]=byK[k]||[]).push(e)});
   const used=new Set(),batchU=new Set();
@@ -2018,7 +2024,7 @@ function resolveAsk(id,ticked,force){
 }
 function unmerge(vmId){
   const i=(S.vm||[]).findIndex(x=>x.id===vmId);if(i<0)return;
-  const rec=S.vm.splice(i,1)[0],G=(S.grp||{})[rec.g];delete rec.g;S.exp.push(rec);
+  edBroke++;const rec=S.vm.splice(i,1)[0],G=(S.grp||{})[rec.g];delete rec.g;S.exp.push(rec);
   if(G){G.vm=(G.vm||[]).filter(x=>x!==vmId);if(!G.vm.length){G.st="open";if(G.mode==="unk")G.mode="cash"}}
 }
 function voiceIssues(){
@@ -2104,10 +2110,235 @@ function showCard(P){
 }
 function runParse(){
   const t=$("vtxt").value.trim();if(!t){$("vNote").textContent=T("আগে মাইকে বলুন বা লিখুন।","Speak or type first.");return}
+  {const C=corrParse(t);if(C){if(C.err){$("vNote").textContent=C.err;$("vcard").hidden=true}else runCorrection(C);return}}
   let P;try{P=vParse(t)}catch(_){P={ok:false,warns:[T("বুঝতে পারিনি। একটু অন্যভাবে লিখুন।","Could not understand. Try again.")]}}
   if(!P.ok){$("vNote").textContent=P.warns[0];$("vcard").hidden=true;return}
   $("vNote").textContent="";showCard(P);
 }
+/* ---------- one card to change, delete or set aside any line ---------- */
+let edBroke=0;
+const ymLabel=k=>mName(k)+" "+bn(+k.slice(0,4));
+const spendOf=ym=>S.exp.filter(e=>e.d.slice(0,7)===ym).reduce((t,e)=>catOf(e)==="সঞ্চয়"?t:t+e.a,0);
+const findEntry=id=>S.exp.find(e=>String(e.id)===String(id));
+function grpTotal(g){return S.exp.filter(x=>x.g===g).reduce((t,x)=>t+x.a,0)}
+function slipAmt(G,tot){return G.mode==="split"?Math.round((tot-(G.cash||0))*100)/100:tot}
+/* does the joined statement line still agree with the entry? */
+function joinHolds(g,mode,tot,d){
+  const G=S.grp[g],rows=(S.vm||[]).filter(x=>x.g===g);
+  if(!rows.length)return true;
+  if(mode==="cash")return false;
+  if(mode==="stmt")return rows.every(r=>r.d===d);
+  const sum=Math.round(rows.reduce((t,r)=>t+r.a,0)*100)/100;
+  return sum===slipAmt({mode,cash:G.cash},tot)&&rows.every(r=>Math.abs(dayN(r.d)-dayN(d))<=1);
+}
+function breakJoin(g){const G=S.grp[g],m=G&&G.mode;(S.vm||[]).filter(x=>x.g===g).map(x=>x.id).forEach(unmerge);if(G&&m)G.mode=m}
+/* returns {err} or {ok} ; mutates S */
+function applyOwn(id,v){
+  const e=findEntry(id);if(!e)return {err:T("লাইনটা আর নেই।","That line no longer exists.")};
+  const g=e.g,G=g&&S.grp?S.grp[g]:null;
+  if(G&&G.asked&&(v.a!==e.a||v.d!==e.d||v.mode!==G.mode))return {err:T("এই এন্ট্রির স্টেটমেন্ট-মেলানোর প্রশ্ন বাকি আছে। আগে ‘অপেক্ষার তালিকা’-য় উত্তর দিন, তারপর টাকা, তারিখ বা পদ্ধতি বদলান।","A question about this entry is waiting. Answer it in the waiting list first, then change the amount, date or method.")};
+  if(G){
+    const items=S.exp.filter(x=>x.g===g),tot=items.reduce((t,x)=>t+(x===e?v.a:x.a),0);
+    if(v.mode==="split"&&!(G.cash>=0&&G.cash<tot))return {err:T("ভাগের জন্য নগদের অঙ্ক মোটের চেয়ে কম হতে হবে।","For a split the cash amount must be below the total.")};
+    if(!joinHolds(g,v.mode,tot,v.d))breakJoin(g);
+    items.forEach(x=>{if(v.d!==e.d)x.d=v.d});
+    G.d=v.d;G.mode=v.mode;if(v.mode==="dig"||v.mode==="split"||v.mode==="stmt")G.via=v.via||G.via||"ডিজিটাল";
+    if(v.mode==="cash"||v.mode==="unk")G.cash=null;
+  }else e.d=v.d;
+  e.a=v.a;e.tag=v.label;e.cat=v.cat;
+  if(G)G.total=grpTotal(g);
+  const k=v.label.toLowerCase();S.wordCat=S.wordCat||{};
+  if(v.label&&(vCat(v.label)!==v.cat||S.wordCat[k]))S.wordCat[k]=v.cat;
+  return {ok:1,g};
+}
+function removeOwn(id){
+  const e=findEntry(id);if(!e)return;
+  const g=e.g;delEntry(e);
+  if(g&&S.grp&&S.grp[g]){
+    const G=S.grp[g],tot=grpTotal(g);G.total=tot;
+    if(!joinHolds(g,G.mode,tot,G.d))breakJoin(g);
+  }
+}
+function applyImp(id,cat,allNames){
+  const e=findEntry(id);if(!e)return;
+  delete e.cat;const auto=catOf(e);
+  if(cat!==auto)e.cat=cat;
+  if(allNames){S.payeeCat=S.payeeCat||{};S.payeeCat[payeeOf(e).toUpperCase()]=cat}
+}
+function skipImp(id){
+  const i=S.exp.findIndex(e=>String(e.id)===String(id));if(i<0)return;
+  const rec=S.exp.splice(i,1)[0];S.skip=S.skip||[];S.skip.push(rec);
+}
+function restoreSkip(id){
+  const i=(S.skip||[]).findIndex(e=>String(e.id)===String(id));if(i<0)return;
+  S.exp.push(S.skip.splice(i,1)[0]);
+}
+/* run an operation on a copy first when it may break a join, show before/after, apply only on confirm */
+function guarded(op,months,done){
+  const snap=JSON.stringify(S),before={};
+  months.forEach(m=>before[m]=spendOf(m));
+  edBroke=0;const r=op();
+  if(r&&r.err){S=JSON.parse(snap);return r}
+  if(!edBroke){return Object.assign({},r,{applied:1})}
+  const after={};months.forEach(m=>after[m]=spendOf(m));
+  S=JSON.parse(snap);
+  return {confirm:1,before,after,run:()=>{edBroke=0;const rr=op();return rr}};
+}
+function monthsOf(...ds){return [...new Set(ds.filter(Boolean).map(d=>d.slice(0,7)))]}
+function ecClose(){const b=$("ebg");b.hidden=true;$("ecard").innerHTML="";document.body.style.overflow=""}
+function ecShow(h){$("ecard").innerHTML=h;$("ebg").hidden=false;document.body.style.overflow="hidden";$("ecard").scrollTop=0}
+function confirmHtml(c,what){
+  const rows=Object.keys(c.before).map(m=>`<li>${esc(ymLabel(m))}: ${rs(c.before[m])} → <b>${rs(c.after[m])}</b></li>`).join("");
+  return `<div class="vcard"><p><b>⚠️ ${T("স্টেটমেন্টের সঙ্গে জোড়া লাগানো লাইন আলাদা হয়ে যাবে","A line joined with the statement will be separated")}</b></p>
+  <p class="note">${what} ${T("স্টেটমেন্টের লাইনটা তখন নিজে খরচ হিসেবে গোনা হবে, আর আপনার এন্ট্রি পরে আবার মেলানো যাবে। কিছু নীরবে দু’বার গোনা হচ্ছে না, নিচে হিসাব দেখুন।","The statement line will then count as its own payment, and your entry can be matched again later. Nothing is counted twice silently; see the totals below.")}</p>
+  <ul class="note">${rows}</ul>
+  <div class="row"><button class="primary" id="ecYes">${T("নিশ্চিত, বদলান","Yes, go ahead")}</button><button id="ecNo">${T("ফিরে যান","Go back")}</button></div></div>`;
+}
+/* a statement line that could belong to this entry (never joined silently) */
+function joinCandidate(g){
+  const G=S.grp&&S.grp[g];if(!G||G.st==="done"||G.asked||(G.mode!=="dig"&&G.mode!=="unk"&&G.mode!=="split"))return null;
+  const a=slipAmt(G,grpTotal(g));if(!(a>0))return null;
+  const slips=slipsOpen().filter(s=>s.k==="one"&&s.a===a&&Math.abs(dayN(s.d)-dayN(G.d))<=1);
+  const rows=S.exp.filter(x=>x.src==="imp"&&!x.g&&x.a===a&&x.tag!=="সঞ্চয়"&&Math.abs(dayN(x.d)-dayN(G.d))<=1);
+  return slips.length===1&&rows.length===1?rows[0]:null;
+}
+function offerJoin(g,row){
+  ecShow(`<div class="vcard"><p><b>${T("স্টেটমেন্টে একটা লাইন মিলছে","A statement line looks like this one")}</b></p>
+  <p class="note">${bnDate(row.d)} · <b>${rs(row.a)}</b> · ${esc(shortDesc(row))}<br>${T("এটাই কি আপনার এই এন্ট্রির টাকা? হ্যাঁ বললে দুটো মিলে একটাই খরচ হবে, না বললে আলাদাই থাকবে (তখন দু’বার গোনা হবে)।","Is this the payment for your entry? If yes the two become one payment. If no they stay separate (and both count).")}</p>
+  <div class="row"><button class="primary" id="ojYes">${T("হ্যাঁ, জোড়া লাগান","Yes, join them")}</button><button id="ojNo">${T("না, আলাদাই থাক","No, keep separate")}</button></div></div>`);
+  $("ojYes").onclick=()=>{const i=S.exp.findIndex(x=>x.id===row.id);if(i>=0){S.exp.splice(i,1);mergeRow(g,row)}save();ecClose();render()};
+  $("ojNo").onclick=()=>{ecClose()};
+}
+function openEdit(id,pre){
+  const e=findEntry(id);if(!e)return;
+  pre=pre||{};
+  const cats=sel=>CATS.map(c=>`<option value="${esc(c)}"${c===sel?" selected":""}>${esc(catLabel(c))}</option>`).join("");
+  const hint=pre.hint?`<p class="note vwarn">${esc(pre.hint)}</p>`:"";
+  if(e.src==="imp"){
+    const cur=pre.cat||catOf(e);
+    ecShow(`<div class="vcard"><p><b>${T("স্টেটমেন্টের লাইন","Statement line")}</b></p>${hint}
+    <p class="note">🔒 ${bnDate(e.d)} · <b>${rs(e.a)}</b><br>${esc(String(e.desc||"").replace(/\s+/g," "))}<br><small>${T("ব্যাংকের তারিখ, টাকা ও বিবরণ বদলানো যায় না। শুধু খাত ঠিক করা যায়, বা লাইনটা হিসাবের বাইরে রাখা যায়।","The bank's date, amount and text cannot be changed. You can only fix the category or leave the line out.")}</small></p>
+    <label>${T("খাত","Category")}<select id="ecCat">${cats(cur)}</select></label>
+    <label class="askrow"><input type="checkbox" id="ecAll"> ${T("এই নামের সব লেনদেনেই এই খাত","Use this category for every payment to this name")}</label>
+    <p class="note" id="ecMsg"></p>
+    <div class="row"><button class="primary" id="ecSave">${T("সেভ করুন","Save")}</button><button id="ecCancel">${T("বন্ধ","Close")}</button></div>
+    <div class="row"><button id="ecSkip">${T("হিসাবে ধরবেন না","Do not count this")}</button></div></div>`);
+    $("ecCancel").onclick=ecClose;
+    $("ecSave").onclick=()=>{applyImp(id,$("ecCat").value,$("ecAll").checked);save();ecClose();render()};
+    $("ecSkip").onclick=()=>{
+      $("ecMsg").innerHTML=`${T("এই লাইন খরচের হিসাব থেকে বাদ যাবে। পরে একই স্টেটমেন্ট আবার আনলেও ফিরবে না। ‘বাদ দেওয়া লাইন’ থেকে ফেরানো যাবে।","This line will leave your spending. Importing the same statement again will not bring it back. You can restore it from ‘Left-out lines’.")} <button class="primary mini" id="ecSkipYes">${T("হ্যাঁ, বাদ দিন","Yes, leave it out")}</button>`;
+      $("ecSkipYes").onclick=()=>{skipImp(id);save();ecClose();render()};
+    };
+    return;
+  }
+  const G=e.g&&S.grp?S.grp[e.g]:null,n=G?S.exp.filter(x=>x.g===e.g).length:1;
+  const lab=pre.label!=null?pre.label:e.tag,cur=pre.cat||(pre.label&&vCat(pre.label)!=="অন্যান্য"?vCat(pre.label):catOf(e));
+  const mode=pre.mode||(G?G.mode:""),via=pre.via||(G&&G.via)||"ডিজিটাল";
+  const mopts=[["unk",T("পদ্ধতি বলিনি","Not told")],["cash",T("নগদ","Cash")],["dig",T("ডিজিটাল (ফোনপে/জিপে/নেট ব্যাংকিং)","Digital (PhonePe/GPay/net banking)")]]
+    .concat(G&&G.mode==="split"?[["split",T("ভাগ করা (নগদ + ডিজিটাল)","Split (cash + digital)")]]:[],G&&G.mode==="stmt"?[["stmt",T("স্টেটমেন্ট দেখে","From the statement")]]:[])
+    .map(([k,t])=>`<option value="${k}"${k===mode?" selected":""}>${t}</option>`).join("");
+  const vias=["PhonePe","GPay","নেট ব্যাংকিং","ডিজিটাল"].map(v=>`<option value="${v}"${v===via?" selected":""}>${v==="ডিজিটাল"?T("অন্য ডিজিটাল","Other digital"):v}</option>`).join("");
+  const locked=G&&G.asked;
+  ecShow(`<div class="vcard"><p><b>${T("আপনার লেখা এন্ট্রি","Your entry")}</b></p>${hint}
+  ${n>1?`<p class="note">${T(`এটা ${bn(n)}টা আইটেমের একটা এন্ট্রির অংশ। তারিখ আর পদ্ধতি বদলালে সবগুলোর বদলাবে; টাকা, নাম আর খাত শুধু এটার।`,`This is one of ${bn(n)} items in one entry. Date and method change for all of them; amount, name and category only for this one.`)}</p>`:""}
+  ${locked?`<p class="note vwarn">${T("স্টেটমেন্ট-মেলানোর একটা প্রশ্ন বাকি, তাই টাকা, তারিখ ও পদ্ধতি এখন বদলানো যাবে না। নাম ও খাত বদলানো যাবে।","A matching question is waiting, so amount, date and method are locked for now. Name and category can change.")}</p>`:""}
+  <label>${T("তারিখ","Date")}<input id="ecD" type="date" value="${esc(e.d)}"${locked?" disabled":""}></label>
+  <label>${T("কী বাবদ","What for")}<input id="ecL" value="${esc(lab)}"></label>
+  <label>${T("টাকা","Amount")}<input id="ecA" type="number" inputmode="decimal" min="0" value="${e.a}"${locked?" disabled":""}></label>
+  <label>${T("খাত","Category")}<select id="ecCat">${cats(cur)}</select></label>
+  ${G?`<label>${T("পদ্ধতি","Method")}<select id="ecM"${locked?" disabled":""}>${mopts}</select></label><label id="ecVl">${T("কোন ডিজিটাল","Which digital")}<select id="ecV"${locked?" disabled":""}>${vias}</select></label>`:""}
+  <p class="note" id="ecMsg"></p>
+  <div class="row"><button class="primary" id="ecSave">${T("সেভ করুন","Save")}</button><button id="ecCancel">${T("বন্ধ","Close")}</button></div>
+  <div class="row"><button id="ecDel">${T("এই লাইন মুছুন","Delete this line")}</button></div></div>`);
+  const sv=()=>{if(G){const m=$("ecM").value;$("ecVl").hidden=!(m==="dig"||m==="split"||m==="stmt")}};
+  if(G){$("ecM").onchange=sv;sv()}
+  $("ecCancel").onclick=ecClose;
+  const msg_=t=>{$("ecMsg").textContent=t};
+  const showConfirm=(c,what,after)=>{
+    ecShow(confirmHtml(c,what));
+    $("ecNo").onclick=()=>openEdit(id,pre);
+    $("ecYes").onclick=()=>{const r=c.run();if(r&&r.err){ecShow(`<div class="vcard"><p class="note vwarn">${esc(r.err)}</p><button id="ecX">${T("বন্ধ","Close")}</button></div>`);$("ecX").onclick=ecClose;return}
+      save();after&&after(r)||(ecClose(),render())};
+  };
+  $("ecSave").onclick=()=>{
+    const v={d:$("ecD").value||e.d,a:+$("ecA").value,label:$("ecL").value.trim(),cat:$("ecCat").value,mode:G?$("ecM").value:"",via:G?$("ecV").value:""};
+    if(!(v.a>0)){msg_(T("টাকার অঙ্ক দিন।","Give an amount."));return}
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(v.d)){msg_(T("তারিখ ঠিক করুন।","Fix the date."));return}
+    if(!v.label)v.label=v.cat;
+    const months=monthsOf(e.d,v.d,...(G?(S.vm||[]).filter(x=>x.g===e.g).map(x=>x.d):[]));
+    const c=guarded(()=>applyOwn(id,v),months);
+    if(c.err){msg_(c.err);return}
+    const fin=r=>{
+      save();const g=r&&r.g,row=g?joinCandidate(g):null;
+      if(row){render();offerJoin(g,row);return true}
+    };
+    if(c.confirm){showConfirm(c,T("টাকা, তারিখ বা পদ্ধতি বদলালে আগের মিল আর ঠিক থাকে না।","Changing the amount, date or method means the earlier match no longer fits."),r=>fin(r)?true:(ecClose(),render(),true));return}
+    if(fin(c))return;
+    ecClose();render();
+  };
+  $("ecDel").onclick=()=>{
+    $("ecMsg").innerHTML=`${T("এই লাইনটা মুছে যাবে।","This line will be deleted.")} <button class="primary mini" id="ecDelYes">${T("হ্যাঁ, মুছুন","Yes, delete")}</button>`;
+    $("ecDelYes").onclick=()=>{
+      const months=monthsOf(e.d,...(G?(S.vm||[]).filter(x=>x.g===e.g).map(x=>x.d):[]));
+      const c=guarded(()=>{removeOwn(id);return {ok:1}},months);
+      if(c.confirm){showConfirm(c,T("লাইনটা মুছলে স্টেটমেন্টের মিল ভেঙে যায়।","Deleting this line breaks the statement match."));return}
+      save();ecClose();render();
+    };
+  };
+}
+/* ---------- fixing a line by sentence ("৫ তারিখের ১০০ টাকাটা মিষ্টি হবে") ---------- */
+function corrParse(text){
+  const s=vNorm(text);
+  const ref=/(?:টাকাটা|খরচটা|এন্ট্রিটা|লেনদেনটা|পেমেন্টটা|লাইনটা|সংশোধন)/,verb=/(?:হবে|বদলে|বদলাও|বদলান|ঠিক\s*কর|শুধরে|করে\s*দাও|করে\s*দিন|ধর(?:ো|ুন)|হিসেবে|হিসাবে|মুছ|বাদ|ডিলিট)/;
+  if(!(ref.test(s)&&verb.test(s)))return null;
+  let r=s,d=null,dd=null;const now=new Date();
+  const mday=r.match(/(\d{1,2})\s*(?:তারিখ(?:ের|এর|ে|র)?|তা\b|ই\b)/);
+  if(/গত\s?কাল|yesterday/.test(r)){const y=new Date();y.setDate(y.getDate()-1);d=iso(y);r=r.replace(/গত\s?কাল|yesterday/," ")}
+  else if(/পরশু/.test(r)){const y=new Date();y.setDate(y.getDate()-2);d=iso(y);r=r.replace(/পরশু/," ")}
+  else if(/আজ|today/.test(r)){d=iso(now);r=r.replace(/আজ|today/," ")}
+  else if(mday){dd=+mday[1];r=r.replace(mday[0]," ")}
+  const am=r.match(/(\d+(?:\.\d+)?)\s*(?:টাকাটা|টাকা|রুপি|rs|₹)?/);
+  if(!am)return {err:T("কোন টাকার লাইন, সেটা বুঝতে পারিনি। অঙ্কটা বলুন।","I could not tell which amount. Say the amount.")};
+  const a=+am[1];r=r.replace(am[0]," ");
+  const pre={};
+  if(/নগদ|ক্যাশ|cash/.test(r))pre.mode="cash";
+  for(const [nm,re] of MODE_VIA){if(re.test(r)){pre.mode="dig";pre.via=nm;break}}
+  const skip=/ট্রান্সফার|নিজের\s*(?:অ্যাকাউন্ট|একাউন্ট)|হিসেবে\s*ধর(?:বে|বেন)?\s*না|হিসাবে\s*ধর(?:বে|বেন)?\s*না|ধরো\s*না|বাদ|মুছ|ডিলিট/.test(r);
+  let lab=r.replace(/টাকাটা|টাকার|টাকা|খরচটা|এন্ট্রিটা|লেনদেনটা|পেমেন্টটা|লাইনটা|ওটা|এটা|সংশোধন|হবে|বদলে|বদলাও|বদলান|ঠিক\s*কর\w*|শুধরে|করে\s*দাও|করে\s*দিন|ধর(?:ো|ুন)|হিসেবে|হিসাবে|তারিখের|তারিখে|তারিখ|এর|র\b|নগদ|ক্যাশ|cash/g," ").replace(/[,\s]+/g," ").trim();
+  for(const [nm,re] of MODE_VIA)lab=lab.replace(re," ");
+  lab=lab.replace(/\s+/g," ").trim();
+  if(lab&&!skip){pre.label=lab;const c=vCat(lab);if(c!=="অন্যান্য")pre.cat=c}
+  return {a,d,dd,pre,skip};
+}
+function corrFind(c){
+  const near=S.exp.filter(e=>e.a===c.a);
+  if(c.d)return near.filter(e=>e.d===c.d);
+  if(c.dd){const now=new Date();return near.filter(e=>+e.d.slice(8)===c.dd).sort((x,y)=>y.d<x.d?-1:1)}
+  return near.sort((x,y)=>y.d<x.d?-1:1);
+}
+function runCorrection(c){
+  const hits=corrFind(c),box=$("vcard");
+  const open=e=>{box.hidden=true;box.innerHTML="";$("vNote").textContent="";
+    const pre=Object.assign({},c.pre);
+    pre.hint=c.skip?T("আপনি এই লাইনটা হিসাব থেকে বাদ দিতে চেয়েছেন। নিচের ‘মুছুন’ বা ‘হিসাবে ধরবেন না’ বোতামে চাপলে তবেই হবে; এখনও কিছু বদলায়নি।","You asked to leave this line out. It only happens if you press ‘Do not count this’ below; nothing has changed yet."):
+      T("আপনার কথা অনুযায়ী ঘরগুলো ভরা হয়েছে। ‘সেভ করুন’ না চাপা পর্যন্ত কিছু বদলায়নি।","The fields are filled from what you said. Nothing changes until you press Save.");
+    if(e.src==="imp"){delete pre.mode;delete pre.via;delete pre.label}
+    openEdit(e.id,pre)};
+  if(!hits.length){$("vNote").textContent=T("এই বর্ণনায় কোনো লাইন পাওয়া যায়নি।","No line found for that.");box.hidden=true;return}
+  if(hits.length===1){open(hits[0]);return}
+  box.hidden=false;
+  box.innerHTML=`<div class="vcard"><p class="note"><b>${T(`${bn(hits.length)}টা লাইন মিলেছে, কোনটা?`,`${bn(hits.length)} lines match. Which one?`)}</b></p>`+hits.slice(0,12).map((e,i)=>`<button class="askrow" data-i="${i}" style="display:block;width:100%;text-align:left;margin:4px 0">${bnDate(e.d)} · <b>${rs(e.a)}</b> · ${esc(e.src==="imp"?shortDesc(e):e.tag)}</button>`).join("")+`</div>`;
+  box.querySelectorAll("button[data-i]").forEach(b=>b.onclick=()=>open(hits[+b.dataset.i]));
+}
+function renderSkip(){
+  const box=$("skipBox");if(!box)return;
+  const l=S.skip||[];
+  if(!l.length){box.innerHTML="";return}
+  box.innerHTML=`<details class="pl"><summary>${T(`বাদ দেওয়া লাইন (${bn(l.length)}টা)`,`Left-out lines (${bn(l.length)})`)}</summary><ul>`+l.slice().sort((a,b)=>b.d<a.d?-1:1).map(x=>`<li data-id="${x.id}"><span class="what">${bnDate(x.d)} · <b>${rs(x.a)}</b><small>${esc(shortDesc(x))}</small></span><span><button class="mini sk-back">${T("ফিরিয়ে আনুন","Bring back")}</button></span></li>`).join("")+`</ul></details>`;
+  box.querySelectorAll(".sk-back").forEach(b=>b.onclick=()=>{restoreSkip(b.closest("li").dataset.id);save();render()});
+}
+
+$("ebg").onclick=ev=>{if(ev.target===$("ebg"))ecClose()};document.addEventListener("keydown",ev=>{if(ev.key==="Escape"&&!$("ebg").hidden)ecClose()});
 $("vParse").onclick=runParse;
 {
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,on=false;
