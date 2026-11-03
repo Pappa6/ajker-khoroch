@@ -2458,29 +2458,56 @@ $("vParse").onclick=runParse;
     const paintVl=()=>document.querySelectorAll(".vlang button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.vl===vl)));
     document.querySelectorAll(".vlang button").forEach(b=>b.onclick=()=>{vl=b.dataset.vl;try{localStorage.setItem(VKEY,vl)}catch(_){}paintVl();
       $("vNote").textContent=vl==="bn-IN"?T("এবার বাংলায় বলুন, যেমন: ‘একশো টাকা দুধ নগদ’।","Now speak in Bengali, e.g. ‘একশো টাকা দুধ নগদ’."):T("Now speak in English, e.g. ‘100 rupees milk cash’.","Now speak in English, e.g. ‘100 rupees milk cash’.");
-      if(on&&rec){try{rec.abort()}catch(_){}}});
+      });
     paintVl();
-    let t1=null,t2=null,t3=null,gotAny=false;
-    const idle=()=>{on=false;mic.classList.remove("on");$("micTxt").textContent=T("ট্যাপ করে বলুন","Tap and speak");[t1,t2,t3].forEach(clearTimeout);t1=t2=t3=null};
-    mic.onclick=()=>{
-      if(on&&rec){try{rec.stop()}catch(_){}t3=setTimeout(idle,2500);return}
-      try{rec=new SR();rec.lang=vl;rec.interimResults=true;rec.continuous=false;rec.maxAlternatives=1;}catch(_){return}
-      let fin="";gotAny=false;on=true;mic.classList.add("on");$("vtxt").value="";$("vcard").hidden=true;$("vNote").textContent="";
-      $("micTxt").textContent=T("শুনছি… থামাতে ট্যাপ করুন","Listening… tap to stop");
-      /* never stay stuck: stop when nothing is heard, and in any case after 25 seconds */
-      t1=setTimeout(()=>{if(on&&!gotAny){try{rec.stop()}catch(_){}t3=setTimeout(idle,2500)}},9000);
-      t2=setTimeout(()=>{if(on){try{rec.stop()}catch(_){}t3=setTimeout(idle,2500)}},25000);
-      rec.onresult=ev=>{gotAny=true;let t="";for(let i=0;i<ev.results.length;i++)t+=ev.results[i][0].transcript+" ";fin=t.trim();$("vtxt").value=fin};
-      rec.onerror=ev=>{idle();const e=ev.error;if(e==="aborted")return;setTimeout(()=>{if(inFrame&&(e==="not-allowed"||e==="service-not-allowed"))addOpenLink()},0);
-        $("vNote").textContent=e==="not-allowed"||e==="service-not-allowed"?(inFrame?FRAME_MSG():T("মাইকের অনুমতি দেওয়া নেই। ঠিকানার পাশের তালা বা ⓘ চিহ্নে চেপে মাইক ‘Allow’ করুন, অথবা লিখে দিন।","Microphone permission is off. Tap the lock or ⓘ next to the address, allow the microphone, or type.")):
+    /* continuous listening: tap once, speak many items, tap again to finish. The browser may end a recording
+       by itself after a pause; we quietly start a new one and keep all the words together. */
+    const SIL=window.__akSil||60000, CAP=window.__akCap||300000;
+    let ti=null,t3=null,fails=0,active=false,finishing=false,acc="",cur="",t0=0,lastAct=0,gotAny=false,fatal=false;
+    const joinRes=ev=>{const out=[];for(let i=0;i<ev.results.length;i++){const tr=(ev.results[i][0].transcript||"").trim();if(!tr)continue;
+      /* some phones repeat the whole sentence in each new result: keep only the longest one */
+      if(out.length&&tr.indexOf(out[out.length-1])===0)out[out.length-1]=tr;else out.push(tr)}return out.join(" ")};
+    const idle=()=>{on=false;active=false;finishing=false;mic.classList.remove("on");$("micTxt").textContent=T("ট্যাপ করে বলুন","Tap and speak");clearInterval(ti);clearTimeout(t3);ti=t3=null};
+    const full=()=>(acc+" "+cur).trim();
+    const label=()=>{const sec=Math.floor((Date.now()-t0)/1000),mm=Math.floor(sec/60),ss=String(sec%60).padStart(2,"0");let n=0;try{const P=vParse(full());if(P&&P.ok)n=P.items.length}catch(_){}
+      $("micTxt").textContent=T("শুনছি "+mm+":"+ss+(n?" · "+n+"টি পেয়েছি":"")+" — শেষ হলে আবার ট্যাপ করুন","Listening "+mm+":"+ss+(n?" · "+n+" found":"")+" — tap again when done")};
+    const finalize=()=>{if(!on&&!active)return;const txt=full();idle();$("vtxt").value=txt;if(txt.trim())runParse();else if(!$("vNote").textContent)$("vNote").textContent=T("কিছু শোনা যায়নি। আবার ট্যাপ করে বলুন।","Heard nothing. Tap and speak again.")};
+    const finish=()=>{if(!active||finishing)return;finishing=true;active=false;try{rec.stop()}catch(_){}clearTimeout(t3);t3=setTimeout(finalize,2500)};
+    const errMsg=e=>e==="not-allowed"||e==="service-not-allowed"?(inFrame?FRAME_MSG():T("মাইকের অনুমতি দেওয়া নেই। ঠিকানার পাশের তালা বা ⓘ চিহ্নে চেপে মাইক ‘Allow’ করুন, অথবা লিখে দিন।","Microphone permission is off. Tap the lock or ⓘ next to the address, allow the microphone, or type.")):
           e==="network"?T("বাংলা শোনার জন্য ইন্টারনেট লাগে। নেট না থাকলে লিখে দিন।","Listening needs internet. Without it, type."):
-          e==="no-speech"?T("কিছু শোনা যায়নি। ফোন মুখের কাছে ধরে আবার ট্যাপ করুন।","Heard nothing. Hold the phone closer and tap again."):
           e==="audio-capture"?T("মাইক পাওয়া যাচ্ছে না। অন্য কোনো অ্যাপ বা ট্যাব মাইক ধরে থাকলে সেটা বন্ধ করে আবার ট্যাপ করুন।","No microphone found. If another app or tab is using it, close that and tap again."):
           e==="language-not-supported"?T("এই ভাষায় শোনা যাচ্ছে না। অন্য ভাষার বোতাম চেপে দেখুন, অথবা লিখে দিন।","This language is not supported here. Try the other language button, or type."):
-          T("মাইক চলল না। আবার ট্যাপ করুন, নয়তো লিখে দিন।","Microphone did not work. Tap again, or type.")};
-      rec.onend=()=>{idle();if($("vtxt").value.trim())runParse();else if(!$("vNote").textContent)$("vNote").textContent=T("কিছু শোনা যায়নি। আবার ট্যাপ করে বলুন।","Heard nothing. Tap and speak again.")};
-      try{rec.start()}catch(_){idle();$("vNote").textContent=T("মাইক চালু করা গেল না। আবার ট্যাপ করুন।","Could not start the microphone. Tap again.")}
+          T("মাইক চলল না। আবার ট্যাপ করুন, নয়তো লিখে দিন।","Microphone did not work. Tap again, or type.");
+    const startInst=()=>{
+      if(!active)return;
+      let r;try{r=new SR();r.lang=vl;r.interimResults=true;r.continuous=true;r.maxAlternatives=1}catch(_){fatal=true;$("vNote").textContent=errMsg("x");finalize();return}
+      rec=r;const born=Date.now();let heard=false;
+      r.onresult=ev=>{if(rec!==r)return;heard=true;gotAny=true;fails=0;lastAct=Date.now();cur=joinRes(ev);$("vtxt").value=full()};
+      r.onerror=ev=>{if(rec!==r)return;const e=ev.error;if(e==="aborted"||e==="no-speech")return;
+        fatal=true;active=false;clearTimeout(t3);t3=setTimeout(finalize,1500);$("vNote").textContent=errMsg(e);setTimeout(()=>{if(inFrame&&(e==="not-allowed"||e==="service-not-allowed"))addOpenLink()},0)};
+      r.onend=()=>{if(rec!==r)return;
+        acc=full();cur="";
+        if(active&&!finishing){ /* ended by the browser: carry on with a fresh recording */
+          if(!heard&&Date.now()-born<1500)fails++;
+          if(fails>=6){fatal=true;active=false;$("vNote").textContent=errMsg("x");finalize();return}
+          setTimeout(startInst,fails?400:120);return}
+        finalize()};
+      try{r.start()}catch(_){fails++;if(fails>=6){fatal=true;active=false;$("vNote").textContent=T("মাইক চালু করা গেল না। আবার ট্যাপ করুন।","Could not start the microphone. Tap again.");finalize()}else setTimeout(startInst,400)}
     };
+    mic.onclick=()=>{
+      if(on){finish();return}
+      acc="";cur="";fails=0;fatal=false;gotAny=false;active=true;finishing=false;on=true;t0=lastAct=Date.now();
+      mic.classList.add("on");$("vtxt").value="";$("vcard").hidden=true;$("vNote").textContent="";label();
+      clearInterval(ti);ti=setInterval(()=>{
+        if(!active){return}
+        label();
+        const now=Date.now();
+        if(now-t0>=CAP||now-lastAct>=SIL){finish()}
+      },1000);
+      startInst();
+    };
+    /* language switch while listening: restart with the new language, keep the words so far */
+    document.querySelectorAll(".vlang button").forEach(b=>{const old=b.onclick;b.onclick=()=>{old();if(on&&active&&rec){const r=rec;acc=full();cur="";try{r.abort()}catch(_){}rec=null;setTimeout(startInst,200)}}});
   }
 }
 
