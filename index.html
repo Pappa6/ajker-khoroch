@@ -32,6 +32,9 @@
   --go:#7fd08a; --go-bg:#1d3221; --wait:#f0b84c; --wait-bg:#3a2e14; --stop:#f2877f; --stop-bg:#3d1f1c; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55}
+.tabbar{display:flex;gap:8px}.tabbar button{flex:1;min-height:48px;padding:12px 10px;font-weight:700;font-size:1rem;border:2px solid var(--accent);background:var(--card);color:var(--accent);border-radius:14px}.tabbar button[aria-selected="true"]{background:var(--accent);color:var(--card)}
+body[data-tab="dash"] .wrap>*:not(header):not(.datestrip):not(#tabbar):not(#dash):not(.installhelp):not(#sampleBar){display:none!important}
+body[data-tab="today"] #dash{display:none!important}
 .wrap{max-width:520px;margin:0 auto;padding-inline:16px;padding-block:18px 48px;display:flex;flex-direction:column;gap:16px}
 header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 h1{font-family:var(--f-display);font-size:1.5rem;margin:0;color:var(--accent)}
@@ -314,6 +317,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
     <button class="helpbtn" id="langBtn" aria-label="ভাষা / Language">English</button>
   </header>
   <div class="datestrip" id="dateStrip" aria-live="polite"></div>
+  <div class="tabbar" id="tabbar" role="tablist"><button type="button" role="tab" id="tabDash" data-tab="dash" aria-selected="true"><span data-en="Dashboard">ড্যাশবোর্ড</span></button><button type="button" role="tab" id="tabToday" data-tab="today" aria-selected="false"><span data-en="Add spending &amp; statements">খরচ লিখুন ও স্টেটমেন্ট</span></button></div>
 
   <div class="installhelp" id="installHelp" hidden>
     <div class="top"><strong><span data-en="To install the app">অ্যাপটা ফোনে বসাতে</span></strong><button class="x" id="installHelpClose" aria-label="Close">✕</button></div>
@@ -361,7 +365,7 @@ body.locked>*:not(#lockscr){visibility:hidden!important}
   </section>
 
   <div class="sample" id="sampleBar" hidden>
-    <span><span data-en="This is a sample. To set up your own, open &quot;My monthly budget&quot; below.">এগুলো নমুনা হিসেব। নিজের হিসেব বসাতে নিচের "আমার মাসের হিসেব" খুলুন।</span></span>
+    <span><span data-en="This is a sample. To set up your own, go to the &quot;Add spending &amp; statements&quot; tab and open &quot;My monthly budget&quot;.">এগুলো নমুনা হিসেব। নিজের হিসেব বসাতে "খরচ লিখুন ও স্টেটমেন্ট" ট্যাবে গিয়ে "আমার মাসের হিসেব" খুলুন।</span></span>
     <button id="clearSample"><span data-en="Clear sample">নমুনা মুছুন</span></button>
   </div>
 
@@ -1364,7 +1368,7 @@ $("shareApp").addEventListener("click",async e=>{
 const OB_KEY="ajkerKhoroch.onboarded";
 function obSeen(){try{return localStorage.getItem(OB_KEY)==="1"}catch(_){return false}}
 function obMark(){try{localStorage.setItem(OB_KEY,"1")}catch(_){}}
-function obShow(v){$("onboard").hidden=!v;if(v)$("onboard").scrollIntoView({behavior:"smooth",block:"start"});}
+function obShow(v){if(v)setTab("today");$("onboard").hidden=!v;if(v)$("onboard").scrollIntoView({behavior:"smooth",block:"start"});}
 $("onboard").hidden=obSeen();
 $("obOpen").onclick=()=>{$("sampleAgainRow").hidden=S.sample;$("sampleAsk").hidden=true;obShow(true);};
 function loadSample(){S=sample();S.payeeCat={};dashP=null;save();render();$("sampleAgainRow").hidden=true;window.scrollTo({top:0,behavior:"smooth"});}
@@ -1375,9 +1379,10 @@ $("sampleAgain").onclick=()=>{
 $("sampleYes").onclick=loadSample;
 $("sampleNo").onclick=()=>{$("sampleAsk").hidden=true};
 $("obClose").onclick=$("obLater").onclick=()=>{obMark();obShow(false)};
+$("obLater").addEventListener("click",()=>setTab("dash"));
 $("obStart").onclick=()=>{obMark();$("onboard").hidden=true;
   if(S.sample){S=blank();save();render();}
-  $("setup").open=true;$("setup").scrollIntoView({behavior:"smooth",block:"start"});};
+  setTab("today");$("setup").open=true;$("setup").scrollIntoView({behavior:"smooth",block:"start"});};
 
 /* ---------- feedback ---------- */
 /* ---------- statement import ---------- */
@@ -2516,7 +2521,7 @@ $("installHelpClose").onclick=()=>{$("installHelp").hidden=true};
 window.addEventListener("appinstalled",()=>{["installBtn","installHint","installTop","installHelp"].forEach(id=>$(id).hidden=true);});
 async function takeShared(){
   if(!/[?&]shared=1/.test(location.search)||!("caches" in window))return;
-  history.replaceState(null,"",location.pathname);
+  history.replaceState(null,"",location.pathname);setTab("today");
   try{
     const c=await caches.open("ajker-khoroch-share");
     const r=await c.match("shared-statement");
@@ -2559,6 +2564,18 @@ $("langBtn").onclick=()=>{
   applyLang();render();
   if(pending&&!$("preview").hidden) showPreview();
 };
+/* two tabs: the dashboard, and the page for adding spending and statements */
+function setTab(t){
+  document.body.setAttribute("data-tab",t);
+  $("tabToday").setAttribute("aria-selected",String(t==="today"));$("tabDash").setAttribute("aria-selected",String(t==="dash"));
+  try{localStorage.setItem("ak_tab2",t)}catch(_){}
+  window.scrollTo(0,0);
+}
+$("tabToday").onclick=()=>setTab("today");
+$("tabDash").onclick=()=>setTab("dash");
+{let t0=null;try{t0=localStorage.getItem("ak_tab2")}catch(_){}
+ if(t0!=="today"&&t0!=="dash")t0=S.sample?"today":"dash";
+ document.body.setAttribute("data-tab",t0);$("tabToday").setAttribute("aria-selected",String(t0==="today"));$("tabDash").setAttribute("aria-selected",String(t0==="dash"));}
 applyLang();
 render();
 takeShared();
@@ -2688,7 +2705,7 @@ $("exitBtn").onclick=()=>{
   setTimeout(()=>{lkPanel();
     const m=$("lsMsg");if(m){m.textContent=lkOK()?T("আগে পিন-লক চালু করুন, তারপর Exit চাপলে অ্যাপ লক হবে।","Turn on the PIN lock first. After that, Exit locks the app."):T("এই ব্রাউজারে পিন-লক চালানো যাচ্ছে না।","PIN lock can't run in this browser.");m.className="lkmsg bad"}
   },60);
-  $("lockSet").scrollIntoView({behavior:"smooth",block:"start"});
+  setTab("today");$("lockSet").scrollIntoView({behavior:"smooth",block:"start"});
 };
 $("lockSet").addEventListener("toggle",()=>{if($("lockSet").open)lkPanel()});
 
