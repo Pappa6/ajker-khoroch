@@ -619,7 +619,6 @@ section#dash{background:transparent;border:0;padding:0;gap:14px}
       <a class="primary" id="fbWA" href="https://wa.me/918001195515" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;padding:11px 18px;border-radius:12px"><span data-en="Message on WhatsApp">WhatsApp-এ জানান</span></a>
     </details>
   </section>
-  <p class="credit">Prepared by তন্ময় মুখার্জী</p>
 </div>
 
 <script>
@@ -675,9 +674,9 @@ function sampleHistory(t){
     const dm=d.getDate(),mi=(d.getFullYear()-start.getFullYear())*12+d.getMonth()-start.getMonth();
     if(dm===5)push(new Date(d),1200+rnd()*700,"WBSEDCL ELECTRICITY BILL","বিল ও রিচার্জ");
     if(dm===8)push(new Date(d),349,"JIO RECHARGE","বিল ও রিচার্জ");
-    if(dm===10)push(new Date(d),2000,"RINA DIDI HOUSE HELP","পরিবার ও ব্যক্তিগত");
+    if(dm===10)push(new Date(d),2000,"HOUSE HELP","পরিবার ও ব্যক্তিগত");
     if(dm===28)push(new Date(d),3000,"SBI MUTUAL FUND SIP","সঞ্চয়");
-    if(dm===14&&mi===2)push(new Date(d),14500,"DURGAPUR MUNICIPAL PROPERTY TAX","বিল ও রিচার্জ");
+    if(dm===14&&mi===2)push(new Date(d),14500,"MUNICIPAL PROPERTY TAX","বিল ও রিচার্জ");
     if(dm===16&&mi===1)push(new Date(d),12000,"SHREE HOUSE PAINTING WORKS","বাড়ি ও মেরামত");
     if(dm===20&&mi===3)push(new Date(d),2100,"PUJO COMMITTEE DONATION","পুজো ও দান");
   }
@@ -877,7 +876,7 @@ const RULES=[
   ["নগদ তোলা",/\batm\b|cash ?wd|cash withdrawal|cwdr|\bnwd\b/i]
 ];
 const TAGCAT={"বাজার":"বাজার ও মুদি","ওষুধ":"স্বাস্থ্য ও ওষুধ","যাতায়াত":"যাতায়াত ও জ্বালানি","খাবার":"খাবার ও মিষ্টি","নগদ তোলা":"নগদ তোলা"};
-/* SBI net-banking narrations: "WDL TFR UPI/DR/ref/NAME/BANK/vpa/Paym 00976.. AT 13124 BIDHANNAGAR, DURGAPUR" -> the real name */
+/* SBI net-banking narrations: "WDL TFR UPI/DR/ref/NAME/BANK/vpa/Paym 00976.. AT 13124 SOME TOWN" -> the real name */
 function sbiName(d){
   let s=String(d||"").replace(/\s+/g," ").trim(),m;
   s=s.replace(/\s+AT\s+\d{4,6}\b.*$/i,"");
