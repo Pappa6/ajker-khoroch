@@ -328,6 +328,7 @@ section#dash{background:transparent;border:0;padding:0;gap:14px}
     <button class="helpbtn" id="exitBtn" aria-label="Exit">🔒 Exit</button>
     <div class="langsw" role="group" aria-label="ভাষা / Language"><button type="button" id="langBn" aria-pressed="true">বাংলা</button><button type="button" id="langEn" aria-pressed="false">English</button></div>
   </header>
+  <a id="apkGet" href="ajker-khoroch.apk" hidden style="display:flex;align-items:center;gap:12px;text-decoration:none;background:linear-gradient(135deg,#1f5f5b,#2f8f7f);color:#fff;border-radius:18px;padding:14px 16px;box-shadow:0 6px 18px rgba(31,95,91,.3)"><span style="font-size:2rem">📲</span><span><b style="font-size:1.15rem" data-en="Get the Android app">Android অ্যাপ নামান</b><br><small data-en="Scan any UPI QR and pay; the spend is saved at once. After downloading, open the file and allow the install.">যেকোনো UPI QR স্ক্যান করে পেমেন্ট, খরচ সঙ্গে সঙ্গে হিসেবে। নামানোর পর ফাইলটা খুলে বসানোর অনুমতি দিন।</small></span></a>
   <div class="datestrip" id="dateStrip" aria-live="polite"></div>
   <div class="tabbar" id="tabbar" role="tablist"><button type="button" role="tab" id="tabDash" data-tab="dash" aria-selected="true"><span data-en="Dashboard">ড্যাশবোর্ড</span></button><button type="button" role="tab" id="tabToday" data-tab="today" aria-selected="false"><span data-en="Add spending &amp; statements">খরচ লিখুন ও স্টেটমেন্ট</span></button></div>
 
@@ -2549,6 +2550,7 @@ $("howFlow").open=!S.exp.some(e=>e.src==="imp")||S.sample;
 /* ---------- install & receive shared statements (only on the real website) ---------- */
 const ON_SITE=location.hostname.endsWith("github.io");
 $("shareTip").hidden=!ON_SITE;
+{const g=$("apkGet");if(g)g.hidden=!(ON_SITE&&/Android/i.test(navigator.userAgent)&&!window.AKNative);}
 if(ON_SITE&&"serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}
 let deferredInstall=null;
 const isInstalled=()=>window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
