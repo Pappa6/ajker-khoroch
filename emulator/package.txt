@@ -1,0 +1,8 @@
+    versionName=1.0.2
+    installPermissionsFixed=false
+    requested permissions:
+      android.permission.CAMERA
+      android.permission.POST_NOTIFICATIONS
+      runtime permissions:
+        android.permission.POST_NOTIFICATIONS: granted=false
+        android.permission.CAMERA: granted=false

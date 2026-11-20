@@ -1,0 +1,2 @@
+ddda95945558e97c762f9b9d8cc47d33e18ef313e53fc18dfa5b41bacf2fd386  out/app-unsigned-aligned.apk
+2defad215d7ff52968a409cde528cdaef7918b115e276b8e3378ca7a178e4180  out/apksigner.jar

@@ -1,0 +1,5 @@
+package: name='com.pappa6.ajkerkhoroch' versionCode='2' versionName='1.0.2' platformBuildVersionName='14' platformBuildVersionCode='34' compileSdkVersion='34' compileSdkVersionCodename='14'
+minSdkVersion:'24'
+targetSdkVersion:'34'
+uses-permission: name='android.permission.CAMERA'
+uses-permission: name='android.permission.POST_NOTIFICATIONS'

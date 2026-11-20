@@ -1,0 +1,7 @@
+Starting: Intent { cmp=com.pappa6.ajkerkhoroch/.MainActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.pappa6.ajkerkhoroch/.MainActivity
+TotalTime: 2684
+WaitTime: 2687
+Complete

@@ -1,0 +1,54 @@
+I/SdkSandboxManager(  518): No SDKs used. Skipping SDK data reconcilation for CallingInfo{mUid=10192, mPackageName='com.pappa6.ajkerkhoroch, mAppProcessToken='null'}
+V/SplashScreenExceptionList(  518): SplashScreen checking exception for package com.pappa6.ajkerkhoroch (target sdk:34) -> false
+I/ActivityTaskManager(  518): START u0 {flg=0x10000000 cmp=com.pappa6.ajkerkhoroch/.MainActivity} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+V/WindowManagerShell(  834): Transition requested: android.os.BinderProxy@5910497 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.pappa6.ajkerkhoroch/.MainActivity } baseActivity=ComponentInfo{com.pappa6.ajkerkhoroch/com.pappa6.ajkerkhoroch.MainActivity} topActivity=ComponentInfo{com.pappa6.ajkerkhoroch/com.pappa6.ajkerkhoroch.MainActivity} origActivity=null realActivity=ComponentInfo{com.pappa6.ajkerkhoroch/com.pappa6.ajkerkhoroch.MainActivity} numActivities=1 lastActiveTime=46965 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@1ef2684} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=ActivityInfo{ea7ce6d com.pappa6.ajkerkhoroch.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+I/a6.ajkerkhoroch( 3037): Using CollectorTypeCC GC.
+W/a6.ajkerkhoroch( 3037): Unexpected CPU variant for x86: x86_64.
+W/a6.ajkerkhoroch( 3037): Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, tremont, kabylake, default
+E/a6.ajkerkhoroch( 3037): Not starting debugger since process cannot load the jdwp agent.
+D/CoreBackPreview(  518): Window{b4f28b8 u0 Splash Screen com.pappa6.ajkerkhoroch}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@3463cda, mPriority=0, mIsAnimationCallback=false}
+I/ActivityManager(  518): Start proc 3037:com.pappa6.ajkerkhoroch/u0a192 for next-top-activity {com.pappa6.ajkerkhoroch/com.pappa6.ajkerkhoroch.MainActivity}
+V/WindowManager(  518): Sent Transition #6 createdAt=11-20 06:12:02.689 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=8 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.pappa6.ajkerkhoroch/.MainActivity } baseActivity=ComponentInfo{com.pappa6.ajkerkhoroch/com.pappa6.ajkerkhoroch.MainActivity} topActivity=ComponentInfo{com.pappa6.ajkerkhoroch/com.pappa6.ajkerkhoroch.MainActivity} origActivity=null realActivity=ComponentInfo{com.pappa6.ajkerkhoroch/com.pappa6.ajkerkhoroch.MainActivity} numActivities=1 lastActiveTime=46965 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{508d2a7 Task{718b8e0 #8 type=standard A=10192:com.pappa6.ajkerkhoroch}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=ActivityInfo{91ac354 com.pappa6.ajkerkhoroch.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= false topActivityLetterboxed= false isFromDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 locusId=null displayAreaFeatureId=1 cameraCompatControlState=hidden}, remoteTransition = null, displayChange = null }
+V/WindowManager(  518):     info={id=6 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{RemoteToken{508d2a7 Task{718b8e0 #8 type=standard A=10192:com.pappa6.ajkerkhoroch}}} m=OPEN f=NONE leash=Surface(name=Task=8)/@0x65f8d32 sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0},{WCT{RemoteToken{ee0f2fd Task{77b6c37 #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x4a08a06 sb=Rect(0, 0 - 320, 640) eb=Rect(0, 0 - 320, 640) d=0}]}
+W/ziparchive( 3037): Unable to open '/data/app/~~CelHGqJWty0Rr4rVYOr83g==/com.pappa6.ajkerkhoroch-Wdob0y9SXpQSgaHxZb2VaA==/base.dm': No such file or directory
+W/ziparchive( 3037): Unable to open '/data/app/~~CelHGqJWty0Rr4rVYOr83g==/com.pappa6.ajkerkhoroch-Wdob0y9SXpQSgaHxZb2VaA==/base.dm': No such file or directory
+D/nativeloader( 3037): Configuring clns-6 for other apk /data/app/~~CelHGqJWty0Rr4rVYOr83g==/com.pappa6.ajkerkhoroch-Wdob0y9SXpQSgaHxZb2VaA==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~CelHGqJWty0Rr4rVYOr83g==/com.pappa6.ajkerkhoroch-Wdob0y9SXpQSgaHxZb2VaA==/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.pappa6.ajkerkhoroch
+V/GraphicsEnvironment( 3037): ANGLE GameManagerService for com.pappa6.ajkerkhoroch: false
+V/GraphicsEnvironment( 3037): com.pappa6.ajkerkhoroch is not listed in per-application setting
+E/a6.ajkerkhoroch( 3037): Failed to open APK '/data/resource-cache/com.android.systemui-neutral-hOhv.frro': Invalid file
+E/a6.ajkerkhoroch( 3037): Failed to open APK '/data/resource-cache/com.android.systemui-accent-9DwD.frro': Invalid file
+E/a6.ajkerkhoroch( 3037): Failed to open APK '/data/resource-cache/com.android.systemui-dynamic-wGPC.frro': Invalid file
+W/a6.ajkerkhoroch( 3037): Entry not found
+I/cr_VariationsUtils( 3037): Failed reading seed file "/data/user/0/com.pappa6.ajkerkhoroch/app_webview/variations_seed_new"
+I/cr_VariationsUtils( 3037): Failed reading seed file "/data/user/0/com.pappa6.ajkerkhoroch/app_webview/variations_seed"
+W/chromium( 3037): [WARNING:dns_config_service_android.cc(115)] Failed to read DnsConfig.
+I/ActivityManager(  518): Start proc 3138:com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0/u0ai9000 for  {com.pappa6.ajkerkhoroch/org.chromium.content.app.SandboxedProcessService0:0}
+I/SafetyLabelChangedBroadcastReceiver(  848): received broadcast packageName: com.pappa6.ajkerkhoroch, current user: UserHandle{0}, packageChangeEvent: NEW_INSTALL, intent user: UserHandle{0}
+I/ActivityManager(  518): Start proc 3220:com.google.android.webview:webview_apk/u0a134 for service {com.google.android.webview/org.chromium.android_webview.nonembedded.AwComponentUpdateService}
+D/CoreBackPreview(  518): Window{4ae04b4 u0 com.pappa6.ajkerkhoroch/com.pappa6.ajkerkhoroch.MainActivity}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@225f1a2, mPriority=0, mIsAnimationCallback=false}
+W/ziparchive(  518): Unable to open '/data/app/~~CelHGqJWty0Rr4rVYOr83g==/com.pappa6.ajkerkhoroch-Wdob0y9SXpQSgaHxZb2VaA==/base.dm': No such file or directory
+I/ActivityTaskManager(  518): Displayed com.pappa6.ajkerkhoroch/.MainActivity for user 0: +2s684ms
+W/InputManager-JNI(  518): Input channel object 'b4f28b8 Splash Screen com.pappa6.ajkerkhoroch (client)' was disposed without first being removed with the input manager!
+I/cr_WebViewApkApp( 3138): Launched version=113.0.5672.136 minSdkVersion=29 isBundle=false processName=com.google.android.webview:sandboxed_process0:org.chromium.content.app.SandboxedProcessService0:0
+I/ImeTracker(  518): com.pappa6.ajkerkhoroch:7dc6b1c6: onRequestHide at ORIGIN_SERVER_HIDE_INPUT reason HIDE_UNSPECIFIED_WINDOW
+I/ImeTracker(  518): com.pappa6.ajkerkhoroch:7dc6b1c6: onCancelled at PHASE_SERVER_SHOULD_HIDE
+I/GoogleInputMethodService( 1537): GoogleInputMethodService.onStartInput():1877 onStartInput(EditorInfo{inputType=0x0(NULL) imeOptions=0x0 privateImeOptions=null actionName=UNSPECIFIED actionLabel=null actionId=0 initialSelStart=-1 initialSelEnd=-1 initialCapsMode=0x0 hintText=null label=null packageName=com.pappa6.ajkerkhoroch fieldId=0 fieldName=null extras=null}, false)
+W/cr_AWNetworkFetcherTask( 3220): 	at org.chromium.android_webview.nonembedded.NetworkFetcherTask.download(chromium-TrichromeWebViewGoogle6432.apk-stable-567263637:48)
+D/CarrierSvcBindHelper( 1047): onPackageAdded: com.pappa6.ajkerkhoroch
+D/ImsResolver( 1047): maybeAddedImsService, packageName: com.pappa6.ajkerkhoroch
+D/CarrierSvcBindHelper( 1047): onPackageModified: com.pappa6.ajkerkhoroch
+D/ImsResolver( 1047): maybeAddedImsService, packageName: com.pappa6.ajkerkhoroch
+I/AiAiEcho( 1614): AppFetcherImplV2 updateApps package:[com.pappa6.ajkerkhoroch], userId:[0], reason:[package is added.].
+W/ProcessStats(  518): Tracking association SourceState{cf17631 com.pappa6.ajkerkhoroch/10192 BTop #1462} whose proc state 2 is better than process ProcessState{3529d3e com.google.android.gms.persistent/10131 pkg=com.google.android.gms} proc state 4 (9323 skipped)
+I/AiAiEcho( 1614): AppFetcherImpl onPackageChanged com.pappa6.ajkerkhoroch.
+I/AiAiEcho( 1614): AppIndexer Package:[com.pappa6.ajkerkhoroch] UserProfile:[0] Enabled:[true].
+I/AiAiEcho( 1614): AppFetcherImplV2 updateApps package:[com.pappa6.ajkerkhoroch], userId:[0], reason:[package is updated.].
+I/BlockstoreStorage( 1448): Clearing Blockstore Data for package com.pappa6.ajkerkhoroch [CONTEXT service_id=258 ]
+I/FontLog ( 1401): Package com.pappa6.ajkerkhoroch has no metadata [CONTEXT service_id=132 ]
+W/InputDispatcher(  518): Not sending touch gesture to b43e9d ActivityRecordInputSink com.pappa6.ajkerkhoroch/.MainActivity because it has config NO_INPUT_CHANNEL
+D/AndroidRuntime( 4670): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+I/AndroidRuntime( 4670): Using default boot image
+I/AndroidRuntime( 4670): Leaving lock profiling enabled
+D/nativeloader( 4670): InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+D/AndroidRuntime( 4670): Calling main entry com.android.commands.uiautomator.Launcher
+D/AndroidRuntime( 4670): Shutting down VM
